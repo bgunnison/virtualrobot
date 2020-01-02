@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 
 from midi import *
 
+
 def fatal_exit(msg):
     print(msg)
     exit(0)
@@ -22,13 +23,45 @@ class Effect:
 class EchoEffect(Effect):
     def __init__(self, note_manager):
         self.note_manager = note_manager
-        self.delay_ticks = 24
+        self.update = True # set if we need to update delays
+        self.delay_start_ticks = 24 # this is a quarter note
+        self.delay_types = ['linear', 'exp_slow_start', 'exp_fast_start']
+        self.delay_type = self.delay_types[0]
+        self.delays = []    # a list of ticks for each echo (number of echoes)
+        self.new_delays = self.delays
         self.echoes = 3
-        self.new_echoes = 3
-        self.end_velocity = 10
+        self.end_velocity = 10 #we linear ramp velocity down to this level
+        self.calc_delays() # init echoes
 
     def __str__(self):
-        return f'Echo effect - Echoes: {self.echoes}, Delay: {self.delay_ticks}'
+        return f'Echo effect - Echoes: {self.echoes}, Type: {self.delay_type}, Delay: {self.delay_start_ticks}'
+
+    def calc_delays(self):
+        """
+        based on settings we can calculate the delays
+        and return it in a list, this the number of echoes and the delay of each
+        """
+        self.update = True
+        self.new_delays = []
+        if self.delay_type is 'linear':
+            for i in range(self.echoes):
+                self.new_delays.append((i+1) * self.delay_start_ticks)
+
+
+    def control_delay_type(self, control):
+        """
+        All controls are 0 - 127 per CC
+        """
+       
+        n = len(self.delay_types)
+        s = int(control/n)
+        if s > n - 1:
+            s = n - 1
+
+        self.delay_type = self.delay_types[s]
+        self.calc_delays()
+        log.info(f"Delay type: {self.delay_type}")
+
 
     def control_echoes(self, control):
         """
@@ -36,15 +69,17 @@ class EchoEffect(Effect):
         """
         control += 1
         control /= 4
-        self.new_echoes = int(control)
-        log.info(f"echoes: {self.new_echoes}")
+        self.echoes = int(control)
+        self.calc_delays()
+        log.info(f"echoes: {self.echoes}")
 
     def control_delay_tick(self, control):
         """
         All controls are 0 - 127 per CC
         """
-        self.delay_ticks = control
-        log.info(f"delay ticks: {self.delay_ticks}")
+        self.delay_start_ticks = control
+        self.calc_delays()
+        log.info(f"delay ticks: {self.delay_start_ticks}")
 
     def run(self, tick, midiout, message):
         """
@@ -58,26 +93,21 @@ class EchoEffect(Effect):
 
         # if we change number of echoes in the middle of echoing notes
         # we could miss note off events. 
-        if self.new_echoes != self.echoes:
+        if self.update:
             if self.note_manager.empty():
-                self.echoes = self.new_echoes
+                self.delays = self.new_delays
+                self.update = False
 
 
         # divide the velocity range to get to min from original v
         ov = note.velocity
-        dv = (ov - self.end_velocity)/float(self.echoes)
-        #log.info(f"tick: {tick}, dv: {dv}")
-        # subsequent echos 
-        echo_num = 1
-        while True:
-            ntick = tick + (echo_num * self.delay_ticks)
-            note.velocity = int(ov - (echo_num * dv))
+        dv = (ov - self.end_velocity)/float(len(self.delays))
+        for i, d in enumerate(self.delays):
+            note.velocity = int(ov - ((i + 1) * dv))
             if note.velocity < self.end_velocity:
                 break
-            self.note_manager.add(ntick, note.get_message())
-            echo_num += 1
-            if echo_num > self.echoes:
-                break
+            self.note_manager.add(d+tick, note.get_message())
+            
 
 class ChordInfo:
     """
@@ -221,6 +251,7 @@ class NoteManager:
         event = self.note_events.get()
 
         if tick >= event[0]:
+            log.info(f"Run: {tick}")
             self.midiout.send_message(event[1])
         else:
             self.note_events.put(event)
@@ -230,7 +261,7 @@ class NoteManager:
         Add a message to the priority queue
         """
         self.note_events.put((tick,message))
-        #log.info(f"Add: {message}, {tick}")
+        log.info(f"Add: {message}, {tick}")
 
     def empty(self):
         return self.note_events.empty()

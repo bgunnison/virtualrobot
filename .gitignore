@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs
+/source/midiapps/.vs/app1/v16/.suo
+/source/projects/.vs/app1/v16/.suo
+/source/common/__pycache__/midi.cpython-37.pyc
