@@ -1,8 +1,15 @@
 """
 MIDI effects app
 """
+import os
+import sys
+import math
 import queue
 import logging
+
+
+sys.path.append('../common')
+    #os.path.dirname(os.path.abspath(__file__)))
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
@@ -16,6 +23,18 @@ def fatal_exit(msg):
 class Effect:
     def __init__(self):
         pass
+
+    def control_to_selection(self, selections, control):
+        """
+        a cc value is mapped to a range of selections in a list
+        """
+        n = len(selections)
+        s = 128/n
+        t = int(control/s)
+        if t > n - 1:
+            t = n - 1
+
+        return t
 
     def run(self):
         pass # override
@@ -46,19 +65,36 @@ class EchoEffect(Effect):
         if self.delay_type is 'linear':
             for i in range(self.echoes):
                 self.new_delays.append((i+1) * self.delay_start_ticks)
+            return
+
+       
+        if 'exp' in self.delay_type:
+            s = 0.2
+            e = 4
+            a = (e - s)/float(self.echoes)
+            for i in range(self.echoes):
+                v = (i+1) * a
+                f = (1.61 + math.log(v))/2.996
+                delay = int(self.delay_start_ticks * f)
+                self.new_delays.append(delay)
+
+            if self.delay_type is 'exp_slow_start':
+                log.info(f"delays: {self.new_delays}")
+                return
+
+            if self.delay_type is 'exp_fast_start':
+                self.new_delays.reverse()
+                log.info(f"delays: {self.new_delays}")
+                return
+
 
 
     def control_delay_type(self, control):
         """
         All controls are 0 - 127 per CC
         """
-       
-        n = len(self.delay_types)
-        s = int(control/n)
-        if s > n - 1:
-            s = n - 1
-
-        self.delay_type = self.delay_types[s]
+        t = self.control_to_selection(self.delay_types, control)
+        self.delay_type = self.delay_types[t]
         self.calc_delays()
         log.info(f"Delay type: {self.delay_type}")
 
@@ -183,12 +219,8 @@ class ChordEffect(Effect):
         All controls are 0 - 127 per CC
         """
         names = ChordInfo().get_names()
-        n = len(names)
-        s = int(control/n)
-        if s > n - 1:
-            s = n - 1
-
-        self.new_chord_name = names[s]
+        t = self.control_to_selection(names, control)        
+        self.new_chord_name = names[t]
         log.info(f"Chord: {self.new_chord_name}")
 
     def control_chord_width(self, control):
@@ -285,15 +317,16 @@ class ZonkerMidiEffect:
     def set_effect_echo(self):
         self.effect = EchoEffect(self.note_manager)
         # VI25 Alesis controller CC knobs start with 21
-        self.effect_controls = {    21:[self.effect.control_echoes],
-                                    22:[self.effect.control_delay_tick]
+        self.effect_controls = {    21:[self.effect.control_delay_type],
+                                    22:[self.effect.control_echoes],
+                                    23:[self.effect.control_delay_tick]
                                 }  # a dict keyed with CC numbers and a list of control functions mapped to that CC
 
     def set_effect_chord(self):
         self.effect = ChordEffect()
         # VI25 Alesis controller CC knobs start with 21
-        self.effect_controls = {    21:[self.effect.control_chord_name],
-                                    22:[self.effect.control_chord_width]
+        self.effect_controls = {    24:[self.effect.control_chord_name],
+                                    25:[self.effect.control_chord_width]
                                 }  # a dict keyed with CC numbers and a list of control functions mapped to that CC
 
 
