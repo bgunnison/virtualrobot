@@ -73,9 +73,9 @@ class EchoEffect(Effect):
             e = 4
             a = (e - s)/float(self.echoes)
             for i in range(self.echoes):
-                v = (i+1) * a
+                v = 0.2 + ((i+1) * a)
                 f = (1.61 + math.log(v))/2.996
-                delay = int(self.delay_start_ticks * f)
+                delay = round(self.delay_start_ticks * f)
                 self.new_delays.append(delay)
 
             if self.delay_type is 'exp_slow_start':
@@ -83,8 +83,18 @@ class EchoEffect(Effect):
                 return
 
             if self.delay_type is 'exp_fast_start':
+                """ wrong!! 
                 self.new_delays.reverse()
+                s = 0
+                nd = []
+                for i, v in enumerate(self.new_delays):
+                    s += v
+                    nd.append(s)
+
+                self.new_delays = nd
                 log.info(f"delays: {self.new_delays}")
+
+                """
                 return
 
 
@@ -139,7 +149,7 @@ class EchoEffect(Effect):
         ov = note.velocity
         dv = (ov - self.end_velocity)/float(len(self.delays))
         for i, d in enumerate(self.delays):
-            note.velocity = int(ov - ((i + 1) * dv))
+            note.velocity = round(ov - ((i + 1) * dv))
             if note.velocity < self.end_velocity:
                 break
             self.note_manager.add(d+tick, note.get_message())

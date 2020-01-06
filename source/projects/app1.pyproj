@@ -6,7 +6,7 @@
     <ProjectHome>
     </ProjectHome>
     <StartupFile>..\midiapps\app1.py</StartupFile>
-    <SearchPath>..\midiapps;..\common;..\common;..\midiapps</SearchPath>
+    <SearchPath>..\midiapps;..\common;..\common;..\midiapps;..\ui;..\ui;..\ui;..\ui;..\ui;..\midiapps;..\ui;..\ui</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>app1</Name>
@@ -23,6 +23,9 @@
   <ItemGroup>
     <Folder Include="common\" />
     <Folder Include="midiapps\" />
+    <Folder Include="ui\" />
+    <Folder Include="ui\media\" />
+    <Folder Include="ui\media\logo\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\common\midi.py">
@@ -31,6 +34,32 @@
     <Compile Include="..\midiapps\app1.py">
       <Link>midiapps\app1.py</Link>
     </Compile>
+    <Compile Include="..\midiapps\module1.py">
+      <Link>midiapps\module1.py</Link>
+    </Compile>
+    <Compile Include="..\ui\mainecho.py">
+      <Link>mainecho.py</Link>
+    </Compile>
+    <Compile Include="..\ui\uix\custom_button.py">
+      <Link>ui\custom_button.py</Link>
+    </Compile>
+    <Compile Include="..\ui\uix\__init__.py">
+      <Link>ui\__init__.py</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\ui\mainEcho.kv">
+      <Link>ui\mainEcho.kv</Link>
+    </Content>
+    <Content Include="..\ui\media\logo.zip">
+      <Link>ui\media\logo\logo.zip</Link>
+    </Content>
+    <Content Include="..\ui\media\logo01.max">
+      <Link>ui\media\logo\logo01.max</Link>
+    </Content>
+    <Content Include="..\ui\media\logosmall.zip">
+      <Link>ui\media\logo\logosmall.zip</Link>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
