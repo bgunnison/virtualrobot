@@ -2,6 +2,7 @@
 
 
 <RootWidget>:
+    orientation: 'vertical' 
     canvas.before:
         Color:
             rgba: 0.5, 0.5, 0.5, 1
@@ -11,20 +12,20 @@
 
 <TitleBoxLayout>:
     orientation: 'horizontal' 
-	height: 60
-	size_hint: 1, None
+    height: 60
+    size_hint: 1, None
     pos_hint: {'x':0, 'top':1}
-	canvas.before:
-		Color:
-			rgb: 0,0,0
-		Rectangle:
+    canvas.before:
+        Color:
+            rgb: 0,0,0
+        Rectangle:
             pos: self.pos
             size: self.size
 
-	LogoZipped:
-        size: (800/7,600/7) #imag.size
+    LogoZipped:
+        size: (600/7,600/7) #imag.size
         size_hint: None, None
-	    pos_hint: {'left':1, 'center_y':.5}
+        pos_hint: {'left':1, 'center_y':.5}
         Image:
             id: imag
             source: 'media/logo.zip'
@@ -32,22 +33,48 @@
 
     BoxLayout:
         orientation: 'horizontal' 
-	    height: 60
-	    size_hint: 1, None
+        height: 60
+        size_hint: 1, None
         pos_hint: {'x':0, 'top':1}
-	    canvas.before:
-		    Color:
-			    rgb: 0,.5,0
-		    Rectangle:
+        canvas.before:
+            Color:
+                rgb: 0,.5,0
+            Rectangle:
                 pos: self.pos
                 size: self.size
         Label:
             markup: True
             text: '[b]- MIDI ECHO -[/b]'
-		    height: 60
-		    font_size: 50
-		    
-		
+            height: 60
+            font_size: 50
+            
+<NavButtons>:    
+    orientation: 'vertical' 
+    width: 60
+    size_hint: None, .7
+    pos_hint: {'left':1, 'center_y':.5}
+    #background_color: 0, 0, 0, 1
+    #border: 1, 1, 1, .5
+    Bubble:
+        arrow_pos: 'right_mid'
+        BubbleButton:
+            markup: True
+            text: '[b]MIDI[/b]'
+    Bubble:
+        arrow_pos: 'right_mid'
+        BubbleButton:
+            markup: True
+            text: '[b]ECHO[/b]'
+    Bubble:
+        arrow_pos: 'right_mid'
+        BubbleButton:
+            markup: True
+            text: '[b]LIVE[/b]'
+    Bubble:
+        arrow_pos: 'right_mid'
+        BubbleButton:
+            markup: True
+            text: '[b]HELP[/b]'
 
 
         
