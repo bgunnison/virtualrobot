@@ -4,6 +4,7 @@ kivy.require('1.0.8')
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics import Color, Rectangle
 
@@ -15,7 +16,7 @@ from kivy.graphics import Color, Rectangle
 #class StartScreen(Screen):
 #    pass
 
-class RootWidget(BoxLayout):
+class RootWidget(FloatLayout):
     pass
 
 
@@ -29,7 +30,7 @@ class MainEchoApp(App):
     def build(self):
         g = RootWidget() # RootScreen() #
         title_box = TitleBoxLayout()
-        title_box.add_widget(LogoZipped())
+        #title_box.add_widget(LogoZipped())
         g.add_widget(title_box)
         return g
 

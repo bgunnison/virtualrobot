@@ -10,34 +10,45 @@
             size: self.size
 
 <TitleBoxLayout>:
-    orientation: 'vertical' 
+    orientation: 'horizontal' 
 	height: 60
-	
+	size_hint: 1, None
+    pos_hint: {'x':0, 'top':1}
 	canvas.before:
 		Color:
-			rgb: 1,0,0
+			rgb: 0,0,0
 		Rectangle:
             pos: self.pos
             size: self.size
 
+	LogoZipped:
+        size: (800/7,600/7) #imag.size
+        size_hint: None, None
+	    pos_hint: {'left':1, 'center_y':.5}
+        Image:
+            id: imag
+            source: 'media/logo.zip'
+            anim_delay: 0.2
 
-    Label:
-        text: 'VIRTUAL ROBOT - MIDI ECHO'
-		height: 50
-		font_size: 40
-		canvas.before:
-			Color:
-				rgb: 1,0,0
+    BoxLayout:
+        orientation: 'horizontal' 
+	    height: 60
+	    size_hint: 1, None
+        pos_hint: {'x':0, 'top':1}
+	    canvas.before:
+		    Color:
+			    rgb: 0,.5,0
+		    Rectangle:
+                pos: self.pos
+                size: self.size
+        Label:
+            markup: True
+            text: '[b]- MIDI ECHO -[/b]'
+		    height: 60
+		    font_size: 50
+		    
 		
 
-<LogoZipped>
-    
-    size: (800/4,600/4) #imag.size
-    size_hint: None, None
-	pos_hint: {'center_x':.5, 'center_y':.5}
-    Image:
-        id: imag
-        source: 'media/logo.zip'
-        anim_delay: 0.2
+
         
 
