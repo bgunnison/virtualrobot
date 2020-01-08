@@ -24,8 +24,15 @@ Config.set('kivy','window_icon','media/icon.ico') # no work...
 #class StartScreen(Screen):
 #    pass
 
-class RootWidget(FloatLayout):
-    pass
+class RootWidget(BoxLayout):
+    def __init__(self, **kwargs):
+        super(RootWidget, self).__init__(**kwargs)
+
+    def nav_midi(self, but):
+        but.show_arrow = False
+        but.background_color = 1.0, 0.0, 0.0, 1.0
+        print(f'nav midi')
+   
 
 
 class TitleBoxLayout(BoxLayout):
@@ -41,14 +48,10 @@ class LogoZipped(BoxLayout):
 class MainEchoApp(App):
     def build(self):
         self.title = 'Virtual Robot MIDI Echo'
-        g = RootWidget() 
-        title_box = TitleBoxLayout()
-        g.add_widget(title_box)
-        nav = NavButtons()
-        g.add_widget(nav)
-        return g
+        
+        return RootWidget() 
 
-
+    
 
 if __name__ == '__main__':
     MainEchoApp().run()

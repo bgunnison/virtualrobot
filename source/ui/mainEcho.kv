@@ -10,71 +10,90 @@
             pos: self.pos
             size: self.size
 
-<TitleBoxLayout>:
-    orientation: 'horizontal' 
-    height: 60
-    size_hint: 1, None
-    pos_hint: {'x':0, 'top':1}
-    canvas.before:
-        Color:
-            rgb: 0,0,0
-        Rectangle:
-            pos: self.pos
-            size: self.size
-
-    LogoZipped:
-        size: (600/7,600/7) #imag.size
-        size_hint: None, None
-        pos_hint: {'left':1, 'center_y':.5}
-        Image:
-            id: imag
-            source: 'media/logo.zip'
-            anim_delay: 0.2
-
-    BoxLayout:
+    TitleBoxLayout:
         orientation: 'horizontal' 
         height: 60
         size_hint: 1, None
         pos_hint: {'x':0, 'top':1}
         canvas.before:
             Color:
-                rgb: 0,.5,0
+                rgb: 0,0,0
             Rectangle:
                 pos: self.pos
                 size: self.size
-        Label:
-            markup: True
-            text: '[b]- MIDI ECHO -[/b]'
+
+        LogoZipped:
+            size: (600/7,600/7) #imag.size
+            size_hint: None, None
+            pos_hint: {'left':1, 'center_y':.5}
+            Image:
+                id: imag
+                source: 'media/logo.zip'
+                anim_delay: 0.2
+
+        BoxLayout:
+            orientation: 'horizontal' 
             height: 60
-            font_size: 50
-            
-<NavButtons>:    
-    orientation: 'vertical' 
-    width: 60
-    size_hint: None, .7
-    pos_hint: {'left':1, 'center_y':.5}
-    #background_color: 0, 0, 0, 1
-    #border: 1, 1, 1, .5
-    Bubble:
-        arrow_pos: 'right_mid'
-        BubbleButton:
-            markup: True
-            text: '[b]MIDI[/b]'
-    Bubble:
-        arrow_pos: 'right_mid'
-        BubbleButton:
-            markup: True
-            text: '[b]ECHO[/b]'
-    Bubble:
-        arrow_pos: 'right_mid'
-        BubbleButton:
-            markup: True
-            text: '[b]LIVE[/b]'
-    Bubble:
-        arrow_pos: 'right_mid'
-        BubbleButton:
-            markup: True
-            text: '[b]HELP[/b]'
+            size_hint: 1, None
+            pos_hint: {'x':0, 'top':1}
+            canvas.before:
+                Color:
+                    rgb: 0,.5,0
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                markup: True
+                text: '[b]- MIDI ECHO -[/b]'
+                height: 60
+                font_size: 50
+
+    BoxLayout:
+        orientation: 'horizontal'
+        NavButtons:    
+            orientation: 'vertical' 
+            width: 65
+            size_hint: None, .5
+            pos_hint: {'left':1, 'center_y':.5}
+            #background_color: 0, 0, 0, 1
+            border: 1, 1, 1, 1
+            Bubble:
+                id: nav_midi
+                height: 60
+                size_hint: .9, None
+                pos_hint: {'center_x':.5, 'center_y':.5}
+                arrow_pos: 'right_mid'
+                BubbleButton:
+                    markup: True
+                    text: '[b]MIDI[/b]'
+                    on_press: root.nav_midi(self)
+            Bubble:
+                id: nav_echo
+                height: 60
+                size_hint: .9, None
+                pos_hint: {'center_x':.5, 'center_y':.5}
+                arrow_pos: 'right_mid'
+                BubbleButton:
+                    markup: True
+                    text: '[b]ECHO[/b]'
+            Bubble:
+                id: nav_live
+                height: 60
+                size_hint: .9, None
+                pos_hint: {'center_x':.5, 'center_y':.5}
+                arrow_pos: 'right_mid'
+                BubbleButton:
+                    markup: True
+                    text: '[b]LIVE[/b]'
+            Bubble:
+                id: nav_help
+                height: 60
+                size_hint: .9, None
+                pos_hint: {'center_x':.5, 'center_y':.5}
+                arrow_pos: 'right_mid'
+                BubbleButton:
+                    markup: True
+                    text: '[b]HELP[/b]'
 
 
         
