@@ -1,4 +1,13 @@
 #:kivy 1.0.9
+#:import SwapTransition kivy.uix.screenmanager.SwapTransition
+
+<NavButton@Button>:
+    height: 60
+    size_hint: .9, None
+    pos_hint: {'center_x':.5, 'center_y':.5}
+    border: 10, 10, 10, 10
+    markup: True
+
 
 
 <RootWidget>:
@@ -48,6 +57,7 @@
                 font_size: 50
 
     BoxLayout:
+        id: myscreens
         orientation: 'horizontal'
         NavButtons:    
             orientation: 'vertical' 
@@ -55,46 +65,51 @@
             size_hint: None, .5
             pos_hint: {'left':1, 'center_y':.7}
             #background_color: 0, 0, 0, 1
-            Button:
+            NavButton:
                 id: nav_midi
-                height: 60
-                size_hint: .9, None
-                pos_hint: {'center_x':.5, 'center_y':.5}
-                #background_down: '' white...
-                border: 10, 10, 10, 10
-                markup: True
-                text: '[b]MIDI[/b]'
+                text: 'MIDI'
                 on_press: root.nav_button_pressed(self, 'nav_midi')
-            Button:
+            NavButton:
                 id: nav_echo
-                height: 60
-                size_hint: .9, None
-                pos_hint: {'center_x':.5, 'center_y':.5}
-                
-                border: 1, 1, 1, 1
-                markup: True
-                text: '[b]ECHO[/b]'
+                text: 'ECHO'
                 on_press: root.nav_button_pressed(self, 'nav_echo')
-            Button:
+            NavButton:
                 id: nav_live
-                height: 60
-                size_hint: .9, None
-                pos_hint: {'center_x':.5, 'center_y':.5}
-                
-                border: 1, 1, 1, 1
-                markup: True
-                text: '[b]LIVE[/b]'
+                text: 'LIVE'
                 on_press: root.nav_button_pressed(self, 'nav_live')
-            Button:
+            NavButton:
                 id: nav_help
-                height: 60
-                size_hint: .9, None
-                pos_hint: {'center_x':.5, 'center_y':.5}
-                
-                border: 1, 1, 1, 1
-                markup: True
-                text: '[b]HELP[/b]'
+                text: 'HELP'
                 on_press: root.nav_button_pressed(self, 'nav_help')
+
+        MainScreenManager:
+            id: screen_manager
+            transition: SwapTransition()
+            #name: 'screen_manager'
+            MidiScreen:
+                id: screen_midi
+                name: 'screen_midi'
+                manager: 'screen_manager'
+                Label:
+                    text: 'MIDI'
+            EchoScreen:
+                id: screen_echo
+                name: 'screen_echo'
+                manager: 'screen_manager'
+                Label:
+                    text: 'ECHO'
+            LiveScreen:
+                id: screen_live
+                name: 'screen_live'
+                manager: 'screen_manager'
+                Label:
+                    text: 'LIVE'
+            HelpScreen:
+                id: screen_help
+                name: 'screen_help'
+                manager: 'screen_manager'
+                Label:
+                    text: 'HELP'
 
 
         
