@@ -27,7 +27,6 @@
             size_hint: None, None
             pos_hint: {'left':1, 'center_y':.5}
             Image:
-                id: imag
                 source: 'media/logo.zip'
                 anim_delay: 0.2
 
@@ -54,46 +53,48 @@
             orientation: 'vertical' 
             width: 65
             size_hint: None, .5
-            pos_hint: {'left':1, 'center_y':.5}
+            pos_hint: {'left':1, 'center_y':.7}
             #background_color: 0, 0, 0, 1
-            border: 1, 1, 1, 1
-            Bubble:
+            Button:
                 id: nav_midi
                 height: 60
                 size_hint: .9, None
                 pos_hint: {'center_x':.5, 'center_y':.5}
-                arrow_pos: 'right_mid'
-                BubbleButton:
-                    markup: True
-                    text: '[b]MIDI[/b]'
-                    on_press: root.nav_midi(self)
-            Bubble:
+                background_color: 0, 0, 0, .8
+                border: 1, 1, 1, 1
+                markup: True
+                text: '[b]MIDI[/b]'
+                on_press: root.nav_button_pressed(self, 'nav_midi')
+            Button:
                 id: nav_echo
                 height: 60
                 size_hint: .9, None
                 pos_hint: {'center_x':.5, 'center_y':.5}
-                arrow_pos: 'right_mid'
-                BubbleButton:
-                    markup: True
-                    text: '[b]ECHO[/b]'
-            Bubble:
+                background_color: 0, 0, 0, .8
+                border: 1, 1, 1, 1
+                markup: True
+                text: '[b]ECHO[/b]'
+                on_press: root.nav_button_pressed(self, 'nav_echo')
+            Button:
                 id: nav_live
                 height: 60
                 size_hint: .9, None
                 pos_hint: {'center_x':.5, 'center_y':.5}
-                arrow_pos: 'right_mid'
-                BubbleButton:
-                    markup: True
-                    text: '[b]LIVE[/b]'
-            Bubble:
+                background_color: 0, 0, 0, .8
+                border: 1, 1, 1, 1
+                markup: True
+                text: '[b]LIVE[/b]'
+                on_press: root.nav_button_pressed(self, 'nav_live')
+            Button:
                 id: nav_help
                 height: 60
                 size_hint: .9, None
                 pos_hint: {'center_x':.5, 'center_y':.5}
-                arrow_pos: 'right_mid'
-                BubbleButton:
-                    markup: True
-                    text: '[b]HELP[/b]'
+                background_color: 0, 0, 0, .8
+                border: 1, 1, 1, 1
+                markup: True
+                text: '[b]HELP[/b]'
+                on_press: root.nav_button_pressed(self, 'nav_help')
 
 
         
