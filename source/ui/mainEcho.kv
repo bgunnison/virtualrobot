@@ -8,7 +8,13 @@
     border: 10, 10, 10, 10
     markup: True
 
-
+<MidiPortSelectSpinner@Spinner>:
+    size: (100,25) 
+    size_hint: None, None
+    pos_hint: {'left':1, 'center_y':.5}
+    markup: True
+    text: '[b]NONE[/b]'
+    values: 'Home', 'Work', 'Other', 'Custom'
 
 <RootWidget>:
     orientation: 'vertical' 
@@ -90,8 +96,28 @@
                 id: screen_midi
                 name: 'screen_midi'
                 manager: 'screen_manager'
-                Label:
-                    text: 'MIDI'
+                BoxLayout:
+                    orientation: 'vertical'
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Label:
+                            markup: True
+                            text: '[b]INPUT:[/b]'
+                        MidiPortSelectSpinner:
+                            id: midi_port_in
+                            on_text: root.select_midi_port(self)
+
+                        Label:
+                            markup: True
+                            text: '[b]OUTPUT:[/b]'
+                        MidiPortSelectSpinner:
+                            id: midi_port_out
+                            on_text: root.select_midi_port(self)
+
+                            
+                    
+
+
             EchoScreen:
                 id: screen_echo
                 name: 'screen_echo'

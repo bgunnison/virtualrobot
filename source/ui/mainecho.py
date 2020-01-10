@@ -9,6 +9,7 @@ from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.properties import ListProperty
 from kivy.utils import get_color_from_hex
+from kivy.uix.spinner import Spinner
 from kivy.config import Config
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'multisamples', 8)
@@ -86,7 +87,8 @@ class RootWidget(BoxLayout):
 
         self.ids['screen_manager'].current = screen_names[id_key]
    
-
+    def select_midi_port(self, selector):
+        print(f'midi_port: {selector.text}')
 
 class MainEchoApp(App):
     def build(self):
