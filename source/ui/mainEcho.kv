@@ -1,20 +1,43 @@
 #:kivy 1.0.9
 #:import SwapTransition kivy.uix.screenmanager.SwapTransition
 
-<NavButton@Button>:
+<NavButton@ToggleButton>:
     height: 60
     size_hint: .9, None
     pos_hint: {'center_x':.5, 'center_y':.5}
     border: 10, 10, 10, 10
     markup: True
+    group: 'nav'
+
 
 <MidiPortSelectSpinner@Spinner>:
-    size: (100,25) 
+    size: (150,25) 
     size_hint: None, None
-    pos_hint: {'left':1, 'center_y':.5}
     markup: True
     text: '[b]NONE[/b]'
-    values: 'Home', 'Work', 'Other', 'Custom'
+    
+
+<MyCheckBox@CheckBox>:
+    canvas.before:
+        Color:
+            rgb: 0,0,0
+        Rectangle:
+            pos:self.center_x-8, self.center_y-8
+            size:[16,16]
+
+
+<ClockSourceToggleButton@ToggleButton>:
+    group: 'clock_source'
+    markup: True
+    size_hint: None, None
+    width: 100
+    height: 30
+
+<MyLEDImage@Image>:
+    source: 'media/red_led.png'
+    size_hint: None, None
+    size: (20,20)
+    
 
 <RootWidget>:
     orientation: 'vertical' 
@@ -70,23 +93,23 @@
             width: 65
             size_hint: None, .5
             pos_hint: {'left':1, 'center_y':.7}
-            #background_color: 0, 0, 0, 1
             NavButton:
                 id: nav_midi
                 text: 'MIDI'
-                on_press: root.nav_button_pressed(self, 'nav_midi')
+                state: 'down'
+                on_press: root.nav_button_pressed('screen_midi')
             NavButton:
                 id: nav_echo
                 text: 'ECHO'
-                on_press: root.nav_button_pressed(self, 'nav_echo')
+                on_press: root.nav_button_pressed('screen_echo')
             NavButton:
                 id: nav_live
                 text: 'LIVE'
-                on_press: root.nav_button_pressed(self, 'nav_live')
+                on_press: root.nav_button_pressed('screen_live')
             NavButton:
                 id: nav_help
                 text: 'HELP'
-                on_press: root.nav_button_pressed(self, 'nav_help')
+                on_press: root.nav_button_pressed('screen_help')
 
         MainScreenManager:
             id: screen_manager
@@ -96,23 +119,75 @@
                 id: screen_midi
                 name: 'screen_midi'
                 manager: 'screen_manager'
-                BoxLayout:
+                FloatLayout:
                     orientation: 'vertical'
-                    BoxLayout:
-                        orientation: 'horizontal'
+                    Label:
+                        markup: True
+                        text: '[b]MIDI PORTS[/b]'
+                        font_size: 30
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.9}
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.8}
+                       
                         Label:
                             markup: True
                             text: '[b]INPUT:[/b]'
+                            pos_hint: {'x':.08, 'center_y':0.5}
+                            width: 20
+                            size_hint: None, 1
                         MidiPortSelectSpinner:
                             id: midi_port_in
-                            on_text: root.select_midi_port(self)
+                            pos_hint: {'x':.14, 'center_y':.5}
+                            on_text: root.select_midi_input_port(self)
+                        MyLEDImage:
+                            id: midi_in_activity
+                            pos_hint: {'x':.36, 'center_y':.5}
 
                         Label:
                             markup: True
                             text: '[b]OUTPUT:[/b]'
+                            pos_hint: {'x':.5, 'center_y':0.5}
+                            width: 20
+                            size_hint: None, 1
                         MidiPortSelectSpinner:
                             id: midi_port_out
-                            on_text: root.select_midi_port(self)
+                            pos_hint: {'x':.56, 'center_y':.5}
+                            on_text: root.select_midi_output_port(self)
+                        MyLEDImage:
+                            id: midi_out_activity
+                            pos_hint: {'x':.78, 'center_y':.5}
+
+                            
+
+                    Label:
+                        markup: True
+                        text: '[b]MIDI CLOCK[/b]'
+                        font_size: 30
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.6}
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.5}
+                        ClockSourceToggleButton:
+                            id: clock_internal
+                            text: '[b]INTERNAL[/b]'
+                            pos_hint: {'x':.08, 'center_y':0.5}
+                            on_press: root.select_internal_clock(self)
+                        ClockSourceToggleButton:
+                            id: clock_external
+                            text: '[b]EXTERNAL[/b]'
+                            pos_hint: {'x':.22, 'center_y':0.5}
+                            on_press: root.select_external_clock(self)
+                        MyLEDImage:
+                            id: midi_clock_activity
+                            pos_hint: {'x':.37, 'center_y':.5}
+                        
 
                             
                     
