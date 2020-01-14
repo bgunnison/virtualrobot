@@ -8,6 +8,9 @@
 """
 import sys
 import os
+import logging
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -25,6 +28,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.uix.spinner import Spinner
+from kivy.uix.slider import Slider
 from kivy.config import Config
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'multisamples', 8)
@@ -66,33 +70,62 @@ class RootWidget(BoxLayout):
 
         self.nav_button_pressed('screen_midi')
 
+        self.update_port_selections()
+
+        self.update_clock_selections()
+
+        self.midi_effect_manager.run()
+
+    def update_port_selections(self):
         # need to truncate??
         ports = self.midi_effect_manager.midi_manager.get_midi_in_ports()
         if ports is not None:
+            ports = ports.copy()
+            ports.insert(0,'None') # we want to be able to close port too. 
             self.ids.midi_port_in.values = ports
 
         ports = self.midi_effect_manager.midi_manager.get_midi_out_ports()
         if ports is not None:
+            ports = ports.copy()
+            ports.insert(0,'None')
             self.ids.midi_port_out.values = ports
 
-        self.midi_effect_manager.run()
+    def update_clock_selections(self):
+        if self.midi_effect_manager.midi_manager.internal_clock:
+            self.ids.clock_internal.state = 'down'
+            self.ids.clock_bpm_slider.value = self.midi_effect_manager.midi_manager.clock_bpm
+        else:
+            self.ids.clock_external.state = 'down'
+
+    def change_internal_clock_bpm(self, value):
+        #log.info(f'internal clock bpm: {int(value)}')
+        self.midi_effect_manager.midi_manager.change_clock_bpm(int(value))
 
     def nav_button_pressed(self, screen_name):
-        print(screen_name)
+        log.info(screen_name)
 
         self.ids['screen_manager'].current = screen_name
    
     def select_midi_input_port(self, selector):
-        print(f'midi_port: {selector.text}')
+        log.info(f'midi_port: {selector.text}')
 
     def select_midi_output_port(self, selector):
-        print(f'midi_port: {selector.text}') 
+        log.info(f'midi out port: {selector.text}') 
+        if selector.text is 'None':
+            self.midi_effect_manager.midi_manager.close_midi_out_port()
+            return
+
+        if self.midi_effect_manager.midi_manager.set_midi_out_port(selector.text):
+            log.info('Opened output port')
+            return
+
+        log.error('error opening output port')
 
     def select_external_clock(self, but):
-        print(f'Using external clock from MIDI port: "{self.ids.midi_port_in.text}"')
+        log.info(f'Using external clock from MIDI port: "{self.ids.midi_port_in.text}"')
 
     def select_internal_clock(self, but):
-        print(f'Using internal clock"')
+        log.info(f'Using internal clock"')
         #print(f'Sending clock out MIDI port: "{self.ids.midi_port_out.text}"')
 
 

@@ -14,7 +14,7 @@
     size: (150,25) 
     size_hint: None, None
     markup: True
-    text: '[b]NONE[/b]'
+    text: 'None'
     
 
 <MyCheckBox@CheckBox>:
@@ -187,6 +187,23 @@
                         MyLEDImage:
                             id: midi_clock_activity
                             pos_hint: {'x':.37, 'center_y':.5}
+                        Label:
+                            width: 10
+                            size_hint: None, 1
+                            pos_hint: {'x':.42, 'center_y':.5}
+                            markup: True
+                            text: '[b]' + str(int(clock_bpm_slider.value)) + '[/b]'
+                        Slider:
+                            id: clock_bpm_slider
+                            pos_hint: {'x':.45, 'center_y':.5}
+                            width: 400
+                            size_hint: None, 1
+                            min: 10
+                            max: 220
+                            value: 60
+                            on_value: root.change_internal_clock_bpm(self.value)
+                        
+
                         
 
                             

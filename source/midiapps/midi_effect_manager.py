@@ -26,8 +26,7 @@ def fatal_exit(msg):
 class MidiEffectManager:
 
     def __init__(self, effect):
-        self.midi_manager = MidiManager()
-        self.internal_clock_bpm = 60
+        self.midi_manager = MidiManager()      
         self.effect_enabled = False
         self.effect = effect
         # button CCs are mapped to to enable (for example) the effect
@@ -44,9 +43,12 @@ class MidiEffectManager:
 
 
     def run(self):
-         self.midi_manager.clock_source.run()
-         self.midi_manager.midiin.run()
-         log.info('Running')
+        self.midi_manager.register_note_callback(self.note_callback)
+        self.midi_manager.register_clock_callback(self.clock_callback)
+        self.midi_manager.register_control_callback(self.control_callback)
+        self.midi_manager.clock_source.run()
+        self.midi_manager.midiin.run()
+        log.info('Running')
 
     def apply_effect(self, tick, message):
         """
@@ -77,7 +79,7 @@ class MidiEffectManager:
         This runs quite fast so no delays...
         """
         #log.info(f"Clock callback: {tick}")
-        self.effect.note_manager.run(tick)
+        self.effect.note_manager.run(tick, self.midi_manager.midiout)
     
     def control_callback(self, cc, control):
         """
