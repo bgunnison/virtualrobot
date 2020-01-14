@@ -1,5 +1,10 @@
 """
-MIDI echo effect
+ Copyright (C) 2020 Brian R. Gunnison
+ 
+ This file is part of MIDI ECHO project
+ 
+ MIDI ECHO can not be copied and/or distributed without the express
+ permission of Brian R. Gunnison
 """
 import os
 import sys

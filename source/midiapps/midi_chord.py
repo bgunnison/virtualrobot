@@ -1,5 +1,10 @@
 """
-MIDI effects app
+ Copyright (C) 2020 Brian R. Gunnison
+ 
+ This file is part of MIDI CHORD project
+ 
+ MIDI CHORD can not be copied and/or distributed without the express
+ permission of Brian R. Gunnison
 """
 import os
 import sys
