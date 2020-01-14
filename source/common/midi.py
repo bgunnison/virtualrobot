@@ -186,8 +186,8 @@ class MidiInternalClock:
         self.tick_time = (60.0/self.bpm)/24.0
         log.info(f'internal bpm: {bpm}')
 
-    def get_tick_interval(self):
-        return self.tick_time
+    def get_bpm(self):
+        return self.bpm
 
     def get_tick(self):
         return self.tick
@@ -321,7 +321,6 @@ class MidiManager:
        self.internal_clock = True # set to false with above if effect does not need a clock
        self.clock_callback = None
        self.clock_data = None
-       self.clock_bpm = 60
        self.set_midi_clock_internal()
 
     def get_midi_in_ports(self):
@@ -362,10 +361,13 @@ class MidiManager:
     def change_clock_bpm(self, value):
         if self.internal_clock:
             self.clock_source.change_bpm(value)
+            
+    def get_clock_bpm(self):
+        return self.clock_source.get_bpm()
 
     def set_midi_clock_internal(self, set=True):
         #if set:
-        self.clock_source = MidiInternalClock(midiout=self.clock_midiout, bpm=self.clock_bpm)
+        self.clock_source = MidiInternalClock(midiout=self.clock_midiout)
         self.internal_clock = True
         #else:
         #    self.clock_source = MidiInput(ignore_clock=False) # 'lmb'

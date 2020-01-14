@@ -33,8 +33,15 @@
     width: 100
     height: 30
 
+<OnOffToggleButton@ToggleButton>:
+    group: 'onoff'
+    markup: True
+    size_hint: None, None
+    width: 30
+    height: 20
+
 <MyLEDImage@Image>:
-    source: 'media/red_led.png'
+    source: 'media/off_led.png'
     size_hint: None, None
     size: (20,20)
     
@@ -114,7 +121,6 @@
         MainScreenManager:
             id: screen_manager
             transition: SwapTransition()
-            #name: 'screen_manager'
             MidiScreen:
                 id: screen_midi
                 name: 'screen_midi'
@@ -136,9 +142,10 @@
                         Label:
                             markup: True
                             text: '[b]INPUT:[/b]'
-                            pos_hint: {'x':.08, 'center_y':0.5}
+                            pos_hint: {'x':.085, 'center_y':0.5}
                             width: 20
                             size_hint: None, 1
+                           
                         MidiPortSelectSpinner:
                             id: midi_port_in
                             pos_hint: {'x':.14, 'center_y':.5}
@@ -188,34 +195,68 @@
                             id: midi_clock_activity
                             pos_hint: {'x':.37, 'center_y':.5}
                         Label:
+                            width: 15
+                            size_hint: None, 1
+                            pos_hint: {'x':.44, 'center_y':.5}
+                            markup: True
+                            text: '[b]BPM:[/b]'
+                        Label:
                             width: 10
                             size_hint: None, 1
-                            pos_hint: {'x':.42, 'center_y':.5}
+                            pos_hint: {'x':.49, 'center_y':.5}
                             markup: True
                             text: '[b]' + str(int(clock_bpm_slider.value)) + '[/b]'
                         Slider:
                             id: clock_bpm_slider
-                            pos_hint: {'x':.45, 'center_y':.5}
-                            width: 400
+                            pos_hint: {'x':.51, 'center_y':.5}
+                            width: 360
                             size_hint: None, 1
                             min: 10
-                            max: 220
+                            max: 240
                             value: 60
                             on_value: root.change_internal_clock_bpm(self.value)
-                        
-
-                        
-
-                            
-                    
 
 
             EchoScreen:
                 id: screen_echo
                 name: 'screen_echo'
                 manager: 'screen_manager'
-                Label:
-                    text: 'ECHO'
+                FloatLayout:
+                    orientation: 'vertical'
+                    Label:
+                        markup: True
+                        text: '[b]ECHO CONTROLS[/b]'
+                        font_size: 30
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.9}
+                FloatLayout
+                    orientation: 'horizontal'
+                    height: 60
+                    size_hint: 1, None
+                    pos_hint: {'top':.8}
+                    Label:
+                        markup: True
+                        text: '[b]EFFECT:[/b]'
+                        pos_hint: {'x':.085, 'center_y':0.5}
+                        width: 20
+                        size_hint: None, 1
+                    OnOffToggleButton:
+                        id: effect_on
+                        text: '[b]ON[/b]'
+                        pos_hint: {'x':.2, 'center_y':0.5}
+                        on_press: root.effect_on(self)
+                        state: 'down'
+                    OnOffToggleButton:
+                        id: effect_off
+                        text: '[b]OFF[/b]'
+                        pos_hint: {'x':.4, 'center_y':0.5}
+                        state: 'normal'
+                        on_press: root.effect_on(self)                    
+                            
+               
+               
+                
             LiveScreen:
                 id: screen_live
                 name: 'screen_live'

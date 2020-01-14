@@ -29,6 +29,9 @@ from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.uix.spinner import Spinner
 from kivy.uix.slider import Slider
+from kivy.uix.popup import Popup
+from kivy.uix.image import Image
+from kivy.clock import Clock
 from kivy.config import Config
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'multisamples', 8)
@@ -48,8 +51,7 @@ class MainScreenManager(ScreenManager):
     pass
            
 class MidiScreen(Screen):
-    pass
-    
+    pass 
 
 class EchoScreen(Screen):
     pass
@@ -62,19 +64,39 @@ class HelpScreen(Screen):
 
 
 
+
+
 class RootWidget(BoxLayout):
 
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
+
         self.midi_effect_manager = MidiEffectManager(MidiEchoEffect())
 
         self.nav_button_pressed('screen_midi')
 
-        self.update_port_selections()
+        self.update_midi_screen()
 
-        self.update_clock_selections()
+        self.update_echo_screen()
 
         self.midi_effect_manager.run()
+
+        self.start_activity_LEDs()
+
+
+    def error_notification(self, title='Error', msg='Something is wrong!'):
+        #turns background red, popup is black kinda cool...
+        popup = Popup(title=title, content=Label(markup=True,text='[b]' + msg + '[/b]'),size_hint=(None, None), size=(300, 200), background_color=(1, 0, 0, .7))
+        popup.open()
+        
+
+    def update_echo_screen(self):
+        pass
+
+    def update_midi_screen(self):
+        self.update_port_selections()
+        self.update_clock_selections()
+
 
     def update_port_selections(self):
         # need to truncate??
@@ -93,7 +115,7 @@ class RootWidget(BoxLayout):
     def update_clock_selections(self):
         if self.midi_effect_manager.midi_manager.internal_clock:
             self.ids.clock_internal.state = 'down'
-            self.ids.clock_bpm_slider.value = self.midi_effect_manager.midi_manager.clock_bpm
+            self.ids.clock_bpm_slider.value = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
         else:
             self.ids.clock_external.state = 'down'
 
@@ -110,7 +132,7 @@ class RootWidget(BoxLayout):
         log.info(f'midi_port: {selector.text}')
 
     def select_midi_output_port(self, selector):
-        log.info(f'midi out port: {selector.text}') 
+        log.info(f'midi out port desired: {selector.text}') 
         if selector.text is 'None':
             self.midi_effect_manager.midi_manager.close_midi_out_port()
             return
@@ -119,14 +141,34 @@ class RootWidget(BoxLayout):
             log.info('Opened output port')
             return
 
+        self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
+        selector.text = selector.values[0]
         log.error('error opening output port')
 
     def select_external_clock(self, but):
-        log.info(f'Using external clock from MIDI port: "{self.ids.midi_port_in.text}"')
+        log.error('wip')
+        #log.info(f'Using external clock from MIDI port: "{self.ids.midi_port_in.text}"')
 
     def select_internal_clock(self, but):
-        log.info(f'Using internal clock"')
+        log.error('wip')
         #print(f'Sending clock out MIDI port: "{self.ids.midi_port_out.text}"')
+
+    def update_clock_LED(self, dt):
+        if 'off' in self.ids.midi_clock_activity.source:
+            self.ids.midi_clock_activity.source = 'media/red_led.png'
+        else:
+            self.ids.midi_clock_activity.source = 'media/off_led.png'
+
+        bpm = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
+        self.clock_LED_event.timeout = 60.0/bpm
+
+    def start_activity_LEDs(self):
+        """
+        The LEDS are toggled by a kivy clock interval or MIDI activity
+        """
+        bpm = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
+        self.clock_LED_event = Clock.schedule_interval(self.update_clock_LED, 60.0/bpm)
+        log.info('Started activity LEDs')
 
 
 
