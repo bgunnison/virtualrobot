@@ -26,6 +26,7 @@ kivy.require('1.0.8')
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
 from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
@@ -66,7 +67,14 @@ class HelpScreen(Screen):
     pass
 
 
+class CCControlInput(TextInput):
+    def insert_text(self, substring, from_undo=False):
+        try:
+            v = int(substring)
+        except:
+            return
 
+        return super(CCControlInput, self).insert_text(substring, from_undo=from_undo)
 
 
 class RootWidget(BoxLayout):
@@ -88,6 +96,29 @@ class RootWidget(BoxLayout):
 
         self.start_activity_LEDs()
 
+    def effect_on(self, on):
+        if on:
+            self.ids.effect_on.state = 'down'
+            self.ids.effect_off.state = 'normal'
+        else:
+            self.ids.effect_on.state = 'normal'
+            self.ids.effect_off.state = 'down'
+
+        self.effect_manager.effect_enable(on)
+
+
+    def cc_control_map_effect_enable(self, input):
+        log.info(f'Effect enable control CC: {input.text}')
+        try:
+            cc = int(input.text)
+        except:
+            return
+
+        if cc > 127:
+            input.text = str(127)
+            cc = 127
+
+        self.effects_manager.map_cc('Effect Enable', cc)
 
     def error_notification(self, title='Error', msg='Something is wrong!'):
         #turns background red, popup is black kinda cool...
@@ -108,7 +139,6 @@ class RootWidget(BoxLayout):
 
 
     def update_port_selections(self):
-        # need to truncate??
         ports = self.midi_manager.get_midi_in_ports()
         if ports is not None:
             ports = ports.copy()

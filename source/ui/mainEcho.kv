@@ -11,7 +11,7 @@
 
 
 <MidiPortSelectSpinner@Spinner>:
-    size: (150,25) 
+    size: (400,30) 
     size_hint: None, None
     markup: True
     text: 'None'
@@ -43,8 +43,15 @@
 <MyLEDImage@Image>:
     source: 'media/off_led.png'
     size_hint: None, None
-    size: (20,20)
+    size: (25,25)
     
+<CCEntryBox@CCControlInput>:
+    multiline: False
+    size_hint: None, None
+    size: (35,35)
+    background_color: (.5,.8,.5,1) if self.focus else (0,.5,0,1)
+    forground_color: (0,1,0,1)
+    halign: 'center'
 
 <RootWidget>:
     orientation: 'vertical' 
@@ -121,6 +128,7 @@
         MainScreenManager:
             id: screen_manager
             transition: SwapTransition()
+
             MidiScreen:
                 id: screen_midi
                 name: 'screen_midi'
@@ -134,6 +142,7 @@
                         height: 20
                         size_hint: 1, None
                         pos_hint: {'top':.9}
+                    
                     FloatLayout:
                         height: 60
                         size_hint: 1, None
@@ -152,21 +161,25 @@
                             on_text: root.select_midi_input_port(self)
                         MyLEDImage:
                             id: midi_in_activity
-                            pos_hint: {'x':.36, 'center_y':.5}
+                            pos_hint: {'x':.7, 'center_y':.5}
 
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.7}
                         Label:
                             markup: True
                             text: '[b]OUTPUT:[/b]'
-                            pos_hint: {'x':.5, 'center_y':0.5}
+                            pos_hint: {'x':.085, 'center_y':0.5}
                             width: 20
                             size_hint: None, 1
                         MidiPortSelectSpinner:
                             id: midi_port_out
-                            pos_hint: {'x':.56, 'center_y':.5}
+                            pos_hint: {'x':.14, 'center_y':.5}
                             on_text: root.select_midi_output_port(self)
                         MyLEDImage:
                             id: midi_out_activity
-                            pos_hint: {'x':.78, 'center_y':.5}
+                            pos_hint: {'x':.7, 'center_y':.5}
 
                             
 
@@ -176,11 +189,11 @@
                         font_size: 30
                         height: 20
                         size_hint: 1, None
-                        pos_hint: {'top':.6}
+                        pos_hint: {'top':.5}
                     FloatLayout:
                         height: 60
                         size_hint: 1, None
-                        pos_hint: {'top':.5}
+                        pos_hint: {'top':.4}
                         ClockSourceToggleButton:
                             id: clock_internal
                             text: '[b]INTERNAL[/b]'
@@ -231,28 +244,31 @@
                         size_hint: 1, None
                         pos_hint: {'top':.9}
                 FloatLayout
-                    orientation: 'horizontal'
                     height: 60
                     size_hint: 1, None
-                    pos_hint: {'top':.8}
+                    pos_hint: {'top':.4}
                     Label:
                         markup: True
                         text: '[b]EFFECT:[/b]'
-                        pos_hint: {'x':.085, 'center_y':0.5}
+                        pos_hint: {'x':.08, 'center_y':0.5}
                         width: 20
                         size_hint: None, 1
+                    CCEntryBox:
+                        id: cc_control_effect_enable
+                        pos_hint: {'x':.14, 'center_y':0.5}
+                        on_text_validate: root.cc_control_effect_enable(self)
                     OnOffToggleButton:
                         id: effect_on
                         text: '[b]ON[/b]'
                         pos_hint: {'x':.2, 'center_y':0.5}
-                        on_press: root.effect_on(self)
+                        on_press: root.effect_on(True)
                         state: 'down'
                     OnOffToggleButton:
                         id: effect_off
                         text: '[b]OFF[/b]'
-                        pos_hint: {'x':.4, 'center_y':0.5}
+                        pos_hint: {'x':.3, 'center_y':0.5}
                         state: 'normal'
-                        on_press: root.effect_on(self)                    
+                        on_press: root.effect_on(False)                    
                             
                
                
