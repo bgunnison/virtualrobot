@@ -13,10 +13,11 @@ import logging
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-from common.midi import *
+from common.upper_class_utils import Effect, NoteManager
 
 
 class MidiEchoEffect(Effect):

@@ -8,32 +8,24 @@
 """
 import os
 import sys
-import math
 import logging
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
-
-from common.midi import *
-from .midi_echo import MidiEchoEffect
-
-def fatal_exit(msg):
-    print(msg)
-    exit(0)
 
 
 class MidiEffectManager:
 
-    def __init__(self, effect):
-        self.midi_manager = MidiManager()      
+    def __init__(self, effect, midi_manager):
+        self.midi_manager = midi_manager      
         self.effect_enabled = False
         self.effect = effect
         # button CCs are mapped to to enable (for example) the effect
         self.effect_manager_controls = {
                         48:{'func':self.enable_effect_control, 'name':f'Enable {self.effect.get_name()}'}
                        }
-        
 
     def enable_effect_control(self, control): 
         if control == 0:

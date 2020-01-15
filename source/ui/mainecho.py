@@ -15,8 +15,10 @@ log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from midiapps.midi_effect_manager import MidiEffectManager
 from midiapps.midi_echo import MidiEchoEffect
+from midiapps.midi_effect_manager import MidiEffectManager
+from common.midi import MidiManager
+
 
 import kivy
 kivy.require('1.0.8')
@@ -72,7 +74,9 @@ class RootWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
 
-        self.midi_effect_manager = MidiEffectManager(MidiEchoEffect())
+        self.midi_manager = MidiManager()
+        self.effect = MidiEchoEffect()
+        self.effect_manager = MidiEffectManager(self.effect, self.midi_manager)
 
         self.nav_button_pressed('screen_midi')
 
@@ -80,7 +84,7 @@ class RootWidget(BoxLayout):
 
         self.update_echo_screen()
 
-        self.midi_effect_manager.run()
+        self.effect_manager.run()
 
         self.start_activity_LEDs()
 
@@ -89,9 +93,9 @@ class RootWidget(BoxLayout):
         #turns background red, popup is black kinda cool...
         popup = Popup(title=title, content=Label(markup=True,
                                                  text='[b]' + msg + '[/b]'),
-                                                size_hint=(None, None),
-                                               size=(300, 200),
-                                              background_color=(1, 0, 0, .7))
+                                                 size_hint=(None, None),
+                                                 size=(300, 200),
+                                                 background_color=(1, 0, 0, .7))
         popup.open()
         
 
@@ -105,28 +109,28 @@ class RootWidget(BoxLayout):
 
     def update_port_selections(self):
         # need to truncate??
-        ports = self.midi_effect_manager.midi_manager.get_midi_in_ports()
+        ports = self.midi_manager.get_midi_in_ports()
         if ports is not None:
             ports = ports.copy()
             ports.insert(0,'None') # we want to be able to close port too. 
             self.ids.midi_port_in.values = ports
 
-        ports = self.midi_effect_manager.midi_manager.get_midi_out_ports()
+        ports = self.midi_manager.get_midi_out_ports()
         if ports is not None:
             ports = ports.copy()
             ports.insert(0,'None')
             self.ids.midi_port_out.values = ports
 
     def update_clock_selections(self):
-        if self.midi_effect_manager.midi_manager.internal_clock:
+        if self.midi_manager.internal_clock:
             self.ids.clock_internal.state = 'down'
-            self.ids.clock_bpm_slider.value = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
+            self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
         else:
             self.ids.clock_external.state = 'down'
 
     def change_internal_clock_bpm(self, value):
         #log.info(f'internal clock bpm: {int(value)}')
-        self.midi_effect_manager.midi_manager.change_clock_bpm(int(value))
+        self.midi_manager.change_clock_bpm(int(value))
 
     def nav_button_pressed(self, screen_name):
         log.info(screen_name)
@@ -136,11 +140,10 @@ class RootWidget(BoxLayout):
     def select_midi_input_port(self, selector):
         log.info(f'midi in port desired: {selector.text}') 
         if selector.text is 'None':
-            self.midi_effect_manager.midi_manager.close_midi_in_port()
+            self.midi_manager.close_midi_in_port()
             return
 
-        if self.midi_effect_manager.midi_manager.set_midi_in_port(selector.text):
-            log.info('Opened input port')
+        if self.midi_manager.set_midi_in_port(selector.text):
             return
 
         self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
@@ -150,11 +153,10 @@ class RootWidget(BoxLayout):
     def select_midi_output_port(self, selector):
         log.info(f'midi out port desired: {selector.text}') 
         if selector.text is 'None':
-            self.midi_effect_manager.midi_manager.close_midi_out_port()
+            self.midi_manager.close_midi_out_port()
             return
 
-        if self.midi_effect_manager.midi_manager.set_midi_out_port(selector.text):
-            log.info('Opened output port')
+        if self.midi_manager.set_midi_out_port(selector.text):
             return
 
         self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
@@ -175,7 +177,7 @@ class RootWidget(BoxLayout):
         else:
             self.ids.midi_clock_activity.source = 'media/off_led.png'
 
-        bpm = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
+        bpm = self.midi_manager.clock_source.get_bpm()
         self.clock_LED_event.timeout = 60.0/bpm
 
         #self.midi_in_activity()
@@ -184,23 +186,31 @@ class RootWidget(BoxLayout):
         """
         The LEDS are toggled by a kivy clock interval or MIDI activity
         """
-        bpm = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
+        bpm = self.midi_manager.clock_source.get_bpm()
         self.clock_LED_event = Clock.schedule_interval(self.update_clock_LED, 60.0/bpm)
-        self.midi_effect_manager.midi_manager.register_midiin_activity_callback(self.midi_in_activity)
+        self.midi_manager.register_midiin_activity_callback(self.midi_in_activity)
+        self.midi_manager.register_midiout_activity_callback(self.midi_out_activity)
         log.info('Started activity LEDs')
 
     def midi_in_activity(self):
         Clock.schedule_once(self.update_midi_in_LED)
         Clock.schedule_once(self.update_midi_in_LED, 0.2)
 
-
-       
-
     def update_midi_in_LED(self, dt):
          if 'off' in self.ids.midi_in_activity.source:
             self.ids.midi_in_activity.source = 'media/red_led.png'
          else:
             self.ids.midi_in_activity.source = 'media/off_led.png'
+
+    def midi_out_activity(self):
+        Clock.schedule_once(self.update_midi_out_LED)
+        Clock.schedule_once(self.update_midi_out_LED, 0.2)
+
+    def update_midi_out_LED(self, dt):
+         if 'off' in self.ids.midi_out_activity.source:
+            self.ids.midi_out_activity.source = 'media/red_led.png'
+         else:
+            self.ids.midi_out_activity.source = 'media/off_led.png'
 
        
 
