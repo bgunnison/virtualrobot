@@ -21,6 +21,7 @@ from common.midi import *
 
 class MidiEchoEffect(Effect):
     def __init__(self):
+        super().__init__()
         self.name = 'Echo'
         self.note_manager = NoteManager()
         self.update = True # set if we need to update delays

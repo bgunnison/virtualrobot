@@ -8,6 +8,7 @@
 """
 import sys
 import os
+import time
 import logging
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -86,7 +87,11 @@ class RootWidget(BoxLayout):
 
     def error_notification(self, title='Error', msg='Something is wrong!'):
         #turns background red, popup is black kinda cool...
-        popup = Popup(title=title, content=Label(markup=True,text='[b]' + msg + '[/b]'),size_hint=(None, None), size=(300, 200), background_color=(1, 0, 0, .7))
+        popup = Popup(title=title, content=Label(markup=True,
+                                                 text='[b]' + msg + '[/b]'),
+                                                size_hint=(None, None),
+                                               size=(300, 200),
+                                              background_color=(1, 0, 0, .7))
         popup.open()
         
 
@@ -129,7 +134,18 @@ class RootWidget(BoxLayout):
         self.ids['screen_manager'].current = screen_name
    
     def select_midi_input_port(self, selector):
-        log.info(f'midi_port: {selector.text}')
+        log.info(f'midi in port desired: {selector.text}') 
+        if selector.text is 'None':
+            self.midi_effect_manager.midi_manager.close_midi_in_port()
+            return
+
+        if self.midi_effect_manager.midi_manager.set_midi_in_port(selector.text):
+            log.info('Opened input port')
+            return
+
+        self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
+        selector.text = selector.values[0]
+        log.error('error opening input port')
 
     def select_midi_output_port(self, selector):
         log.info(f'midi out port desired: {selector.text}') 
@@ -162,15 +178,31 @@ class RootWidget(BoxLayout):
         bpm = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
         self.clock_LED_event.timeout = 60.0/bpm
 
+        #self.midi_in_activity()
+
     def start_activity_LEDs(self):
         """
         The LEDS are toggled by a kivy clock interval or MIDI activity
         """
         bpm = self.midi_effect_manager.midi_manager.clock_source.get_bpm()
         self.clock_LED_event = Clock.schedule_interval(self.update_clock_LED, 60.0/bpm)
+        self.midi_effect_manager.midi_manager.register_midiin_activity_callback(self.midi_in_activity)
         log.info('Started activity LEDs')
 
+    def midi_in_activity(self):
+        Clock.schedule_once(self.update_midi_in_LED)
+        Clock.schedule_once(self.update_midi_in_LED, 0.2)
 
+
+       
+
+    def update_midi_in_LED(self, dt):
+         if 'off' in self.ids.midi_in_activity.source:
+            self.ids.midi_in_activity.source = 'media/red_led.png'
+         else:
+            self.ids.midi_in_activity.source = 'media/off_led.png'
+
+       
 
 class MainEchoApp(App):
     def build(self):
