@@ -24,14 +24,14 @@ class MidiEffectManager:
         self.effect = effect
         # button CCs are mapped to to enable (for example) the effect
         self.effect_manager_controls = {
-                        48:{'func':self.enable_effect_control, 'name':f'Enable {self.effect.get_name()}', 'callback':None}
+                        48:{'name':'Enable', 'func':self.enable_effect_control, 'callback':None}
                        }
 
     def enable_effect_control(self, info, control): 
         if control == 0:
-            on = True
-        else:
             on = False
+        else:
+            on = True
 
         self.effect_enable(on)
         callback = info.get('callback')
@@ -39,6 +39,7 @@ class MidiEffectManager:
             callback(on)
 
     def effect_enable(self, on):
+        log.info(f'Effect: {self.effect.get_name()} is {on}')
         self.effect_enabled = on
 
 
@@ -91,6 +92,7 @@ class MidiEffectManager:
         # intercept effect manager controls first
         info = self.effect_manager_controls.get(cc)
         if info is not None:
+            #log.info(f'cc: {cc}, {info["name"]}')
             info['func'](info, control)
             return
 

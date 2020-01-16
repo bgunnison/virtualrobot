@@ -28,8 +28,7 @@ class MidiPort:
     def __init__(self):
         self.ports = None
         self.port_name = None
-        self.midiin_activity_callback = None
-        self.last_error = ''
+        self.midi_activity_callback = None
 
     def register_midi_activity_callback(self, callback):
         self.midi_activity_callback = callback
@@ -86,6 +85,7 @@ class MidiPort:
         self.close_port()
         del self.midi
 
+gstart_debug_timer = 0.0
 
 class MidiInput(MidiPort):
     def __init__(self, q_size_limit=1024, ignore_clock=True):
@@ -122,6 +122,7 @@ class MidiInput(MidiPort):
         return self.clock_counts
 
     def callback(self, msg_dt, data):
+        global gstart_debug_timer
         message = msg_dt[0]
         data_type = message[0]
 
@@ -134,10 +135,12 @@ class MidiInput(MidiPort):
 
         if self.note_callback is not None:
             if data_type is NOTE_OFF or data_type is NOTE_ON:
+                gstart_debug_timer = time.time()
+                
                 log.info(f"{self.port_name} - Note In: {message}")
                 self.note_callback(message, self.clock_midiin)
-                if self.midiin_activity_callback is not None:
-                    self.midiin_activity_callback()
+                if self.midi_activity_callback is not None:
+                    self.midi_activity_callback()
 
         if self.control_callback is not None:
             if data_type is CONTROL_CHANGE:
@@ -181,6 +184,8 @@ class MidiOutput(MidiPort):
             self.notes_pending += 1
 
         self.midi.send_message(message)
+        time_passed = time.time() - gstart_debug_timer
+        log.info('tp: %.03f' % time_passed)
 
         if self.midi_activity_callback is not None:
             self.midi_activity_callback()

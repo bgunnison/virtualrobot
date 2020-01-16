@@ -17,6 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
+from common.midi import MidiNoteMessage
 from common.upper_class_utils import Effect, NoteManager
 
 
