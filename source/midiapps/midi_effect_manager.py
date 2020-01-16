@@ -24,11 +24,24 @@ class MidiEffectManager:
         self.effect = effect
         # button CCs are mapped to to enable (for example) the effect
         self.effect_manager_controls = {
+                        #cc                     called when changed from midi port       calls up to change UI
                         48:{'name':'Enable', 'func':self.enable_effect_control, 'callback':None}
                        }
 
+    def register_cc_callback(self, name, callback):
+        """
+        adds a callback to the UI to change widgets during a cc
+        """
+        for cc, info in self.effect_manager_controls.items():
+            if info.get('name') == name:
+                info['callback'] = callback
+                break
+
     def enable_effect_control(self, info, control): 
-        if control == 0:
+        """
+        called when its cc changes
+        """
+        if control == 0: 
             on = False
         else:
             on = True
@@ -36,11 +49,24 @@ class MidiEffectManager:
         self.effect_enable(on)
         callback = info.get('callback')
         if callback is not None:
-            callback(on)
+            callback(on) # callback to UI
 
     def effect_enable(self, on):
         log.info(f'Effect: {self.effect.get_name()} is {on}')
         self.effect_enabled = on
+
+    def remap_cc(self, name, cc):
+        """
+        find the named cc info and change its cc number
+        """
+        for oldcc, info in self.effect_manager_controls.items():
+            if info.get(name) is not None:
+                self.effect_manager_controls[cc] = info
+                del self.effect_manager_controls[oldcc]
+                return True
+
+        return False
+
 
 
     def run(self):

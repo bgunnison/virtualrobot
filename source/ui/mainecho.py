@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from midiapps.midi_echo import MidiEchoEffect
 from midiapps.midi_effect_manager import MidiEffectManager
-from common.midi import MidiManager
+from common.midi import MidiManager, MidiConstants
 
 
 import kivy
@@ -96,6 +96,15 @@ class RootWidget(BoxLayout):
 
         self.start_activity_LEDs()
 
+
+    def update_midi_screen(self):
+        self.update_port_selections()
+        self.update_clock_selections()
+
+    def update_echo_screen(self):
+        self.effect_manager.register_cc_callback('Enable', self.effect_on)
+
+
     def effect_on(self, on):
         if on:
             self.ids.effect_on.state = 'down'
@@ -114,11 +123,11 @@ class RootWidget(BoxLayout):
         except:
             return
 
-        if cc > 127:
-            input.text = str(127)
-            cc = 127
+        if cc > MidiConstants().CC_MAX:
+            input.text = str(MidiConstants().CC_MAX)
+            cc = MidiConstants().CC_MAX
 
-        self.effects_manager.map_cc('Effect Enable', cc)
+        self.effect_manager.remap_cc('Enable', cc)
 
     def error_notification(self, title='Error', msg='Something is wrong!'):
         #turns background red, popup is black kinda cool...
@@ -130,12 +139,6 @@ class RootWidget(BoxLayout):
         popup.open()
         
 
-    def update_echo_screen(self):
-        pass
-
-    def update_midi_screen(self):
-        self.update_port_selections()
-        self.update_clock_selections()
 
 
     def update_port_selections(self):

@@ -18,8 +18,18 @@ except:
 
 from rtmidi.midiconstants import *
 
+
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
+
+class MidiConstants:
+    """
+    exported outside this file as well as here
+    """
+    def __init__(self):
+        self.CC_MAX = 127
+
 
 class MidiPort:
     """

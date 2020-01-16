@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-from common.midi import MidiNoteMessage
+from common.midi import MidiNoteMessage, MidiConstants
 from common.upper_class_utils import Effect, NoteManager
 
 
@@ -38,7 +38,7 @@ class MidiEchoEffect(Effect):
         # VI25 Alesis controller CC knobs start with 21
         self.control_map = {    21:{'name':'Delay Type','func':self.control_delay_type, 'list':self.delay_types},
                                 22:{'name':'Echoes',    'func':self.control_echoes,     'min':1, 'max':32},
-                                23:{'name':'Delay',     'func':self.control_delay_tick, 'min':0, 'max':127}
+                                23:{'name':'Delay',     'func':self.control_delay_tick, 'min':0, 'max':MidiConstants().CC_MAX}
                            } 
 
     def __str__(self):
