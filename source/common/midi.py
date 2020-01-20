@@ -225,6 +225,10 @@ class MidiManager:
        self.clock_data = None
        self.set_midi_clock_internal()
        self.cc_controls = {}    # a dict keyd by cc number
+
+       self.add_control(name='InternalClockBPM', CC=29, control_callback=self.change_clock_bpm)
+
+       # last
        self.midiin.register_control_callback(self.control_callback, None)
        
 
@@ -244,8 +248,6 @@ class MidiManager:
             for cc, info in self.cc_controls.items():
                 if info.get(name) == name:
                     del self.cc_controls[cc]
-
-
 
     def remap_control(self, name, cc):
         """
@@ -392,6 +394,15 @@ class MidiInternalClock:
     """
     def __init__(self, settings=None, midiout=None, bpm=60):
         self.settings = settings
+        self.min = self.settings.get('internal_clock_bpm_min')
+        if self.min is None:
+            self.min = 10
+            self.settings.set('internal_clock_bpm_min', self.min)
+        self.max = self.settings.get('internal_clock_bpm_max')
+        if self.max is None:
+            self.max = 240
+            self.settings.set('internal_clock_bpm_min', self.max)
+
         sbpm = self.settings.get('internal_clock_bpm')
         if sbpm is None:
             self.settings.set('internal_clock_bpm', bpm)
@@ -409,7 +420,10 @@ class MidiInternalClock:
         self.time_alarm = False # gets set if we run out of time between ticks
 
     def change_bpm(self, bpm):
-        if self.bpm == 0:
+        if bpm < self.min:
+            return
+
+        if bpm > self.max:
             return
 
         self.bpm = bpm
@@ -419,6 +433,10 @@ class MidiInternalClock:
 
     def get_bpm(self):
         return self.bpm
+
+    def get_min_max(self):
+        return (self.min, self.max)
+
 
     def get_tick(self):
         return self.tick

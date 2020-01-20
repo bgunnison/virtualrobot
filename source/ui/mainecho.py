@@ -203,12 +203,22 @@ class RootWidget(BoxLayout):
             self.ids.midi_port_out.values = ports
 
     def update_clock_selections(self):
+        """
+        called once at startup
+        """
         if self.midi_manager.internal_clock:
             self.ids.clock_internal.state = 'down'
+            self.ids.clock_bpm_slider.min = self.midi_manager.clock_source.get_min_max()[0]
+            self.ids.clock_bpm_slider.max = self.midi_manager.clock_source.get_min_max()[1]
             self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
-            self.midi_manager.register_ui_control_callback('Internal Clock BPM', self.effect_on)
+            self.midi_manager.register_ui_control_callback('InternalClockBPM', self.ui_change_internal_clock_bpm)
         else:
             self.ids.clock_external.state = 'down'
+
+    def ui_change_internal_clock_bpm(self, control):
+        self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
+
+
 
     def change_internal_clock_bpm(self, value):
         #log.info(f'internal clock bpm: {int(value)}')
