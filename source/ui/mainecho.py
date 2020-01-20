@@ -18,7 +18,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from midiapps.midi_echo import MidiEchoEffect
 from midiapps.midi_effect_manager import MidiEffectManager
 from common.midi import MidiManager, MidiConstants
-
+from common.upper_class_utils import Settings
 
 import kivy
 kivy.require('1.0.8')
@@ -74,6 +74,8 @@ class CCControlInput(TextInput):
         except:
             return
 
+        
+
         return super(CCControlInput, self).insert_text(substring, from_undo=from_undo)
 
 
@@ -82,30 +84,67 @@ class RootWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
 
-        self.midi_manager = MidiManager()
-        self.effect = MidiEchoEffect()
-        self.effect_manager = MidiEffectManager(self.effect, self.midi_manager)
+        self.settings = Settings('MidiEcho')
 
-        self.nav_button_pressed('screen_midi')
+        self.midi_manager = MidiManager(self.settings)
+        self.effect = MidiEchoEffect(self.settings)
+        self.effect_manager = MidiEffectManager(self.settings, self.effect, self.midi_manager)
+
+        # restore screen in settings
+        screen = self.settings.get('start_screen')
+        if screen is None:
+            screen = 'screen_midi'
+            but = self.ids.nav_midi
+        else:
+            if 'midi' in screen:
+                but = self.ids.nav_midi
+            if 'echo' in screen:
+                but = self.ids.nav_echo
+            if 'live' in screen:
+                but = self.ids.nav_live
+            if 'help' in screen:
+                but = self.ids.nav_help
+
+        self.nav_button_pressed(but, screen)
 
         self.update_midi_screen()
 
         self.update_echo_screen()
 
+        # call last
         self.effect_manager.run()
 
         self.start_activity_LEDs()
 
 
     def update_midi_screen(self):
+        """
+        called at startup
+        """
         self.update_port_selections()
         self.update_clock_selections()
 
+        # reopen midi ports if in settings
+        midi_port = self.settings.get('midi_in_port')
+        if midi_port is not None:
+            if midi_port in self.midi_manager.get_midi_in_ports():
+                self.ids.midi_port_in.text = midi_port
+                self.select_midi_input_port(self.ids.midi_port_in)
+
+        midi_port = self.settings.get('midi_out_port')
+        if midi_port is not None:
+            if midi_port in self.midi_manager.get_midi_out_ports():
+                self.ids.midi_port_out.text = midi_port
+                self.select_midi_output_port(self.ids.midi_port_out)
+
+
     def update_echo_screen(self):
-        self.effect_manager.register_cc_callback('Enable', self.effect_on)
+        self.midi_manager.register_ui_control_callback('Enable', self.ui_effect_on)
 
-
-    def effect_on(self, on):
+    def ui_effect_on(self, on):
+        """
+        called from either the ui or from a control
+        """
         if on:
             self.ids.effect_on.state = 'down'
             self.ids.effect_off.state = 'normal'
@@ -113,21 +152,30 @@ class RootWidget(BoxLayout):
             self.ids.effect_on.state = 'normal'
             self.ids.effect_off.state = 'down'
 
+    def effect_on(self, on):
+        self.ui_effect_on(on)
         self.effect_manager.effect_enable(on)
 
 
-    def cc_control_map_effect_enable(self, input):
-        log.info(f'Effect enable control CC: {input.text}')
+    def ui_control_map_effect_enable(self, ccbox):
+        """
+        called when UI CC box has a number
+        remaps the UI number to this control
+        """
         try:
-            cc = int(input.text)
+            cc = int(ccbox.text)
         except:
             return
 
         if cc > MidiConstants().CC_MAX:
-            input.text = str(MidiConstants().CC_MAX)
+            ccbox.text = str(MidiConstants().CC_MAX)
             cc = MidiConstants().CC_MAX
 
-        self.effect_manager.remap_cc('Enable', cc)
+        log.info(f'Effect enable control CC: {ccbox.text}')
+
+        self.midi_manager.remap_control('Enable', cc)
+
+
 
     def error_notification(self, title='Error', msg='Something is wrong!'):
         #turns background red, popup is black kinda cool...
@@ -158,6 +206,7 @@ class RootWidget(BoxLayout):
         if self.midi_manager.internal_clock:
             self.ids.clock_internal.state = 'down'
             self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
+            self.midi_manager.register_ui_control_callback('Internal Clock BPM', self.effect_on)
         else:
             self.ids.clock_external.state = 'down'
 
@@ -165,35 +214,42 @@ class RootWidget(BoxLayout):
         #log.info(f'internal clock bpm: {int(value)}')
         self.midi_manager.change_clock_bpm(int(value))
 
-    def nav_button_pressed(self, screen_name):
+    def nav_button_pressed(self, but, screen_name):
         log.info(screen_name)
-
+        but.state = 'down'
         self.ids['screen_manager'].current = screen_name
+        self.settings.set('start_screen', screen_name)
    
     def select_midi_input_port(self, selector):
         log.info(f'midi in port desired: {selector.text}') 
         if selector.text is 'None':
             self.midi_manager.close_midi_in_port()
+            self.settings.set('midi_in_port', selector.text)
             return
 
         if self.midi_manager.set_midi_in_port(selector.text):
+            self.settings.set('midi_in_port', selector.text)
             return
 
         self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
         selector.text = selector.values[0]
+        self.settings.set('midi_in_port', selector.text)
         log.error('error opening input port')
 
     def select_midi_output_port(self, selector):
         log.info(f'midi out port desired: {selector.text}') 
         if selector.text is 'None':
             self.midi_manager.close_midi_out_port()
+            self.settings.set('midi_out_port', selector.text)
             return
 
         if self.midi_manager.set_midi_out_port(selector.text):
+            self.settings.set('midi_out_port', selector.text)
             return
 
         self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
         selector.text = selector.values[0]
+        self.settings.set('midi_out_port', selector.text)
         log.error('error opening output port')
 
     def select_external_clock(self, but):
@@ -257,3 +313,4 @@ class MainEchoApp(App):
 
 if __name__ == '__main__':
     MainEchoApp().run()
+    time.sleep(10)

@@ -91,7 +91,7 @@ class MidiPort:
         log.info(f"Closed MIDI port: {self.port_name}")
         self.port_name = None
 
-    def __destroy__(self):
+    def __del__(self):
         self.close_port()
         del self.midi
 
@@ -214,7 +214,8 @@ class MidiManager:
     Manages midi in, midi out and midi clock
     """
 
-    def __init__(self):
+    def __init__(self, settings):
+       self.settings = settings
        self.midiin = MidiInput()
        self.midiout = MidiOutput()
        self.clock_midiout = None # set to self.midiout if we want to send clock out this port. 
@@ -223,6 +224,83 @@ class MidiManager:
        self.clock_callback = None
        self.clock_data = None
        self.set_midi_clock_internal()
+       self.cc_controls = {}    # a dict keyd by cc number
+       self.midiin.register_control_callback(self.control_callback, None)
+       
+
+    def add_control(self, name, CC,  control_callback, type='cont', ui_callback=None):
+        if self.cc_controls.get(CC) is not None:
+            del self.cc_controls[CC]
+
+        self.cc_controls[CC] = {'name':name, 'control_callback':control_callback, 'type':type, 'ui_callback':ui_callback}
+
+    def delete_control(self, cc=None, name=None):
+        if cc is not None:
+            if self.cc_controls.get(cc) is not None:
+                del self.cc_controls[cc]
+                return
+
+        if name is not None:
+            for cc, info in self.cc_controls.items():
+                if info.get(name) == name:
+                    del self.cc_controls[cc]
+
+
+
+    def remap_control(self, name, cc):
+        """
+        find the named cc info and change its cc number
+        """
+        for oldcc, info in self.cc_controls.items():
+            if name == info.get('name'):
+                self.cc_controls[cc] = info
+                del self.cc_controls[oldcc]
+                return True
+
+        return False
+
+    def register_ui_control_callback(self, name, callback):
+        """
+        adds a callback to the UI to change widgets during a cc
+        """
+        for cc, info in self.cc_controls.items():
+            if info.get('name') == name:
+                info['ui_callback'] = callback
+                return True
+
+        log.error(f'register_ui_control_callback for {name} - must add cc first')
+        return False
+
+
+    def control_callback(self, cc, control):
+        """
+        A cc button switches effects or
+        An effect has controllable parms via CC knobs
+        The app maps the CC to the parm(s). This callback has the CC number and control  (0 - 127)
+        We use the CC to get the effect parm function and call it.
+        """
+        info = self.cc_controls.get(cc)
+        if info is None:
+            return
+
+        control_callback = info.get('control_callback')
+        if control_callback is None:
+            log.error(f'CC map {cc} control callback is none')
+            return
+
+        if info['type'] == 'switch':
+            if control == 0:
+                control = False
+            else:
+                control = True
+
+        control_callback(control)
+
+        ui_callback = info.get('ui_callback')
+
+        if ui_callback is not None:
+            ui_callback(control)
+
 
     def get_midi_in_ports(self):
         try:
@@ -275,7 +353,7 @@ class MidiManager:
 
     def set_midi_clock_internal(self, set=True):
         #if set:
-        self.clock_source = MidiInternalClock(midiout=self.clock_midiout)
+        self.clock_source = MidiInternalClock(self.settings, midiout=self.clock_midiout)
         self.internal_clock = True
         #else:
         #    self.clock_source = MidiInput(ignore_clock=False) # 'lmb'
@@ -301,9 +379,6 @@ class MidiManager:
         self.clock_callback = callback
         self.clock_data = data
 
-    def register_control_callback(self, callback, data=None):
-        self.midiin.register_control_callback(callback, data)
- 
 
     def panic(self):
         self.midiout.panic()
@@ -315,8 +390,16 @@ class MidiInternalClock:
     looks like a MidiInput object, but runs off a internal clock instead of a external midi clock
     can send clocks externally though
     """
-    def __init__(self, midiout=None, bpm=60):
+    def __init__(self, settings=None, midiout=None, bpm=60):
+        self.settings = settings
+        sbpm = self.settings.get('internal_clock_bpm')
+        if sbpm is None:
+            self.settings.set('internal_clock_bpm', bpm)
+        else:
+            bpm = sbpm
+
         self.bpm = bpm
+        self.settings = settings
         self.midiout = midiout
         self.clock_callback = None
         self.clock_data = None
@@ -332,6 +415,7 @@ class MidiInternalClock:
         self.bpm = bpm
         self.tick_time = (60.0/self.bpm)/24.0
         log.info(f'internal bpm: {bpm}')
+        self.settings.set('internal_clock_bpm', self.bpm)
 
     def get_bpm(self):
         return self.bpm

@@ -22,8 +22,8 @@ from common.upper_class_utils import Effect, NoteManager
 
 
 class MidiEchoEffect(Effect):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, settings):
+        super().__init__(settings)
         self.name = 'Echo'
         self.note_manager = NoteManager()
         self.update = True # set if we need to update delays
@@ -36,9 +36,9 @@ class MidiEchoEffect(Effect):
         self.end_velocity = 10 #we linear ramp velocity down to this level
         self.calc_delays() # init echoes
         # VI25 Alesis controller CC knobs start with 21
-        self.control_map = {    21:{'name':'Delay Type','func':self.control_delay_type, 'list':self.delay_types},
-                                22:{'name':'Echoes',    'func':self.control_echoes,     'min':1, 'max':32},
-                                23:{'name':'Delay',     'func':self.control_delay_tick, 'min':0, 'max':MidiConstants().CC_MAX}
+        self.control_map = {    22:{'name':'Delay Type','func':self.control_delay_type, 'list':self.delay_types},
+                                23:{'name':'Echoes',    'func':self.control_echoes,     'min':1, 'max':32},
+                                24:{'name':'Delay',     'func':self.control_delay_tick, 'min':0, 'max':MidiConstants().CC_MAX}
                            } 
 
     def __str__(self):

@@ -15,6 +15,7 @@
     size_hint: None, None
     markup: True
     text: 'None'
+    sync_height: True
     
 
 <MyCheckBox@CheckBox>:
@@ -106,24 +107,23 @@
             orientation: 'vertical' 
             width: 65
             size_hint: None, .5
-            pos_hint: {'left':1, 'center_y':.7}
+            pos_hint: {'left':1, 'center_y':.8}
             NavButton:
                 id: nav_midi
-                text: 'MIDI'
-                state: 'down'
-                on_press: root.nav_button_pressed('screen_midi')
+                text: '[b]MIDI[/b]'
+                on_press: root.nav_button_pressed(self, 'screen_midi')
             NavButton:
                 id: nav_echo
-                text: 'ECHO'
-                on_press: root.nav_button_pressed('screen_echo')
+                text: '[b]ECHO[/b]'
+                on_press: root.nav_button_pressed(self, 'screen_echo')
             NavButton:
                 id: nav_live
-                text: 'LIVE'
-                on_press: root.nav_button_pressed('screen_live')
+                text: '[b]LIVE[/b]'
+                on_press: root.nav_button_pressed(self, 'screen_live')
             NavButton:
                 id: nav_help
-                text: 'HELP'
-                on_press: root.nav_button_pressed('screen_help')
+                text: '[b]HELP[/b]'
+                on_press: root.nav_button_pressed(self, 'screen_help')
 
         MainScreenManager:
             id: screen_manager
@@ -151,17 +151,18 @@
                         Label:
                             markup: True
                             text: '[b]INPUT:[/b]'
-                            pos_hint: {'x':.085, 'center_y':0.5}
+                            pos_hint: {'x':.13, 'center_y':0.5}
                             width: 20
                             size_hint: None, 1
                            
                         MidiPortSelectSpinner:
                             id: midi_port_in
-                            pos_hint: {'x':.14, 'center_y':.5}
+                            pos_hint: {'x':.2, 'center_y':.5}
                             on_text: root.select_midi_input_port(self)
+                            on_press: root.update_port_selections()
                         MyLEDImage:
                             id: midi_in_activity
-                            pos_hint: {'x':.7, 'center_y':.5}
+                            pos_hint: {'x':.75, 'center_y':.5}
 
                     FloatLayout:
                         height: 60
@@ -170,16 +171,16 @@
                         Label:
                             markup: True
                             text: '[b]OUTPUT:[/b]'
-                            pos_hint: {'x':.085, 'center_y':0.5}
+                            pos_hint: {'x':.12, 'center_y':0.5}
                             width: 20
                             size_hint: None, 1
                         MidiPortSelectSpinner:
                             id: midi_port_out
-                            pos_hint: {'x':.14, 'center_y':.5}
+                            pos_hint: {'x':.2, 'center_y':.5}
                             on_text: root.select_midi_output_port(self)
                         MyLEDImage:
                             id: midi_out_activity
-                            pos_hint: {'x':.7, 'center_y':.5}
+                            pos_hint: {'x':.75, 'center_y':.5}
 
                             
 
@@ -197,37 +198,56 @@
                         ClockSourceToggleButton:
                             id: clock_internal
                             text: '[b]INTERNAL[/b]'
-                            pos_hint: {'x':.08, 'center_y':0.5}
+                            pos_hint: {'x':.35, 'center_y':0.5}
                             on_press: root.select_internal_clock(self)
                         ClockSourceToggleButton:
                             id: clock_external
                             text: '[b]EXTERNAL[/b]'
-                            pos_hint: {'x':.22, 'center_y':0.5}
+                            pos_hint: {'x':.5, 'center_y':0.5}
                             on_press: root.select_external_clock(self)
-                        MyLEDImage:
-                            id: midi_clock_activity
-                            pos_hint: {'x':.37, 'center_y':.5}
-                        Label:
-                            width: 15
-                            size_hint: None, 1
-                            pos_hint: {'x':.44, 'center_y':.5}
-                            markup: True
-                            text: '[b]BPM:[/b]'
-                        Label:
-                            width: 10
-                            size_hint: None, 1
-                            pos_hint: {'x':.49, 'center_y':.5}
-                            markup: True
-                            text: '[b]' + str(int(clock_bpm_slider.value)) + '[/b]'
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.3}
+
                         Slider:
                             id: clock_bpm_slider
-                            pos_hint: {'x':.51, 'center_y':.5}
-                            width: 360
+                            pos_hint: {'center_x':.5, 'center_y':.5}
+                            width: 600
                             size_hint: None, 1
                             min: 10
                             max: 240
                             value: 60
                             on_value: root.change_internal_clock_bpm(self.value)
+                            #Label:
+                            #    pos: (root.value_pos[0] - sp(16), root.center_y - sp(27)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+                            #    size_hint: None, None
+                            #    size: sp(32), sp(32)
+                            #    text: str(root.value)
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.2}
+                        MyLEDImage:
+                            id: midi_clock_activity
+                            pos_hint: {'x':.37, 'center_y':.5}
+                        CCEntryBox:
+                            id: cc_control_internal_clock_bpm
+                            pos_hint: {'x':.42, 'center_y':0.5}
+                            on_text_validate: root.ui_control_map_clock_bpm(self)
+                        Label:
+                            width: 15
+                            size_hint: None, 1
+                            pos_hint: {'x':.5, 'center_y':.5}
+                            markup: True
+                            text: '[b]BPM:[/b]'
+                        Label:
+                            width: 10
+                            size_hint: None, 1
+                            pos_hint: {'x':.55, 'center_y':.5}
+                            markup: True
+                            text: '[b]' + str(int(clock_bpm_slider.value)) + '[/b]'
+
 
 
             EchoScreen:
@@ -246,7 +266,7 @@
                 FloatLayout
                     height: 60
                     size_hint: 1, None
-                    pos_hint: {'top':.4}
+                    pos_hint: {'top':.8}
                     Label:
                         markup: True
                         text: '[b]EFFECT:[/b]'
@@ -256,7 +276,7 @@
                     CCEntryBox:
                         id: cc_control_effect_enable
                         pos_hint: {'x':.14, 'center_y':0.5}
-                        on_text_validate: root.cc_control_map_effect_enable(self)
+                        on_text_validate: root.ui_control_map_effect_enable(self)
                     OnOffToggleButton:
                         id: effect_on
                         text: '[b]ON[/b]'

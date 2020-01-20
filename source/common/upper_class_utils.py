@@ -6,8 +6,90 @@
  MIDI can not be copied and/or distributed without the express
  permission of Brian R. Gunnison
 """
+import os
+import glob
 import queue
 import logging
+from pathlib import Path
+import shelve
+from datetime import datetime
+
+class Settings:
+    """
+    persistant storage
+    """
+    def __init__(self, app_name='generic'):
+        """
+        Try to make this foolproof...
+        put settings in user dir in case other dirs are admin
+        we create the path dirs
+        then create the shelve files, if these fail we resort to a dictionay so set and get work, but persistance fails
+        """
+        self.path = os.path.expanduser(os.path.join('~', 'VirtualRobot', app_name))
+        self.settings = None
+        self.persist = True
+
+        self._open()        
+
+        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        #log.info(f'Settings at {self.path} started: {now}')
+        self.set(app_name, now)
+        self.set('path', self.path)
+        self.dump()
+
+        self.save()
+     
+    def _open(self, start_over=False):
+        if start_over:
+            thispath = os.path.join(self.path, '*')
+            files = glob.glob(thispath)
+            for file in files:
+                if 'config' in file:
+                    os.remove(file)
+
+
+        # flag = 'n'  # NOT ON WINDOWS!! Always create a new, empty database, open for reading and writing
+
+        try:
+            Path(self.path).mkdir(parents=True, exist_ok=True)
+            pathfile = os.path.expanduser(os.path.join(self.path, 'config'))
+            self.settings = shelve.open(pathfile, writeback=True)
+            self.persist = True
+        except:
+            str = f'Error opening settings at: {self.path}'
+            log.error(str)
+            self.settings = {}  # use a dict so all the calls don't fail and we can get settings
+            self.persist = False
+
+    def save(self):
+        if self.persist:
+            self.settings.sync()
+
+    def set(self, name, value):
+        self.settings[name] = value
+        log.info(f'Settings set: {self.path}, {name}, {value}')
+
+    def get(self, name):
+
+        try:
+            return self.settings[name]
+        except:
+            return None
+
+    def dump(self):
+        try:
+            for k, v in self.settings.items():
+                log.info(f'Setting: {k}, {v}')
+        except:
+            self.settings.close()
+            self._open(start_over=True)
+
+
+    def __del__(self):
+        if self.persist:
+            self.settings.close()
+        self.dump()
+        log.info(f'Settings closed {self.path}')
 
 
 logging.basicConfig(level=logging.INFO)
@@ -17,7 +99,8 @@ class Effect:
     """
     Things common to midi effects
     """
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.name = 'MIDI Effect'
         self.control_map = {}
 
