@@ -14,7 +14,6 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 from midiapps.midi_echo import MidiEchoEffect
 from midiapps.midi_effect_manager import MidiEffectManager
 from common.midi import MidiManager, MidiConstants
@@ -165,7 +164,6 @@ class RootWidget(BoxLayout):
         self.midi_manager.cc_controls.remap(ccbox.name, cc)
 
 
-
     def error_notification(self, title='Error', msg='Something is wrong!'):
         #turns background red, popup is black kinda cool...
         popup = Popup(title=title, content=Label(markup=True,
@@ -175,8 +173,6 @@ class RootWidget(BoxLayout):
                                                  background_color=(1, 0, 0, .7))
         popup.open()
         
-
-
 
     def update_port_selections(self):
         ports = self.midi_manager.get_midi_in_ports()
@@ -315,11 +311,9 @@ class RootWidget(BoxLayout):
 class MainEchoApp(App):
     def build(self):
         self.title = 'Virtual Robot MIDI Echo'
-        
         return RootWidget() 
 
     
 
 if __name__ == '__main__':
     MainEchoApp().run()
-    time.sleep(10)

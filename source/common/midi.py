@@ -18,8 +18,6 @@ except:
 
 from rtmidi.midiconstants import *
 
-
-
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
@@ -228,13 +226,18 @@ class CCControls:
                 return str(cc)
         return ''
 
-    def add(self, name, cc_default,  control_callback, type='cont', ui_callback=None):
+    def add(self, name, cc_default,  control_callback, type='cont', min=0, max=127, ui_callback=None):
         cc = self.settings.get(name, cc_default)
 
         if self.cc_controls.get(cc) is not None:
             del self.cc_controls[cc]
 
-        self.cc_controls[cc] = {'name':name, 'control_callback':control_callback, 'type':type, 'ui_callback':ui_callback}
+        self.cc_controls[cc] = {'name':name,    # accessed by name
+                                'control_callback':control_callback, # midi callback
+                                'type':type,    # continuous or a switch (0 = off, > 0 is on)
+                                'min':min,        # map 0 - 127 to min/max
+                                'max':max,
+                                'ui_callback':ui_callback}  # call up to UI to change widgets
 
     def delete(self, cc=None, name=None):
         if cc is not None:
@@ -290,16 +293,19 @@ class CCControls:
 
         if info['type'] == 'switch':
             if control == 0:
-                control = False
+                value = False
             else:
-                control = True
+                value = True
+        else:
+            range = info['max'] - info['min']
+            value = int(info['min'] + (range * (control/127.0)))
 
-        control_callback(control)
+        control_callback(value)
 
         ui_callback = info.get('ui_callback')
 
         if ui_callback is not None:
-            ui_callback(control)
+            ui_callback(value)
 
 
 class MidiManager():
@@ -428,7 +434,11 @@ class MidiInternalClock():
         self.tick_time = (60.0/self.bpm)/24.0
         self.time_alarm = False # gets set if we run out of time between ticks
         if self.cc_controls is not None:
-            self.cc_controls.add(name='InternalClockBPMControlCC', cc_default=29, control_callback=self.change_bpm)
+            self.cc_controls.add(name='InternalClockBPMControlCC',
+                                 cc_default=29,
+                                 control_callback=self.change_bpm,
+                                 min=self.min,
+                                 max=self.max)
 
     def stop_clock(self):
         """
