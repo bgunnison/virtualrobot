@@ -69,12 +69,17 @@ class Settings:
         self.settings[name] = value
         log.info(f'Settings set: {self.path}, {name}, {value}')
 
-    def get(self, name):
-
+    def get(self, name, default_value=None):
+        """
+        if not in settings, set default value
+        """
         try:
-            return self.settings[name]
+            value = self.settings[name]
         except:
-            return None
+            self.set(name, default_value)
+            return default_value
+
+        return value
 
     def dump(self):
         try:

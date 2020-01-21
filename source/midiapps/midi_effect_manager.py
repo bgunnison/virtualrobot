@@ -19,11 +19,10 @@ class MidiEffectManager:
     def __init__(self, settings, effect, midi_manager):
         self.settings = settings
         self.midi_manager = midi_manager      
-        self.effect_enabled = False
+        self.effect_enabled = self.settings.get('EffectEnabled', False)
         self.effect = effect
         # button CCs are mapped to to enable (for example) the effect
-                        #cc                     called when changed from midi port       calls up to change UI
-        self.midi_manager.add_control(name='Enable', CC=48, type='switch', control_callback=self.effect_enable, ui_callback=None)
+        self.midi_manager.cc_controls.add(name='EffectEnableControlCC', cc_default=48, type='switch', control_callback=self.effect_enable)
 
     def effect_enable(self, on):
         log.info(f'Effect: {self.effect.get_name()} is {on}')

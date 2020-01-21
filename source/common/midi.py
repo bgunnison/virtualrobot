@@ -98,38 +98,41 @@ class MidiPort:
 gstart_debug_timer = 0.0
 
 class MidiInput(MidiPort):
-    def __init__(self, q_size_limit=1024, ignore_clock=True):
+    def __init__(self, q_size_limit=1024):
         super().__init__()
         self.midi = rtmidi.MidiIn(queue_size_limit=q_size_limit)
-
-        if ignore_clock == False:
-            self.midi.ignore_types(timing = False) #don't ignore MIDI clock messages
 
         self.note_callback = None
 
         self.clock_callback = None
         self.clock_midiin = None
         self.clock_delta_time = 0.0   # the time between clock msgs
-        self.clock_counts = 0
+        self.tick = 0
 
         self.control_callback = None
         self.control_data = None
 
+    def register_clock_callback(self, callback, data=None):
+        self.clock_callback = callback
+        self.clock_data = data
+        self.midi.ignore_types(timing = False) # don't ignore MIDI clock messages
+
+    def stop_clock(self):
+        self.clock_callback = None
+        self.clock_data = None
+        self.midi.ignore_types(timing = True) # ignore MIDI clock messages
 
     def register_note_callback(self, callback, clock_midiin):
         self.note_callback = callback
         self.clock_midiin = clock_midiin
 
-    def register_clock_callback(self, callback, data=None):
-        self.clock_callback = callback
-        self.clock_data = data
 
     def register_control_callback(self, callback, data=None):
         self.control_callback = callback
         self.control_data = data
 
     def get_tick(self):
-        return self.clock_counts
+        return self.tick
 
     def callback(self, msg_dt, data):
         global gstart_debug_timer
@@ -139,9 +142,9 @@ class MidiInput(MidiPort):
         if self.clock_callback is not None:
             if data_type == TIMING_CLOCK:
                 self.clock_delta_time = msg_dt[1]   # the time between clock msgs
-                self.clock_counts += 1           # number of clock msgs since inception
-                self.clock_callback(self.clock_counts, self.clock_data)
-            return 
+                self.tick += 1           # number of clock msgs since inception
+                self.clock_callback(self.tick, self.clock_data)
+                return 
 
         if self.note_callback is not None:
             if data_type is NOTE_OFF or data_type is NOTE_ON:
@@ -151,6 +154,7 @@ class MidiInput(MidiPort):
                 self.note_callback(message, self.clock_midiin)
                 if self.midi_activity_callback is not None:
                     self.midi_activity_callback()
+                return
 
         if self.control_callback is not None:
             if data_type is CONTROL_CHANGE:
@@ -158,6 +162,7 @@ class MidiInput(MidiPort):
                 self.control_callback(message[1], message[2])
                 if self.midi_activity_callback is not None:
                     self.midi_activity_callback()
+
 
     def run(self):
         self.midi.set_callback(self.callback)
@@ -207,38 +212,31 @@ class MidiOutput(MidiPort):
 
         self.midi.send_message([TIMING_CLOCK])
 
-    
 
-class MidiManager:
+class CCControls:
     """
-    Manages midi in, midi out and midi clock
+    contains the CC control mapping and functionality
+    A singleton
     """
-
     def __init__(self, settings):
-       self.settings = settings
-       self.midiin = MidiInput()
-       self.midiout = MidiOutput()
-       self.clock_midiout = None # set to self.midiout if we want to send clock out this port. 
-       self.clock_midiin = None # can be set to a midiin port to get external clock
-       self.internal_clock = True # set to false with above if effect does not need a clock
-       self.clock_callback = None
-       self.clock_data = None
-       self.set_midi_clock_internal()
-       self.cc_controls = {}    # a dict keyd by cc number
+        self.settings = settings
+        self.cc_controls = {}    # a dict keyd by cc number
 
-       self.add_control(name='InternalClockBPM', CC=29, control_callback=self.change_clock_bpm)
+    def get_cc_str(self, name):
+        for cc, info in self.cc_controls.items():
+            if name == info.get('name'):
+                return str(cc)
+        return ''
 
-       # last
-       self.midiin.register_control_callback(self.control_callback, None)
-       
+    def add(self, name, cc_default,  control_callback, type='cont', ui_callback=None):
+        cc = self.settings.get(name, cc_default)
 
-    def add_control(self, name, CC,  control_callback, type='cont', ui_callback=None):
-        if self.cc_controls.get(CC) is not None:
-            del self.cc_controls[CC]
+        if self.cc_controls.get(cc) is not None:
+            del self.cc_controls[cc]
 
-        self.cc_controls[CC] = {'name':name, 'control_callback':control_callback, 'type':type, 'ui_callback':ui_callback}
+        self.cc_controls[cc] = {'name':name, 'control_callback':control_callback, 'type':type, 'ui_callback':ui_callback}
 
-    def delete_control(self, cc=None, name=None):
+    def delete(self, cc=None, name=None):
         if cc is not None:
             if self.cc_controls.get(cc) is not None:
                 del self.cc_controls[cc]
@@ -249,7 +247,7 @@ class MidiManager:
                 if info.get(name) == name:
                     del self.cc_controls[cc]
 
-    def remap_control(self, name, cc):
+    def remap(self, name, cc):
         """
         find the named cc info and change its cc number
         """
@@ -257,11 +255,12 @@ class MidiManager:
             if name == info.get('name'):
                 self.cc_controls[cc] = info
                 del self.cc_controls[oldcc]
+                self.settings.set(name, cc)
                 return True
 
         return False
 
-    def register_ui_control_callback(self, name, callback):
+    def register_ui_callback(self, name, callback):
         """
         adds a callback to the UI to change widgets during a cc
         """
@@ -273,8 +272,7 @@ class MidiManager:
         log.error(f'register_ui_control_callback for {name} - must add cc first')
         return False
 
-
-    def control_callback(self, cc, control):
+    def callback(self, cc, control):
         """
         A cc button switches effects or
         An effect has controllable parms via CC knobs
@@ -303,6 +301,28 @@ class MidiManager:
         if ui_callback is not None:
             ui_callback(control)
 
+
+class MidiManager():
+    """
+    Manages midi in, midi out and midi clock
+    """
+
+    def __init__(self, settings):
+       self.settings = settings
+       self.cc_controls = CCControls(settings)
+       self.midiin = MidiInput()
+       self.midiout = MidiOutput()
+       self.clock_midiout = None # set to self.midiout if we want to send clock out this port. 
+       self.clock_midiin = None # can be set to a midiin port to get external clock
+       self.internal_clock = False # set to false so the call below will make it internal
+       self.clock_callback = None
+       self.clock_data = None
+       self.clock_source = None
+       self.set_clock_source(internal=True)
+
+       # last
+       self.midiin.register_control_callback(self.cc_controls.callback, None)
+      
 
     def get_midi_in_ports(self):
         try:
@@ -346,22 +366,22 @@ class MidiManager:
             return False
         return True
 
-    def change_clock_bpm(self, value):
-        if self.internal_clock:
-            self.clock_source.change_bpm(value)
             
-    def get_clock_bpm(self):
-        return self.clock_source.get_bpm()
+    def set_clock_source(self, internal=True):
+        if internal == self.internal_clock:
+            return  # no change
 
-    def set_midi_clock_internal(self, set=True):
-        #if set:
-        self.clock_source = MidiInternalClock(self.settings, midiout=self.clock_midiout)
-        self.internal_clock = True
-        #else:
-        #    self.clock_source = MidiInput(ignore_clock=False) # 'lmb'
+        if self.clock_source is not None:
+            self.clock_source.stop_clock() # gracefully stop clock at the source
+
+        if internal:
+            self.clock_source = MidiInternalClock(self.settings, midiout=self.clock_midiout, cc_controls=self.cc_controls)
+            self.internal_clock = True
+        else:
+            self.internal_clock = False
+            self.clock_source = self.midiin
 
         self.clock_source.register_clock_callback(callback=self.clock_callback, data=self.clock_data)   
-
         # wip a lot more logic here and there...
 
     def register_midiin_activity_callback(self, callback):
@@ -370,11 +390,13 @@ class MidiManager:
     def register_midiout_activity_callback(self, callback):
         self.midiout.register_midi_activity_callback(callback)
 
-
     def register_note_callback(self, callback):
         self.midiin.register_note_callback(callback, self.clock_source) # pass clock source so we know when notes arrive
 
     def register_clock_callback(self, callback, data=None):
+        """
+        called from effect manager to register its clock callback
+        """
         if self.clock_source is not None:
             self.clock_source.register_clock_callback(callback, data) 
         # rememeber in case we switch clock sources
@@ -387,37 +409,33 @@ class MidiManager:
 
 
 # wip create clock class for this and midiin
-class MidiInternalClock:
+class MidiInternalClock():
     """
     looks like a MidiInput object, but runs off a internal clock instead of a external midi clock
     can send clocks externally though
     """
-    def __init__(self, settings=None, midiout=None, bpm=60):
+    def __init__(self, settings, midiout=None, cc_controls=None, bpm=60):
         self.settings = settings
-        self.min = self.settings.get('internal_clock_bpm_min')
-        if self.min is None:
-            self.min = 10
-            self.settings.set('internal_clock_bpm_min', self.min)
-        self.max = self.settings.get('internal_clock_bpm_max')
-        if self.max is None:
-            self.max = 240
-            self.settings.set('internal_clock_bpm_min', self.max)
-
-        sbpm = self.settings.get('internal_clock_bpm')
-        if sbpm is None:
-            self.settings.set('internal_clock_bpm', bpm)
-        else:
-            bpm = sbpm
-
-        self.bpm = bpm
-        self.settings = settings
-        self.midiout = midiout
+        self.min = self.settings.get('internal_clock_bpm_min', 10)
+        self.max = self.settings.get('internal_clock_bpm_max', 240)
+        self.bpm = self.settings.get('internal_clock_bpm', bpm)
+        self.cc_controls = cc_controls
+        self.midiout = midiout # send clock out if  exists
         self.clock_callback = None
         self.clock_data = None
         self.tick = 0 
         # 24 beats per quarter note, (60/60)/24 = 41.6 msec
         self.tick_time = (60.0/self.bpm)/24.0
         self.time_alarm = False # gets set if we run out of time between ticks
+        if self.cc_controls is not None:
+            self.cc_controls.add(name='InternalClockBPMControlCC', cc_default=29, control_callback=self.change_bpm)
+
+    def stop_clock(self):
+        """
+        just stop
+        """
+        self.clock_callback = None
+        self.clock_data = None
 
     def change_bpm(self, bpm):
         if bpm < self.min:
@@ -470,9 +488,6 @@ class MidiInternalClock:
         log.info(f"Starting internal clock: {self.tick_time}")
         timerThread = threading.Thread(target=self.callback)
         timerThread.start()
-
-    def stop(self):
-        self.clock_callback = None
 
     def send_clock_out(self, midiout):
         self.midiout = midiout

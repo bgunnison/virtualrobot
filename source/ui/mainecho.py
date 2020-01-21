@@ -68,42 +68,30 @@ class HelpScreen(Screen):
 
 
 class CCControlInput(TextInput):
-    def insert_text(self, substring, from_undo=False):
-        try:
-            v = int(substring)
-        except:
-            return
-
-        
-
-        return super(CCControlInput, self).insert_text(substring, from_undo=from_undo)
-
+    pass
+    
 
 class RootWidget(BoxLayout):
 
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
 
-        self.settings = Settings('MidiEcho')
+        self.settings = Settings('MidiEcho')    # our persistant settings
 
         self.midi_manager = MidiManager(self.settings)
         self.effect = MidiEchoEffect(self.settings)
         self.effect_manager = MidiEffectManager(self.settings, self.effect, self.midi_manager)
 
         # restore screen in settings
-        screen = self.settings.get('start_screen')
-        if screen is None:
-            screen = 'screen_midi'
+        screen = self.settings.get('start_screen', 'screen_midi')
+        if 'midi' in screen:
             but = self.ids.nav_midi
-        else:
-            if 'midi' in screen:
-                but = self.ids.nav_midi
-            if 'echo' in screen:
-                but = self.ids.nav_echo
-            if 'live' in screen:
-                but = self.ids.nav_live
-            if 'help' in screen:
-                but = self.ids.nav_help
+        if 'echo' in screen:
+            but = self.ids.nav_echo
+        if 'live' in screen:
+            but = self.ids.nav_live
+        if 'help' in screen:
+            but = self.ids.nav_help
 
         self.nav_button_pressed(but, screen)
 
@@ -139,7 +127,9 @@ class RootWidget(BoxLayout):
 
 
     def update_echo_screen(self):
-        self.midi_manager.register_ui_control_callback('Enable', self.ui_effect_on)
+        self.midi_manager.cc_controls.register_ui_callback('EffectEnableControlCC', self.ui_effect_on)
+        cc_str = self.midi_manager.cc_controls.get_cc_str('EffectEnableControlCC')
+        self.ids.EffectEnableControlCC.text = cc_str
 
     def ui_effect_on(self, on):
         """
@@ -156,8 +146,7 @@ class RootWidget(BoxLayout):
         self.ui_effect_on(on)
         self.effect_manager.effect_enable(on)
 
-
-    def ui_control_map_effect_enable(self, ccbox):
+    def ui_control_map(self, ccbox):
         """
         called when UI CC box has a number
         remaps the UI number to this control
@@ -171,9 +160,9 @@ class RootWidget(BoxLayout):
             ccbox.text = str(MidiConstants().CC_MAX)
             cc = MidiConstants().CC_MAX
 
-        log.info(f'Effect enable control CC: {ccbox.text}')
+        log.info(f'Mapping control CC: {cc} to {ccbox.name}')
 
-        self.midi_manager.remap_control('Enable', cc)
+        self.midi_manager.cc_controls.remap(ccbox.name, cc)
 
 
 
@@ -208,21 +197,30 @@ class RootWidget(BoxLayout):
         """
         if self.midi_manager.internal_clock:
             self.ids.clock_internal.state = 'down'
+            self.ids.clock_bpm_slider.disabled = False
             self.ids.clock_bpm_slider.min = self.midi_manager.clock_source.get_min_max()[0]
             self.ids.clock_bpm_slider.max = self.midi_manager.clock_source.get_min_max()[1]
             self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
-            self.midi_manager.register_ui_control_callback('InternalClockBPM', self.ui_change_internal_clock_bpm)
+            self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
+            cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')
+            self.ids.InternalClockBPMControlCC.text = cc_str
+
         else:
             self.ids.clock_external.state = 'down'
+            self.ids.clock_bpm_slider.disabled = True
+
 
     def ui_change_internal_clock_bpm(self, control):
+        """
+        changes slider if control changes
+        """
         self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
 
-
-
     def change_internal_clock_bpm(self, value):
-        #log.info(f'internal clock bpm: {int(value)}')
-        self.midi_manager.change_clock_bpm(int(value))
+        """
+        from slider changes clock bpm
+        """
+        self.midi_manager.clock_source.change_bpm(int(value))
 
     def nav_button_pressed(self, but, screen_name):
         log.info(screen_name)
@@ -262,13 +260,14 @@ class RootWidget(BoxLayout):
         self.settings.set('midi_out_port', selector.text)
         log.error('error opening output port')
 
-    def select_external_clock(self, but):
-        log.error('wip')
-        #log.info(f'Using external clock from MIDI port: "{self.ids.midi_port_in.text}"')
+    def select_clock_source(self, but, internal_source):
+        but.state = 'down'
+        if internal_source:
+            self.ids.clock_bpm_slider.disabled = False
+            self.midi_manager.set_clock_source(internal=True)
+        else:
+            self.ids.clock_bpm_slider.disabled = True
 
-    def select_internal_clock(self, but):
-        log.error('wip')
-        #print(f'Sending clock out MIDI port: "{self.ids.midi_port_out.text}"')
 
     def update_clock_LED(self, dt):
         if 'off' in self.ids.midi_clock_activity.source:

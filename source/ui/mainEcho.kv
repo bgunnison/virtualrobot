@@ -47,6 +47,7 @@
     size: (25,25)
     
 <CCEntryBox@CCControlInput>:
+    input_filter: 'int'
     multiline: False
     size_hint: None, None
     size: (35,35)
@@ -198,13 +199,13 @@
                         ClockSourceToggleButton:
                             id: clock_internal
                             text: '[b]INTERNAL[/b]'
-                            pos_hint: {'x':.35, 'center_y':0.5}
-                            on_press: root.select_internal_clock(self)
+                            pos_hint: {'x':.32, 'center_y':0.5}
+                            on_press: root.select_clock_source(self, True)
                         ClockSourceToggleButton:
                             id: clock_external
                             text: '[b]EXTERNAL[/b]'
-                            pos_hint: {'x':.5, 'center_y':0.5}
-                            on_press: root.select_external_clock(self)
+                            pos_hint: {'x':.47, 'center_y':0.5}
+                            on_press: root.select_clock_source(self, False)
                     FloatLayout:
                         height: 60
                         size_hint: 1, None
@@ -232,9 +233,10 @@
                             id: midi_clock_activity
                             pos_hint: {'x':.37, 'center_y':.5}
                         CCEntryBox:
-                            id: cc_control_internal_clock_bpm
+                            id: InternalClockBPMControlCC
+                            name: 'InternalClockBPMControlCC'
                             pos_hint: {'x':.42, 'center_y':0.5}
-                            on_text_validate: root.ui_control_map_clock_bpm(self)
+                            on_text_validate: root.ui_control_map(self)
                         Label:
                             width: 15
                             size_hint: None, 1
@@ -274,9 +276,10 @@
                         width: 20
                         size_hint: None, 1
                     CCEntryBox:
-                        id: cc_control_effect_enable
+                        id: EffectEnableControlCC
+                        name: 'EffectEnableControlCC'
                         pos_hint: {'x':.14, 'center_y':0.5}
-                        on_text_validate: root.ui_control_map_effect_enable(self)
+                        on_text_validate: root.ui_control_map(self)
                     OnOffToggleButton:
                         id: effect_on
                         text: '[b]ON[/b]'
@@ -286,7 +289,7 @@
                     OnOffToggleButton:
                         id: effect_off
                         text: '[b]OFF[/b]'
-                        pos_hint: {'x':.3, 'center_y':0.5}
+                        pos_hint: {'x':.24, 'center_y':0.5}
                         state: 'normal'
                         on_press: root.effect_on(False)                    
                             
