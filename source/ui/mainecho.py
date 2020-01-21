@@ -78,7 +78,7 @@ class RootWidget(BoxLayout):
         self.settings = Settings('MidiEcho')    # our persistant settings
 
         self.midi_manager = MidiManager(self.settings)
-        self.effect = MidiEchoEffect(self.settings)
+        self.effect = MidiEchoEffect(self.settings, self.midi_manager.cc_controls)
         self.effect_manager = MidiEffectManager(self.settings, self.effect, self.midi_manager)
 
         # restore screen in settings
@@ -129,6 +129,25 @@ class RootWidget(BoxLayout):
         self.midi_manager.cc_controls.register_ui_callback('EffectEnableControlCC', self.ui_effect_on)
         cc_str = self.midi_manager.cc_controls.get_cc_str('EffectEnableControlCC')
         self.ids.EffectEnableControlCC.text = cc_str
+        self.update_effect_controls()
+
+    def update_effect_controls(self):
+        """
+        called at startup to set the effect specific controls
+        each effect control has a label, a CCBox a current value and a slider
+        current value can be a number or text
+        maybe: https://stackoverflow.com/questions/35278859/converting-static-widget-tree-to-dynamic-using-python-and-kv-file
+        """
+        pass
+
+        """
+            self.ids.clock_bpm_slider.min = self.midi_manager.cc_controls.get_min('InternalClockBPMControlCC')
+            self.ids.clock_bpm_slider.max = self.midi_manager.cc_controls.get_max('InternalClockBPMControlCC')
+            self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
+            self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
+            cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')
+            self.ids.InternalClockBPMControlCC.text = cc_str
+"""
 
     def ui_effect_on(self, on):
         """
@@ -194,8 +213,8 @@ class RootWidget(BoxLayout):
         if self.midi_manager.internal_clock:
             self.ids.clock_internal.state = 'down'
             self.ids.clock_bpm_slider.disabled = False
-            self.ids.clock_bpm_slider.min = self.midi_manager.clock_source.get_min_max()[0]
-            self.ids.clock_bpm_slider.max = self.midi_manager.clock_source.get_min_max()[1]
+            self.ids.clock_bpm_slider.min = self.midi_manager.cc_controls.get_min('InternalClockBPMControlCC')
+            self.ids.clock_bpm_slider.max = self.midi_manager.cc_controls.get_max('InternalClockBPMControlCC')
             self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
             self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
             cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')

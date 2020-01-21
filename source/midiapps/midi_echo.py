@@ -22,30 +22,60 @@ from common.upper_class_utils import Effect, NoteManager
 
 
 class MidiEchoEffect(Effect):
-    def __init__(self, settings):
-        super().__init__(settings)
+    def __init__(self, settings, cc_controls=None):
+        super().__init__(settings, cc_controls)
         self.name = 'Echo'
         self.note_manager = NoteManager()
         self.update = True # set if we need to update delays
-        self.delay_start_ticks = 24 # this is a quarter note
+        self.delay_start_ticks = self.settings.get('EchoEffectDelayStartTicks',24) # this is a quarter note
         self.delay_types = ['linear', 'exp_slow_start', 'exp_fast_start']
-        self.delay_type = self.delay_types[0]
+        self.delay_type = self.settings.get('EchoEffectDelayType', self.delay_types[0]) # store the string
         self.delays = []    # a list of ticks for each echo (number of echoes)
         self.new_delays = self.delays
-        self.echoes = 3
-        self.end_velocity = 10 #we linear ramp velocity down to this level
+        self.echoes = self.settings.get('EchoEffectNumberEchos', 3)
+        self.end_velocity = self.settings.get('EchoEffectEndVelocity', 10) # we linear ramp velocity down to this level
         self.calc_delays() # init echoes
-        # VI25 Alesis controller CC knobs start with 21
-        self.control_map = {    22:{'name':'Delay Type','func':self.control_delay_type, 'list':self.delay_types},
-                                23:{'name':'Echoes',    'func':self.control_echoes,     'min':1, 'max':32},
-                                24:{'name':'Delay',     'func':self.control_delay_tick, 'min':0, 'max':MidiConstants().CC_MAX}
-                           } 
+        if self.cc_controls is not None:
+            self.add_controls()
 
     def __str__(self):
         return f'Echo effect - Echoes: {self.echoes}, Type: {self.delay_type}, Delay: {self.delay_start_ticks}'
 
-    def set_midi_out(self, midiout):
-        self.note_manager.set_midi_out(midiout)
+    def get_ui_controls(self):
+        """
+        returns a dict of UI control info to populate the UI
+        used at startup 
+        """
+
+    def add_controls(self):
+        """
+        called at init to add cc controls map
+        """
+        # VI25 Alesis controller CC knobs start with 21
+        self.cc_controls.add(name='EchoEffectDelayTypeControlCC',
+                                 cc_default=22,
+                                 control_callback=self.control_delay_type,
+                                 min=0,
+                                 max=len(self.delay_types) - 1)
+
+        self.cc_controls.add(name='EchoEffectNumberEchoesControlCC',
+                                 cc_default=23,
+                                 control_callback=self.control_echoes,
+                                 min=1,
+                                 max=32)
+
+        self.cc_controls.add(name='EchoEffectDelayStartTicksControlCC',
+                                 cc_default=24,
+                                 control_callback=self.control_delay_tick,
+                                 min=0,
+                                 max=MidiConstants().CC_MAX)
+
+        self.cc_controls.add(name='EchoEffectEndVelocityControlCC',
+                                 cc_default=25,
+                                 control_callback=self.control_end_velocity,
+                                 min=0,
+                                 max=MidiConstants().CC_MAX)
+
 
     def calc_delays(self):
         """
@@ -90,23 +120,25 @@ class MidiEchoEffect(Effect):
                 return
 
 
-    def control_delay_type(self, info, control):
+    def control_delay_type(self, control):
         """
-        All controls are 0 - 127 per CC
+        index to delay type
         """
-        t = self.control_to_selection(self.delay_types, control)
-        self.delay_type = self.delay_types[t]
+        if control >= len(self.delay_types):
+            log.error('delay type index too big')
+            return
+
+        self.delay_type = self.delay_types[control]
         self.calc_delays()
+        self.settings.set('EchoEffectDelayType', self.delay_type)
         log.info(f"Delay type: {self.delay_type}")
 
 
-    def control_echoes(self, info, control):
+    def control_echoes(self, control):
         """
-        All controls are 0 - 127 per CC
+        1 - 32
         """
-        control += 1
-        control /= 4
-        self.echoes = int(control)
+        self.echoes = control
         self.calc_delays()
         log.info(f"echoes: {self.echoes}")
 
@@ -117,6 +149,14 @@ class MidiEchoEffect(Effect):
         self.delay_start_ticks = control
         self.calc_delays()
         log.info(f"delay ticks: {self.delay_start_ticks}")
+
+
+    def control_end_velocity(self, control):
+        """
+        1 - 127
+        """
+        self.control_end_velocity = control
+
 
     def run(self, tick, midiout, message):
         """
@@ -139,11 +179,16 @@ class MidiEchoEffect(Effect):
         # divide the velocity range to get to min from original v
         ov = note.velocity
         dv = (ov - self.end_velocity)/float(len(self.delays))
-        for i, d in enumerate(self.delays):
+        for i, delay in enumerate(self.delays):
             note.velocity = round(ov - ((i + 1) * dv))
+
+            if note.velocity > MidiConstants().CC_MAX:
+                note.velocity = MidiConstants().CC_MAX
+
             if note.velocity < self.end_velocity:
                 break
-            self.note_manager.add(d+tick, note.get_message())
+
+            self.note_manager.add(delay + tick, note.get_message())
             
 
 

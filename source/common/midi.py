@@ -239,6 +239,21 @@ class CCControls:
                                 'max':max,
                                 'ui_callback':ui_callback}  # call up to UI to change widgets
 
+    def get_max(self, name):
+        for cc, info in self.cc_controls.items():
+            if info.get('name') == name:
+                return info.get('max')
+
+        return 0
+
+    def get_min(self, name):
+        for cc, info in self.cc_controls.items():
+            if info.get('name') == name:
+                return info.get('min')
+
+        return 0
+
+
     def delete(self, cc=None, name=None):
         if cc is not None:
             if self.cc_controls.get(cc) is not None:
@@ -461,10 +476,6 @@ class MidiInternalClock():
 
     def get_bpm(self):
         return self.bpm
-
-    def get_min_max(self):
-        return (self.min, self.max)
-
 
     def get_tick(self):
         return self.tick

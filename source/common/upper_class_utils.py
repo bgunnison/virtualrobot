@@ -104,25 +104,14 @@ class Effect:
     """
     Things common to midi effects
     """
-    def __init__(self, settings):
+    def __init__(self, settings, cc_controls=None):
         self.settings = settings
         self.name = 'MIDI Effect'
-        self.control_map = {}
+        self.cc_controls = cc_controls
+
 
     def get_name(self):
         return self.name
-
-    def control_to_selection(self, selections, control):
-        """
-        a cc value is mapped to a range of selections in a list
-        """
-        n = len(selections)
-        s = 128/n
-        t = int(control/s)
-        if t > n - 1:
-            t = n - 1
-
-        return t
 
     def run(self):
         pass # override
