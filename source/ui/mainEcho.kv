@@ -55,6 +55,13 @@
     forground_color: (0,1,0,1)
     halign: 'center'
 
+<EffectControlSlider@Slider>:
+    pos_hint: {'x':.3, 'center_y':.5}
+    width: 400
+    size_hint: None, 1
+    on_value: root.change_effect_control(self)
+
+
 <RootWidget>:
     orientation: 'vertical' 
     canvas.before:
@@ -231,24 +238,24 @@
                         pos_hint: {'top':.2}
                         MyLEDImage:
                             id: midi_clock_activity
-                            pos_hint: {'x':.37, 'center_y':.5}
-                        CCEntryBox:
-                            id: InternalClockBPMControlCC
-                            name: 'InternalClockBPMControlCC'
-                            pos_hint: {'x':.42, 'center_y':0.5}
-                            on_text_validate: root.ui_control_map(self)
+                            pos_hint: {'x':.39, 'center_y':.5}
                         Label:
                             width: 15
                             size_hint: None, 1
-                            pos_hint: {'x':.5, 'center_y':.5}
+                            pos_hint: {'x':.45, 'center_y':.5}
                             markup: True
                             text: '[b]BPM:[/b]'
                         Label:
                             width: 10
                             size_hint: None, 1
-                            pos_hint: {'x':.55, 'center_y':.5}
+                            pos_hint: {'x':.5, 'center_y':.5}
                             markup: True
                             text: '[b]' + str(int(clock_bpm_slider.value)) + '[/b]'
+                        CCEntryBox:
+                            id: InternalClockBPMControlCC
+                            name: 'InternalClockBPMControlCC'
+                            pos_hint: {'x':.55, 'center_y':0.5}
+                            on_text_validate: root.ui_control_map(self)
 
 
 
@@ -293,8 +300,31 @@
                         state: 'normal'
                         on_press: root.effect_on(False)    
                 FloatLayout:
-                    id: effect_controls
-                    pos_hint: {'top':.7}
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.6}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: '[b]DELAY TYPE:[/b]'
+                    Label:
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.19, 'center_y':.5}
+                        markup: True
+                        text: '[b]' + str(int(EchoEffectDelayType.value)) + '[/b]'
+                    EffectControlSlider:
+                        id: EchoEffectDelayType
+                        name: 'EchoEffectDelayTypeControlCC'
+                    CCEntryBox:
+                        id: EchoEffectDelayTypeControlCC
+                        name: 'EchoEffectDelayTypeControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        
+
 
 
                             
