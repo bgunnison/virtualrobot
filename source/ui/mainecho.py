@@ -80,7 +80,7 @@ class RootWidget(BoxLayout):
         self.midi_manager = MidiManager(self.settings)
         self.effect = MidiEchoEffect(self.settings, self.midi_manager.cc_controls)
         self.effect_manager = MidiEffectManager(self.settings, self.effect, self.midi_manager)
-
+        self.effect_controls = {} # dict keyd by effect control name with ui ids to update if we get a CC control
         # restore screen in settings
         screen = self.settings.get('start_screen', 'screen_midi')
         if 'midi' in screen:
@@ -103,6 +103,8 @@ class RootWidget(BoxLayout):
 
         self.start_activity_LEDs()
 
+    def bold(self, text):
+        return '[b]' + text + '[/b]' # markup must be true, this is our style plus CAPS
 
     def update_midi_screen(self):
         """
@@ -138,16 +140,63 @@ class RootWidget(BoxLayout):
         current value can be a number or text
         maybe: https://stackoverflow.com/questions/35278859/converting-static-widget-tree-to-dynamic-using-python-and-kv-file
         """
-        pass
+        self.ids.EchoEffectDelayTypeSlider.min = self.midi_manager.cc_controls.get_min('EchoEffectDelayTypeControlCC')
+        self.ids.EchoEffectDelayTypeSlider.max = self.midi_manager.cc_controls.get_max('EchoEffectDelayTypeControlCC')
+        value = self.settings.get('EchoEffectDelayType')
+        self.ids.EchoEffectDelayTypeSlider.value = value
+        self.ids.EchoEffectDelayTypeValue.text = self.bold(self.effect.get_delay_type_label(value))
+        cc_str = self.midi_manager.cc_controls.get_cc_str('EchoEffectDelayTypeControlCC')
+        self.ids.EchoEffectDelayTypeControlCC.text = cc_str
+        self.midi_manager.cc_controls.register_ui_callback('EchoEffectDelayTypeControlCC', self.ui_effect_control_update, 'EchoEffectDelayTypeControlCC')
+        self.effect_controls['EchoEffectDelayTypeControlCC'] = {'slider_id':self.ids.EchoEffectDelayTypeSlider, # update slider
+                                                                'value_id':self.ids.EchoEffectDelayTypeValue, # update text
+                                                                'text_function':self.effect.get_delay_type_label,
+                                                                'update_function':self.effect.control_delay_type} # if exist the value for text is a string
 
+
+    def ui_effect_control_update(self, value, id_str):
         """
-            self.ids.clock_bpm_slider.min = self.midi_manager.cc_controls.get_min('InternalClockBPMControlCC')
-            self.ids.clock_bpm_slider.max = self.midi_manager.cc_controls.get_max('InternalClockBPMControlCC')
-            self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
-            self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
-            cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')
-            self.ids.InternalClockBPMControlCC.text = cc_str
-"""
+        update UI sliders to reflect CC changing the effect parm
+        """
+        info = self.effect_controls.get(id_str)
+        if info is None:
+            log.error(f'Unknown effects control name {id_str}')
+            return
+
+        info.get('slider_id').value = value
+
+        text_getter = info.get('text_function')
+        if text_getter is not None:
+            text = self.bold(text_getter(value))
+        else:
+            text = self.bold(str(value))
+
+        info.get('value_id').text = text
+        
+        
+
+    def effect_control_update(self, value, id_str):
+        """
+        from the slider update text and effect
+        """
+        info = self.effect_controls.get(id_str)
+        if info is None:
+            log.error(f'Unknown effects control name {id_str}')
+            return
+
+        value = int(value)
+        text_getter = info.get('text_function')
+        if text_getter is not None:
+            text = self.bold(text_getter(value))
+        else:
+            text = self.bold(str(value))
+
+        info.get('value_id').text = text
+
+        uf = info.get('update_function')
+        if uf is not None:
+            uf(value)
+
 
     def ui_effect_on(self, on):
         """
@@ -186,7 +235,7 @@ class RootWidget(BoxLayout):
     def error_notification(self, title='Error', msg='Something is wrong!'):
         #turns background red, popup is black kinda cool...
         popup = Popup(title=title, content=Label(markup=True,
-                                                 text='[b]' + msg + '[/b]'),
+                                                 text=self.bold(msg)),
                                                  size_hint=(None, None),
                                                  size=(300, 200),
                                                  background_color=(1, 0, 0, .7))
@@ -310,9 +359,9 @@ class RootWidget(BoxLayout):
         Clock.schedule_once(self.update_midi_in_LED, 0.2)
 
     def update_midi_in_LED(self, dt):
-         if 'off' in self.ids.midi_in_activity.source:
+        if 'off' in self.ids.midi_in_activity.source:
             self.ids.midi_in_activity.source = 'media/red_led.png'
-         else:
+        else:
             self.ids.midi_in_activity.source = 'media/off_led.png'
 
     def midi_out_activity(self):

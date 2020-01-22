@@ -28,8 +28,8 @@ class MidiEchoEffect(Effect):
         self.note_manager = NoteManager()
         self.update = True # set if we need to update delays
         self.delay_start_ticks = self.settings.get('EchoEffectDelayStartTicks',24) # this is a quarter note
-        self.delay_types = ['linear', 'exp_slow_start', 'exp_fast_start']
-        self.delay_type = self.settings.get('EchoEffectDelayType', self.delay_types[0]) # store the string
+        self.delay_types = ['LINEAR', 'EXP SLOW', 'EXP FAST']   # seen in ui
+        self.delay_type = self.settings.get('EchoEffectDelayType', 0) 
         self.delays = []    # a list of ticks for each echo (number of echoes)
         self.new_delays = self.delays
         self.echoes = self.settings.get('EchoEffectNumberEchos', 3)
@@ -41,12 +41,11 @@ class MidiEchoEffect(Effect):
     def __str__(self):
         return f'Echo effect - Echoes: {self.echoes}, Type: {self.delay_type}, Delay: {self.delay_start_ticks}'
 
-    def get_ui_controls(self):
-        """
-        returns a dict of UI control info to populate the UI
-        used at startup 
-        """
-
+    def get_delay_type_label(self, index):
+        if index >= len(self.delay_types):
+            return 0
+        return self.delay_types[index]
+       
     def add_controls(self):
         """
         called at init to add cc controls map
@@ -82,15 +81,15 @@ class MidiEchoEffect(Effect):
         based on settings we can calculate the delays
         and return it in a list, this the number of echoes and the delay of each
         """
+        delay_type_str = self.delay_types[self.delay_type]
         self.update = True
         self.new_delays = []
-        if self.delay_type is 'linear':
+        if delay_type_str is 'LINEAR':
             for i in range(self.echoes):
                 self.new_delays.append((i+1) * self.delay_start_ticks)
             return
 
-       
-        if 'exp' in self.delay_type:
+        if 'EXP' in delay_type_str:
             s = 0.2
             e = 4
             a = (e - s)/float(self.echoes)
@@ -100,11 +99,11 @@ class MidiEchoEffect(Effect):
                 delay = round(self.delay_start_ticks * f)
                 self.new_delays.append(delay)
 
-            if self.delay_type is 'exp_slow_start':
+            if 'SLOW' in delay_type_str:
                 log.info(f"delays: {self.new_delays}")
                 return
 
-            if self.delay_type is 'exp_fast_start':
+            if 'FAST' in delay_type_str:
                 """ wrong!! 
                 self.new_delays.reverse()
                 s = 0
@@ -117,21 +116,19 @@ class MidiEchoEffect(Effect):
                 log.info(f"delays: {self.new_delays}")
 
                 """
+                log.error('Exp Fast not implemented')
                 return
 
 
     def control_delay_type(self, control):
-        """
-        index to delay type
-        """
         if control >= len(self.delay_types):
-            log.error('delay type index too big')
+            log.error('Echo delay types control too big')
             return
 
-        self.delay_type = self.delay_types[control]
+        self.delay_type = control
         self.calc_delays()
         self.settings.set('EchoEffectDelayType', self.delay_type)
-        log.info(f"Delay type: {self.delay_type}")
+        log.info(f"Delay type: {self.delay_types[self.delay_type]}")
 
 
     def control_echoes(self, control):
@@ -144,7 +141,7 @@ class MidiEchoEffect(Effect):
 
     def control_delay_tick(self, info, control):
         """
-        All controls are 0 - 127 per CC
+        1 - 127
         """
         self.delay_start_ticks = control
         self.calc_delays()

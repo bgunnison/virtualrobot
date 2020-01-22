@@ -278,13 +278,13 @@ class CCControls:
 
         return False
 
-    def register_ui_callback(self, name, callback):
+    def register_ui_callback(self, name, callback, data=None):
         """
         adds a callback to the UI to change widgets during a cc
         """
         for cc, info in self.cc_controls.items():
             if info.get('name') == name:
-                info['ui_callback'] = callback
+                info['ui_callback'] = (callback, data)
                 return True
 
         log.error(f'register_ui_control_callback for {name} - must add cc first')
@@ -320,7 +320,7 @@ class CCControls:
         ui_callback = info.get('ui_callback')
 
         if ui_callback is not None:
-            ui_callback(value)
+            ui_callback[0](value, ui_callback[1])
 
 
 class MidiManager():
@@ -329,20 +329,20 @@ class MidiManager():
     """
 
     def __init__(self, settings):
-       self.settings = settings
-       self.cc_controls = CCControls(settings)
-       self.midiin = MidiInput()
-       self.midiout = MidiOutput()
-       self.clock_midiout = None # set to self.midiout if we want to send clock out this port. 
-       self.clock_midiin = None # can be set to a midiin port to get external clock
-       self.internal_clock = False # set to false so the call below will make it internal
-       self.clock_callback = None
-       self.clock_data = None
-       self.clock_source = None
-       self.set_clock_source(internal=True)
+        self.settings = settings
+        self.cc_controls = CCControls(settings)
+        self.midiin = MidiInput()
+        self.midiout = MidiOutput()
+        self.clock_midiout = None # set to self.midiout if we want to send clock out this port. 
+        self.clock_midiin = None # can be set to a midiin port to get external clock
+        self.internal_clock = False # set to false so the call below will make it internal
+        self.clock_callback = None
+        self.clock_data = None
+        self.clock_source = None
+        self.set_clock_source(internal=True)
 
-       # last
-       self.midiin.register_control_callback(self.cc_controls.callback, None)
+        # last
+        self.midiin.register_control_callback(self.cc_controls.callback, None)
       
 
     def get_midi_in_ports(self):
