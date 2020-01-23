@@ -198,7 +198,7 @@ class MidiOutput(MidiPort):
 
         self.midi.send_message(message)
         time_passed = time.time() - gstart_debug_timer
-        log.info('tp: %.03f' % time_passed)
+        log.info(f'tp: {time_passed:.04f}')
 
         if self.midi_activity_callback is not None:
             self.midi_activity_callback()

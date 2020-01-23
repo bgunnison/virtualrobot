@@ -133,25 +133,73 @@ class RootWidget(BoxLayout):
         self.ids.EffectEnableControlCC.text = cc_str
         self.update_effect_controls()
 
+    def update_effect_control(self, effect_control_key):
+        info = self.effect_controls.get(effect_control_key)
+        if info is None:
+            log.error(f'Error in efect control info for key {effect_control_key}')
+            return
+
+        control_name = info.get('control_name')
+        slider_id = info.get('slider_id')
+        slider_id.min = self.midi_manager.cc_controls.get_min(control_name)
+        slider_id.max = self.midi_manager.cc_controls.get_max(control_name)
+        value = self.settings.get(info.get('settings_name'))
+        slider_id.value = value
+        # effects can have text selections or numerical
+        text_function = info.get('text_function')
+        if text_function is not None:
+            info.get('value_id').text = self.bold(text_function(value))
+        else:
+            info.get('value_id').text = self.bold(str(value))
+
+        cc_str = self.midi_manager.cc_controls.get_cc_str(control_name)
+        info.get('control_cc_id').text = cc_str
+        self.midi_manager.cc_controls.register_ui_callback(control_name, self.ui_effect_control_update, control_name)
+
+
     def update_effect_controls(self):
         """
         called at startup to set the effect specific controls
         each effect control has a label, a CCBox a current value and a slider
         current value can be a number or text
-        maybe: https://stackoverflow.com/questions/35278859/converting-static-widget-tree-to-dynamic-using-python-and-kv-file
         """
-        self.ids.EchoEffectDelayTypeSlider.min = self.midi_manager.cc_controls.get_min('EchoEffectDelayTypeControlCC')
-        self.ids.EchoEffectDelayTypeSlider.max = self.midi_manager.cc_controls.get_max('EchoEffectDelayTypeControlCC')
-        value = self.settings.get('EchoEffectDelayType')
-        self.ids.EchoEffectDelayTypeSlider.value = value
-        self.ids.EchoEffectDelayTypeValue.text = self.bold(self.effect.get_delay_type_label(value))
-        cc_str = self.midi_manager.cc_controls.get_cc_str('EchoEffectDelayTypeControlCC')
-        self.ids.EchoEffectDelayTypeControlCC.text = cc_str
-        self.midi_manager.cc_controls.register_ui_callback('EchoEffectDelayTypeControlCC', self.ui_effect_control_update, 'EchoEffectDelayTypeControlCC')
-        self.effect_controls['EchoEffectDelayTypeControlCC'] = {'slider_id':self.ids.EchoEffectDelayTypeSlider, # update slider
+        # create a database of effect ids, funcs etc, used for setup and control
+        self.effect_controls['EchoEffectDelayTypeControlCC'] = {'control_name':'EchoEffectDelayTypeControlCC',
+                                                                'settings_name':'EchoEffectDelayType',
+                                                                'slider_id':self.ids.EchoEffectDelayTypeSlider, # update slider
                                                                 'value_id':self.ids.EchoEffectDelayTypeValue, # update text
-                                                                'text_function':self.effect.get_delay_type_label,
-                                                                'update_function':self.effect.control_delay_type} # if exist the value for text is a string
+                                                                'control_cc_id':self.ids.EchoEffectDelayTypeControlCC,
+                                                                'text_function':self.effect.get_delay_type_label, # only if control has text values instead of a number
+                                                                'update_function':self.effect.control_delay_type} 
+
+        self.update_effect_control('EchoEffectDelayTypeControlCC')
+
+        self.effect_controls['EchoEffectNumberEchoesControlCC'] = {'control_name':'EchoEffectNumberEchoesControlCC',
+                                                                   'settings_name':'EchoEffectNumberEchoes',
+                                                                   'slider_id':self.ids.EchoEffectNumberEchoesSlider, # update slider
+                                                                   'value_id':self.ids.EchoEffectNumberEchoesValue, # update text
+                                                                   'control_cc_id':self.ids.EchoEffectNumberEchoesControlCC,
+                                                                   'update_function':self.effect.control_echoes} 
+
+        self.update_effect_control('EchoEffectNumberEchoesControlCC')
+
+        self.effect_controls['EchoEffectDelayStartTicksControlCC'] = {'control_name':'EchoEffectDelayStartTicksControlCC',
+                                                                   'settings_name':'EchoEffectDelayStartTicks',
+                                                                   'slider_id':self.ids.EchoEffectDelayStartTicksSlider, # update slider
+                                                                   'value_id':self.ids.EchoEffectDelayStartTicksValue, # update text
+                                                                   'control_cc_id':self.ids.EchoEffectDelayStartTicksControlCC,
+                                                                   'update_function':self.effect.control_delay_tick} 
+
+        self.update_effect_control('EchoEffectDelayStartTicksControlCC')
+
+        self.effect_controls['EchoEffectEndVelocityControlCC'] = {'control_name':'EchoEffectEndVelocityControlCC',
+                                                                   'settings_name':'EchoEffectEndVelocity',
+                                                                   'slider_id':self.ids.EchoEffectEndVelocitySlider, # update slider
+                                                                   'value_id':self.ids.EchoEffectEndVelocityValue, # update text
+                                                                   'control_cc_id':self.ids.EchoEffectEndVelocityControlCC,
+                                                                   'update_function':self.effect.control_end_velocity} 
+
+        self.update_effect_control('EchoEffectEndVelocityControlCC')
 
 
     def ui_effect_control_update(self, value, id_str):

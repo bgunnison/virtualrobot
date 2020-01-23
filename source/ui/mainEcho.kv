@@ -324,6 +324,86 @@
                         name: 'EchoEffectDelayTypeControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.5}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('ECHOES:')
+                    Label:
+                        id: EchoEffectNumberEchoesValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: EchoEffectNumberEchoesSlider
+                        name: 'EchoEffectNumberEchoesControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: EchoEffectNumberEchoesControlCC
+                        name: 'EchoEffectNumberEchoesControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.4}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('DELAY:')
+                    Label:
+                        id: EchoEffectDelayStartTicksValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: EchoEffectDelayStartTicksSlider
+                        name: 'EchoEffectDelayStartTicksControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: EchoEffectDelayStartTicksControlCC
+                        name: 'EchoEffectDelayStartTicksControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.3}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('END VELOCITY:')
+                    Label:
+                        id: EchoEffectEndVelocityValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: EchoEffectEndVelocitySlider
+                        name: 'EchoEffectEndVelocityControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: EchoEffectEndVelocityControlCC
+                        name: 'EchoEffectEndVelocityControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+
                         
 
                 

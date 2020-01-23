@@ -32,7 +32,7 @@ class MidiEchoEffect(Effect):
         self.delay_type = self.settings.get('EchoEffectDelayType', 0) 
         self.delays = []    # a list of ticks for each echo (number of echoes)
         self.new_delays = self.delays
-        self.echoes = self.settings.get('EchoEffectNumberEchos', 3)
+        self.echoes = self.settings.get('EchoEffectNumberEchoes', 3)
         self.end_velocity = self.settings.get('EchoEffectEndVelocity', 10) # we linear ramp velocity down to this level
         self.calc_delays() # init echoes
         if self.cc_controls is not None:
@@ -139,7 +139,7 @@ class MidiEchoEffect(Effect):
         self.calc_delays()
         log.info(f"echoes: {self.echoes}")
 
-    def control_delay_tick(self, info, control):
+    def control_delay_tick(self, control):
         """
         1 - 127
         """
