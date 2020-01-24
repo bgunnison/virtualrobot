@@ -137,6 +137,7 @@ class MidiEchoEffect(Effect):
         """
         self.echoes = control
         self.calc_delays()
+        self.settings.set('EchoEffectNumberEchoes', self.echoes)
         log.info(f"echoes: {self.echoes}")
 
     def control_delay_tick(self, control):
@@ -144,6 +145,7 @@ class MidiEchoEffect(Effect):
         1 - 127
         """
         self.delay_start_ticks = control
+        self.settings.set('EchoEffectDelayStartTicks', self.delay_start_ticks)
         self.calc_delays()
         log.info(f"delay ticks: {self.delay_start_ticks}")
 
@@ -152,7 +154,9 @@ class MidiEchoEffect(Effect):
         """
         1 - 127
         """
-        self.control_end_velocity = control
+        self.end_velocity = control
+        self.settings.set('EchoEffectEndVelocity', self.end_velocity)
+
 
 
     def run(self, tick, midiout, message):

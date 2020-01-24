@@ -14,6 +14,9 @@ from pathlib import Path
 import shelve
 from datetime import datetime
 
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+
 class Settings:
     """
     persistant storage
@@ -53,7 +56,7 @@ class Settings:
         try:
             Path(self.path).mkdir(parents=True, exist_ok=True)
             pathfile = os.path.expanduser(os.path.join(self.path, 'config'))
-            self.settings = shelve.open(pathfile, writeback=True)
+            self.settings = shelve.open(pathfile, writeback=False)
             self.persist = True
         except:
             str = f'Error opening settings at: {self.path}'
@@ -89,16 +92,17 @@ class Settings:
             self.settings.close()
             self._open(start_over=True)
 
-
-    def __del__(self):
+    def close(self):
+        self.dump()
         if self.persist:
             self.settings.close()
-        self.dump()
         log.info(f'Settings closed {self.path}')
 
+    def __del__(self):
+        self.close()
+        
 
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger(__name__)
+
 
 class Effect:
     """

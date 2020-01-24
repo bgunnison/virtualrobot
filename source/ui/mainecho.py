@@ -69,6 +69,7 @@ class HelpScreen(Screen):
 class CCControlInput(TextInput):
     pass
     
+gsettings = None
 
 class RootWidget(BoxLayout):
 
@@ -76,6 +77,8 @@ class RootWidget(BoxLayout):
         super(RootWidget, self).__init__(**kwargs)
 
         self.settings = Settings('MidiEcho')    # our persistant settings
+        global gsettings
+        gsettings = self.settings   # so when the app exits we save
 
         self.midi_manager = MidiManager(self.settings)
         self.effect = MidiEchoEffect(self.settings, self.midi_manager.cc_controls)
@@ -141,10 +144,14 @@ class RootWidget(BoxLayout):
 
         control_name = info.get('control_name')
         slider_id = info.get('slider_id')
+        #slider_id.disabled = True
+        log.info(f'{control_name}')
         slider_id.min = self.midi_manager.cc_controls.get_min(control_name)
+        log.info(f'{slider_id.min}')
         slider_id.max = self.midi_manager.cc_controls.get_max(control_name)
         value = self.settings.get(info.get('settings_name'))
         slider_id.value = value
+        #slider_id.disabled = False
         # effects can have text selections or numerical
         text_function = info.get('text_function')
         if text_function is not None:
@@ -246,7 +253,7 @@ class RootWidget(BoxLayout):
             uf(value)
 
 
-    def ui_effect_on(self, on):
+    def ui_effect_on(self, on, data):
         """
         called from either the ui or from a control
         """
@@ -258,7 +265,7 @@ class RootWidget(BoxLayout):
             self.ids.effect_off.state = 'down'
 
     def effect_on(self, on):
-        self.ui_effect_on(on)
+        self.ui_effect_on(on, None)
         self.effect_manager.effect_enable(on)
 
     def ui_control_map(self, ccbox):
@@ -433,3 +440,6 @@ class MainEchoApp(App):
 
 if __name__ == '__main__':
     MainEchoApp().run()
+    if gsettings is not None:
+       gsettings.close()
+    log.info('exiting')
