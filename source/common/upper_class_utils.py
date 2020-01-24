@@ -143,7 +143,7 @@ class NoteManager:
         event = self.note_events.get()
 
         if tick >= event[0]:
-            log.info(f"Run: {tick}")
+            #log.info(f"Run: {tick}")
             midiout.send_message(event[1])
         else:
             self.note_events.put(event)
@@ -153,7 +153,7 @@ class NoteManager:
         Add a message to the priority queue
         """
         self.note_events.put((tick,message))
-        log.info(f"Add: {message}, {tick}")
+        #log.info(f"Add: {message}, {tick}")
 
     def empty(self):
         return self.note_events.empty()

@@ -27,6 +27,7 @@ class MidiEffectManager:
     def effect_enable(self, on):
         log.info(f'Effect: {self.effect.get_name()} is {on}')
         self.effect_enabled = on
+        self.settings.set('EffectEnabled', on)
 
 
     def run(self):
