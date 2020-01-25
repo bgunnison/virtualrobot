@@ -157,7 +157,7 @@ class MidiInput(MidiPort):
         if self.control_callback is not None:
             if data_type is CONTROL_CHANGE:
                 log.info(f"{self.port_name} - Control: {message}")
-                self.control_callback(message[1], message[2])
+                self.control_callback(message[1], message[2], self.control_data)
                 if self.midi_activity_callback is not None:
                     self.midi_activity_callback()
 
@@ -216,9 +216,16 @@ class CCControls:
     contains the CC control mapping and functionality
     A singleton
     """
-    def __init__(self, settings):
+    def __init__(self, settings, midiin):
         self.settings = settings
+        self.midiin = midiin
         self.cc_controls = {}    # a dict keyd by cc number
+        self.learn_name = None    # set to cc name to remap during midi learn
+        self.ui_learn_callback = None # callback to ui when learning
+
+        # last
+        self.midiin.register_control_callback(self.callback, None)
+      
 
     def get_cc_str(self, name):
         for cc, info in self.cc_controls.items():
@@ -265,15 +272,22 @@ class CCControls:
                 if info.get(name) == name:
                     del self.cc_controls[cc]
 
+    def dump(self):
+        for cc, info in self.cc_controls.items():
+            log.info(f"{cc} - {info['name']}")
+            log.info(f"   {info['type']}, {info['min']}, {info['max']}")
+
     def remap(self, name, cc):
         """
         find the named cc info and change its cc number
         """
         for oldcc, info in self.cc_controls.items():
             if name == info.get('name'):
+                log.info(f'Remapping {name} cc: {oldcc} to {cc}')
+                del self.cc_controls[oldcc] # del first in case same cc #
                 self.cc_controls[cc] = info
-                del self.cc_controls[oldcc]
                 self.settings.set(name, cc)
+                self.dump()
                 return True
 
         return False
@@ -290,7 +304,47 @@ class CCControls:
         log.error(f'register_ui_control_callback for {name} - must add cc first')
         return False
 
-    def callback(self, cc, control):
+        
+    def learn(self, name, ui_callback=None, ui_data=None):
+        """
+        set midin callback to learn for this cc name
+        """
+        for cc, info in self.cc_controls.items():
+            if name == info.get('name'):
+                log.info(f'Learning cc for {name}')
+                self.midiin.register_control_callback(self.cc_learn_callback, ui_data)
+                self.ui_learn_callback = ui_callback
+                self.learn_name = name
+                return True
+
+        log.error(f'Cannot learn cc for {name} as it does not exist')
+        return False
+
+    def unlearn(self):
+        """
+        set midin callback back to control
+        """
+        self.ui_learn_callback = None
+        self.learn_name = None
+        self.midiin.register_control_callback(self.callback, None)
+        log.info(f'unlearn')
+                
+
+    def cc_learn_callback(self, cc, control, data):
+        """
+        midi input calls this in learn mode to remap the incoming cc to the 
+        registered "learn" control name. We also call back up to the UI with the new cc number
+        """
+        if self.learn_name is None:
+            return
+
+        self.remap(self.learn_name, cc)
+        if self.ui_learn_callback is not None:
+            self.ui_learn_callback(self.learn_name, cc, data)
+
+      
+
+    def callback(self, cc, control, data):
         """
         A cc button switches effects or
         An effect has controllable parms via CC knobs
@@ -330,9 +384,9 @@ class MidiManager():
 
     def __init__(self, settings):
         self.settings = settings
-        self.cc_controls = CCControls(settings)
         self.midiin = MidiInput()
         self.midiout = MidiOutput()
+        self.cc_controls = CCControls(settings, self.midiin)
         self.clock_midiout = None # set to self.midiout if we want to send clock out this port. 
         self.clock_midiin = None # can be set to a midiin port to get external clock
         self.internal_clock = False # set to false so the call below will make it internal
@@ -341,9 +395,6 @@ class MidiManager():
         self.clock_source = None
         self.set_clock_source(internal=True)
 
-        # last
-        self.midiin.register_control_callback(self.cc_controls.callback, None)
-      
 
     def get_midi_in_ports(self):
         try:
