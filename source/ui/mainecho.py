@@ -23,6 +23,7 @@ import kivy
 kivy.require('1.0.8')
 
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
@@ -469,17 +470,23 @@ class RootWidget(BoxLayout):
          else:
             self.ids.midi_out_activity.source = 'media/off_led.png'
 
-       
+  
+def save_settings(args):
+    if gsettings is not None:
+        gsettings.close()
+
+    return False    # do not return True or window cannot be closed
+
 
 class MainEchoApp(App):
     def build(self):
         self.title = 'Virtual Robot MIDI Echo'
+          # Execute cleaning function when exiting app
+        Window.bind(on_request_close=save_settings)
         return RootWidget() 
 
     
 
 if __name__ == '__main__':
     MainEchoApp().run()
-    if gsettings is not None:
-       gsettings.close()
     log.info('exiting')

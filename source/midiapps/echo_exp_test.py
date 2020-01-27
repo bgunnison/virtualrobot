@@ -29,7 +29,7 @@ def plot(echoes, start_tick, delays):
     x_axis = np.linspace(0,1,delays[-1])
     label = f'Echos: {echoes}, start tick: {start_tick}'
 
-        #t = np.linspace(0, 10, 100)
+    #t = np.linspace(0, 10, 100)
     #df = pd.DataFrame({'x':t, 'y':t})
     #fig = px.scatter(df, x='x', y='y',labels={'x':'t', 'y':'t'})
 

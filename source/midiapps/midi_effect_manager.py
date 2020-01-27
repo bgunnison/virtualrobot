@@ -69,7 +69,7 @@ class MidiEffectManager:
         self.effect.note_manager.run(tick, self.midi_manager.midiout)
     
 
-
+"""
 if __name__ == '__main__':
     app = MidiEffectManager(EchoEffect())
     app.run()
@@ -77,3 +77,4 @@ if __name__ == '__main__':
         time.sleep(0.2)
 
     app.panic()
+"""
