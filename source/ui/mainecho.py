@@ -214,12 +214,16 @@ class RootWidget(BoxLayout):
         """
         update UI sliders to reflect CC changing the effect parm
         """
+        log.info(f'ui_effect_control_update: {id_str}')
         info = self.effect_controls.get(id_str)
         if info is None:
             log.error(f'Unknown effects control name {id_str}')
             return
 
-        info.get('slider_id').value = value
+        slider_id = info.get('slider_id')
+        slider_id.disabled = True
+        slider_id.value = value
+        slider_id.disabled = False
 
         text_getter = info.get('text_function')
         if text_getter is not None:
@@ -235,6 +239,7 @@ class RootWidget(BoxLayout):
         """
         from the slider update text and effect
         """
+        log.info(f'effect_control_update: {id_str}')
         info = self.effect_controls.get(id_str)
         if info is None:
             log.error(f'Unknown effects control name {id_str}')
@@ -288,6 +293,34 @@ class RootWidget(BoxLayout):
 
         self.midi_manager.cc_controls.remap(ccbox.name, cc)
 
+    def update_cc_box_learn(self, name, cc, ccbox):
+        """
+        when a control changes and we are in learn mode
+        this is called back by midi in with the new cc and the box to update
+        """
+        log.info(f'ui - updating cc box {name} to cc: {cc}')
+        try:
+            cc = int(cc)
+        except:
+            return
+
+        if cc > MidiConstants().CC_MAX:
+           cc = MidiConstants().CC_MAX
+
+        ccbox.text = str(cc)
+
+    def control_cc_learn(self, ccbox, focus):
+        """
+        we learn when focused, set the cc control callback to learn
+        This calls the remap, when defocused set the callback to process
+        controls
+        """
+        log.info(f'focus: {ccbox.name}, {focus}')
+        if focus:
+            self.midi_manager.cc_controls.learn(ccbox.name, self.update_cc_box_learn, ccbox)
+        else:
+            self.midi_manager.cc_controls.unlearn()
+
 
     def error_notification(self, title='Error', msg='Something is wrong!'):
         #turns background red, popup is black kinda cool...
@@ -331,16 +364,21 @@ class RootWidget(BoxLayout):
             self.ids.clock_bpm_slider.disabled = True
 
 
-    def ui_change_internal_clock_bpm(self, control):
+    def ui_change_internal_clock_bpm(self, control, data):
         """
         changes slider if control changes
         """
+        self.ids.clock_bpm_slider.disabled = True
         self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
+        self.ids.clock_bpm_slider.disabled = False
 
     def change_internal_clock_bpm(self, value):
         """
         from slider changes clock bpm
         """
+        if self.ids.clock_bpm_slider.disabled == True:
+             return
+
         self.midi_manager.clock_source.change_bpm(int(value))
 
     def nav_button_pressed(self, but, screen_name):

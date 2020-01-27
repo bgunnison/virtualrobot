@@ -55,6 +55,7 @@
     forground_color: (0,1,0,1)
     halign: 'center'
 
+
 <EffectControlSlider@Slider>:
     pos_hint: {'x':.3, 'center_y':.5}
     width: 400
@@ -255,6 +256,8 @@
                             name: 'InternalClockBPMControlCC'
                             pos_hint: {'x':.55, 'center_y':0.5}
                             on_text_validate: root.ui_control_map(self)
+                            on_focus: root.control_cc_learn(self, self.focus)
+
 
 
 
@@ -286,6 +289,7 @@
                         name: 'EffectEnableControlCC'
                         pos_hint: {'x':.14, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
                     OnOffToggleButton:
                         id: effect_on
                         text: root.bold('ON')
@@ -324,6 +328,7 @@
                         name: 'EchoEffectDelayTypeControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
 
                 FloatLayout:
                     height: 60   
@@ -351,6 +356,7 @@
                         name: 'EchoEffectNumberEchoesControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
@@ -377,6 +383,8 @@
                         name: 'EchoEffectDelayStartTicksControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
@@ -403,6 +411,7 @@
                         name: 'EchoEffectEndVelocityControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
 
                         
 
