@@ -26,16 +26,22 @@ def calc_delays(ticks, echoes):
 
 def plot(echoes, start_tick, delays):
 
-    x_axis = np.linspace(0,1,delays[-1])
     label = f'Echos: {echoes}, start tick: {start_tick}'
 
     #t = np.linspace(0, 10, 100)
     #df = pd.DataFrame({'x':t, 'y':t})
     #fig = px.scatter(df, x='x', y='y',labels={'x':'t', 'y':'t'})
 
-    #t = np.linspace(0, 10, 100)
-    #df = pd.DataFrame({'x':t, 'y':t})
-    #fig = px.scatter(df, x='x', y='y',labels={'x':'t', 'y':'t'})
+    x_axis = np.linspace(0, delays[-1] + 1, delays[-1] + 1)
+    print(f'x len: {len(x_axis)}')
+    y = [0] * len(x_axis)
+
+    for d in delays:
+        y[d] = 1
+
+    print(f'y len: {len(y)}')
+    df = pd.DataFrame({'x':x_axis, 'y':y})
+    fig = px.scatter(df, x='x', y='y',labels={'x':'t', 'y':'t'})
     fig.show()
 
     """
@@ -57,8 +63,8 @@ def plot(echoes, start_tick, delays):
 """
 
 if __name__ == '__main__':
-    ticks=24
-    echoes=3
+    ticks=100
+    echoes=20
     delays = calc_delays(ticks, echoes)
     print(f'Delays: {delays}')
     plot(echoes, ticks, delays)

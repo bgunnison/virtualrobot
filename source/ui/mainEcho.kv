@@ -181,6 +181,22 @@
                         MyLEDImage:
                             id: midi_out_activity
                             pos_hint: {'x':.75, 'center_y':.5}
+                        Button:
+                            id: midi_panic
+                            name: root.bold('PANIC')
+                            background_color: (1, 0, 0, 1)
+                            background_normal: 'media/start_panic.png'
+                            background_down: 'media/end_panic.png'
+                            border: (2, 2, 2, 2)
+                            size_hint: None, None
+                            width: 40
+                            height: 40
+                            pos_hint: {'x':.8, 'center_y':0.5}
+                            markup: True
+                            text: ''# root.bold('PANIC')
+                            on_press: root.start_midi_panic(self)
+                            on_release: root.end_midi_panic(self)
+
 
                             
 
@@ -287,20 +303,7 @@
                         text: root.bold('OFF')
                         pos_hint: {'x':.18, 'center_y':0.5}
                         state: 'normal'
-                        on_press: root.effect_on(False)  
-                    Button:
-                        id: midi_panic
-                        background_normal: ''
-                        background_color: (1, 0, 0, 1)
-                        background_down: 'media/panic.png'
-                        size_hint: None, None
-                        width: 60
-                        height: 60
-                        pos_hint: {'x':.4, 'center_y':0.5}
-                        markup: True
-                        text: root.bold('PANIC')
-                        on_press: root.midi_panic(self)
-                        
+                        on_press: root.effect_on(False)                          
                     CCEntryBox:
                         id: EffectEnableControlCC
                         name: 'EffectEnableControlCC'

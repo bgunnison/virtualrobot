@@ -10,7 +10,7 @@ import sys
 import os
 import time
 import logging
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -29,10 +29,10 @@ Config.set('graphics', 'multisamples', 8)
 Config.set('kivy','window_icon','media/logo.ico') # no work...
 
 
-
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
+from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
@@ -113,13 +113,15 @@ class RootWidget(BoxLayout):
     def bold(self, text):
         return '[b]' + text + '[/b]' # markup must be true, this is our style plus CAPS
 
-    def midi_panic(self, but):
-       # pass
-       # but.state = 'down'
-        #self.effect.panic()
-        #self.midi_manager.panic()
-        time.sleep(0.2)
-        #but.state = 'normal'
+    def midi_panic(self, dt):
+        self.effect.panic()
+        self.midi_manager.panic()
+
+    def start_midi_panic(self, but):       
+        Clock.schedule_once(self.midi_panic)               
+
+    def end_midi_panic(self, but):
+        pass
 
     def update_midi_screen(self):
         """
