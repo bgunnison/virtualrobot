@@ -14,7 +14,7 @@ import logging
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 from common.midi import MidiNoteMessage, MidiConstants
@@ -40,6 +40,12 @@ class MidiEchoEffect(Effect):
 
     def __str__(self):
         return f'Echo effect - Echoes: {self.echoes}, Type: {self.delay_type}, Delay: {self.delay_start_ticks}'
+
+    def panic(self):
+        """
+        cancels all echoes
+        """
+        self.note_manager.panic()
 
     def get_delay_type_label(self, index):
         if index >= len(self.delay_types):

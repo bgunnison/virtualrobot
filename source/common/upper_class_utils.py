@@ -14,7 +14,7 @@ from pathlib import Path
 import shelve
 from datetime import datetime
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 class Settings:
@@ -27,6 +27,7 @@ class Settings:
         put settings in user dir in case other dirs are admin
         we create the path dirs
         then create the shelve files, if these fail we resort to a dictionay so set and get work, but persistance fails
+        todo: multiple apps of same type?
         """
         self.path = os.path.expanduser(os.path.join('~', 'VirtualRobot', app_name))
         self.settings = None
@@ -136,6 +137,9 @@ class NoteManager:
         """
         See if any events are ready to play
         """
+        if self.note_events is None:
+            return
+
         if self.note_events.empty():
             return
 
@@ -154,6 +158,10 @@ class NoteManager:
         """
         self.note_events.put((tick,message))
         #log.info(f"Add: {message}, {tick}")
+
+    def panic(self):
+        self.note_events = None
+        self.note_events = queue.PriorityQueue()
 
     def empty(self):
         return self.note_events.empty()

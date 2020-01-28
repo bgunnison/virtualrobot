@@ -18,7 +18,7 @@ except:
 
 from rtmidi.midiconstants import *
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 class MidiConstants:

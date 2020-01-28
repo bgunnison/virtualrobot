@@ -16,15 +16,7 @@
     markup: True
     text: 'None'
     sync_height: True
-    
-
-<MyCheckBox@CheckBox>:
-    canvas.before:
-        Color:
-            rgb: 0,0,0
-        Rectangle:
-            pos:self.center_x-8, self.center_y-8
-            size:[16,16]
+   
 
 
 <ClockSourceToggleButton@ToggleButton>:
@@ -284,24 +276,38 @@
                         pos_hint: {'x':.08, 'center_y':0.5}
                         width: 20
                         size_hint: None, 1
-                    CCEntryBox:
-                        id: EffectEnableControlCC
-                        name: 'EffectEnableControlCC'
-                        pos_hint: {'x':.14, 'center_y':0.5}
-                        on_text_validate: root.ui_control_map(self)
-                        on_focus: root.control_cc_learn(self, self.focus)
                     OnOffToggleButton:
                         id: effect_on
                         text: root.bold('ON')
-                        pos_hint: {'x':.2, 'center_y':0.5}
+                        pos_hint: {'x':.14, 'center_y':0.5}
                         on_press: root.effect_on(True)
                         state: 'down'
                     OnOffToggleButton:
                         id: effect_off
                         text: root.bold('OFF')
-                        pos_hint: {'x':.24, 'center_y':0.5}
+                        pos_hint: {'x':.18, 'center_y':0.5}
                         state: 'normal'
-                        on_press: root.effect_on(False)    
+                        on_press: root.effect_on(False)  
+                    Button:
+                        id: midi_panic
+                        background_normal: ''
+                        background_color: (1, 0, 0, 1)
+                        background_down: 'media/panic.png'
+                        size_hint: None, None
+                        width: 60
+                        height: 60
+                        pos_hint: {'x':.4, 'center_y':0.5}
+                        markup: True
+                        text: root.bold('PANIC')
+                        on_press: root.midi_panic(self)
+                        
+                    CCEntryBox:
+                        id: EffectEnableControlCC
+                        name: 'EffectEnableControlCC'
+                        pos_hint: {'x':.24, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None

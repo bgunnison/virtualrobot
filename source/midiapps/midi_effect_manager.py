@@ -10,7 +10,7 @@ import os
 import sys
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 

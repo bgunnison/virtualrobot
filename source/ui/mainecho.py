@@ -10,7 +10,7 @@ import sys
 import os
 import time
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -20,7 +20,15 @@ from common.midi import MidiManager, MidiConstants
 from common.upper_class_utils import Settings
 
 import kivy
-kivy.require('1.0.8')
+kivy.require('1.11.1')
+
+from kivy.config import Config
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
+Config.set('graphics', 'resizable', False)
+Config.set('graphics', 'multisamples', 8)
+Config.set('kivy','window_icon','media/logo.ico') # no work...
+
+
 
 from kivy.app import App
 from kivy.core.window import Window
@@ -36,11 +44,6 @@ from kivy.uix.slider import Slider
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
 from kivy.clock import Clock
-from kivy.config import Config
-Config.set('graphics', 'resizable', False)
-Config.set('graphics', 'multisamples', 8)
-
-#Config.set('kivy','window_icon','media/icon.ico') # no work...
 
 class TitleBoxLayout(BoxLayout):
     pass
@@ -109,6 +112,14 @@ class RootWidget(BoxLayout):
 
     def bold(self, text):
         return '[b]' + text + '[/b]' # markup must be true, this is our style plus CAPS
+
+    def midi_panic(self, but):
+       # pass
+       # but.state = 'down'
+        #self.effect.panic()
+        #self.midi_manager.panic()
+        time.sleep(0.2)
+        #but.state = 'normal'
 
     def update_midi_screen(self):
         """
