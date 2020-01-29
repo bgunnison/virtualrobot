@@ -14,7 +14,7 @@ import logging
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 from common.midi import MidiNoteMessage, MidiConstants
@@ -106,23 +106,15 @@ class MidiEchoEffect(Effect):
                 self.new_delays.append(delay)
 
             if 'SLOW' in delay_type_str:
-                log.info(f"delays: {self.new_delays}")
+                log.info(f"slow delays: {self.new_delays}")
                 return
 
             if 'FAST' in delay_type_str:
-                """ wrong!! 
+             
+                hi = self.new_delays[-1]
                 self.new_delays.reverse()
-                s = 0
-                nd = []
-                for i, v in enumerate(self.new_delays):
-                    s += v
-                    nd.append(s)
-
-                self.new_delays = nd
-                log.info(f"delays: {self.new_delays}")
-
-                """
-                log.error('Exp Fast not implemented')
+                self.new_delays = [hi - d for d in self.new_delays]
+                log.info(f"fast delays: {self.new_delays}")
                 return
 
 
@@ -172,8 +164,9 @@ class MidiEchoEffect(Effect):
         midiout.send_message(message)  # send original note event
 
         note = MidiNoteMessage(message)
-        if note.velocity <= self.end_velocity:
-            return
+        end_velocity = self.end_velocity
+        if note.velocity <= end_velocity:
+            end_velocity = note.velocity
 
         # if we change number of echoes in the middle of echoing notes
         # we could miss note off events. 
@@ -185,7 +178,7 @@ class MidiEchoEffect(Effect):
 
         # divide the velocity range to get to min from original v
         ov = note.velocity
-        dv = (ov - self.end_velocity)/float(len(self.delays))
+        dv = (ov - end_velocity)/float(len(self.delays))
         for i, delay in enumerate(self.delays):
             note.velocity = round(ov - ((i + 1) * dv))
 

@@ -94,8 +94,8 @@ class RootWidget(BoxLayout):
             but = self.ids.nav_midi
         if 'echo' in screen:
             but = self.ids.nav_echo
-        if 'live' in screen:
-            but = self.ids.nav_live
+        #if 'live' in screen:
+        #    but = self.ids.nav_live
         if 'help' in screen:
             but = self.ids.nav_help
 
