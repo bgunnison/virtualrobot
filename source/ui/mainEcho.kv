@@ -435,8 +435,18 @@
                 id: screen_help
                 name: 'screen_help'
                 manager: 'screen_manager'
-                Label:
-                    text: 'HELP'
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.8}
+                    Label:
+                        text:root.bold('WEBSITE: [ref=http://virtualrobot.net/]VIRTUALROBOT[/ref]')
+                        markup: True
+                        bold: True
+                        #color: (55./255., 171./255., 200./255., 1)
+                        on_ref_press:
+                            import webbrowser
+                            webbrowser.open(args[1])
 
 
         
