@@ -10,6 +10,23 @@ import sys
 import os
 import time
 import logging
+
+help_text = 'Welcome to VirtualRobots MIDI ECHO. \
+To get started quickly on the left are navigating buttons, \
+press “MIDI” and select a MIDI input device. \
+This app will echo the notes coming in here. Then select an output \
+device so you can hear the echoed notes. The clock should be set to \
+“INTERNAL” to make sure we get echoes. Via the “ECHO” navigator button \
+go to the “ECHO” settings screen and enable the effect. Generate a input \
+note and you should hear the echoes on the output device. The green boxes \
+next to buttons or sliders are the MIDI controller that can change the setting. \
+Click inside the box and move the MIDI controller to learn. Or change the number \
+by typing a new one. If you look carefully at the right side of the MIDI output selection \
+The skull is a MIDI panic button. Press this to cancel any stuck notes or echoes \
+that are going on too long. For detailed help read the manual at the link above. \
+Also please check out the other VirtualRobot MIDI apps at the website.' 
+
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
@@ -31,6 +48,7 @@ Config.set('kivy','window_icon','media/logo.ico') # no work...
 
 from kivy.app import App
 from kivy.core.window import Window
+from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
 from kivy.uix.image import Image
 from kivy.uix.label import Label
@@ -38,6 +56,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
+from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Color, Rectangle
 from kivy.uix.spinner import Spinner
 from kivy.uix.slider import Slider
@@ -72,6 +91,11 @@ class HelpScreen(Screen):
 
 class CCControlInput(TextInput):
     pass
+
+
+class ScrollableLabel(ScrollView):
+    pass
+
     
 gsettings = None
 
@@ -437,9 +461,11 @@ class RootWidget(BoxLayout):
         but.state = 'down'
         if internal_source:
             self.ids.clock_bpm_slider.disabled = False
-            self.midi_manager.set_clock_source(internal=True)
         else:
             self.ids.clock_bpm_slider.disabled = True
+
+        self.midi_manager.set_clock_source(internal=internal_source)
+
 
 
     def update_clock_LED(self, dt):
@@ -482,6 +508,9 @@ class RootWidget(BoxLayout):
             self.ids.midi_out_activity.source = 'media/red_led.png'
          else:
             self.ids.midi_out_activity.source = 'media/off_led.png'
+
+    def get_help_text(self):
+        return help_text
 
   
 def save_settings(args):
