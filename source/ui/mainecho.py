@@ -387,19 +387,20 @@ class RootWidget(BoxLayout):
         """
         called once at startup
         """
-        if self.midi_manager.internal_clock:
+        if self.midi_manager.clock_source == 'internal':
             self.ids.clock_internal.state = 'down'
             self.ids.clock_bpm_slider.disabled = False
-            self.ids.clock_bpm_slider.min = self.midi_manager.cc_controls.get_min('InternalClockBPMControlCC')
-            self.ids.clock_bpm_slider.max = self.midi_manager.cc_controls.get_max('InternalClockBPMControlCC')
-            self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
-            self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
-            cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')
-            self.ids.InternalClockBPMControlCC.text = cc_str
-
         else:
             self.ids.clock_external.state = 'down'
             self.ids.clock_bpm_slider.disabled = True
+
+        self.ids.clock_bpm_slider.min = self.midi_manager.cc_controls.get_min('InternalClockBPMControlCC')
+        self.ids.clock_bpm_slider.max = self.midi_manager.cc_controls.get_max('InternalClockBPMControlCC')
+        self.ids.clock_bpm_slider.value = self.midi_manager.clock.get_bpm()
+        self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
+        cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')
+        self.ids.InternalClockBPMControlCC.text = cc_str
+
 
 
     def ui_change_internal_clock_bpm(self, control, data):
@@ -407,7 +408,7 @@ class RootWidget(BoxLayout):
         changes slider if control changes
         """
         self.ids.clock_bpm_slider.disabled = True
-        self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
+        self.ids.clock_bpm_slider.value = self.midi_manager.clock.get_bpm()
         self.ids.clock_bpm_slider.disabled = False
 
     def change_internal_clock_bpm(self, value):
@@ -417,7 +418,7 @@ class RootWidget(BoxLayout):
         if self.ids.clock_bpm_slider.disabled == True:
              return
 
-        self.midi_manager.clock_source.change_bpm(int(value))
+        self.midi_manager.clock.change_bpm(int(value))
 
     def nav_button_pressed(self, but, screen_name):
         log.info(screen_name)
@@ -461,11 +462,16 @@ class RootWidget(BoxLayout):
         but.state = 'down'
         if internal_source:
             self.ids.clock_bpm_slider.disabled = False
+            source = 'internal'
         else:
             self.ids.clock_bpm_slider.disabled = True
+            source = 'external'
 
-        self.midi_manager.set_clock_source(internal=internal_source)
-        bpm = self.midi_manager.clock_source.get_bpm()
+        self.effect.panic() # should do this in midi_manager, but it does not have effect. 
+
+        self.midi_manager.set_clock_source(source)
+
+        bpm = self.midi_manager.clock.get_bpm()
         if bpm != 0:
             self.clock_LED_event.timeout = 60.0/bpm
 
@@ -477,7 +483,7 @@ class RootWidget(BoxLayout):
         else:
             self.ids.midi_clock_activity.source = 'media/off_led.png'
 
-        bpm = self.midi_manager.clock_source.get_bpm()
+        bpm = self.midi_manager.clock.get_bpm()
         if bpm != 0:
             self.clock_LED_event.timeout = 60.0/bpm
 
@@ -487,7 +493,7 @@ class RootWidget(BoxLayout):
         """
         The LEDS are toggled by a kivy clock interval or MIDI activity
         """
-        bpm = self.midi_manager.clock_source.get_bpm()
+        bpm = self.midi_manager.clock.get_bpm()
         self.clock_LED_event = Clock.schedule_interval(self.update_clock_LED, 60.0/bpm)
         self.midi_manager.register_midiin_activity_callback(self.midi_in_activity)
         self.midi_manager.register_midiout_activity_callback(self.midi_out_activity)

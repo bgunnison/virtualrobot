@@ -33,7 +33,6 @@ class MidiEffectManager:
     def run(self):
         self.midi_manager.register_note_callback(self.note_callback)
         self.midi_manager.register_clock_callback(self.clock_callback)
-        self.midi_manager.clock_source.run()
         self.midi_manager.midiin.run()
         log.info('Running')
 
