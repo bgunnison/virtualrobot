@@ -90,6 +90,7 @@ class MidiEchoEffect(Effect):
         delay_type_str = self.delay_types[self.delay_type]
         self.update = True
         self.new_delays = []
+        self.panic()    # stop all ongoing notes to start fresh with new parms (might be an option)
         if delay_type_str is 'LINEAR':
             for i in range(self.echoes):
                 self.new_delays.append((i+1) * self.delay_start_ticks)
@@ -185,7 +186,7 @@ class MidiEchoEffect(Effect):
             if note.velocity > MidiConstants().CC_MAX:
                 note.velocity = MidiConstants().CC_MAX
 
-            if note.velocity < self.end_velocity:
+            if note.velocity < end_velocity:
                 break
 
             self.note_manager.add(delay + tick, note.get_message())

@@ -465,6 +465,9 @@ class RootWidget(BoxLayout):
             self.ids.clock_bpm_slider.disabled = True
 
         self.midi_manager.set_clock_source(internal=internal_source)
+        bpm = self.midi_manager.clock_source.get_bpm()
+        if bpm != 0:
+            self.clock_LED_event.timeout = 60.0/bpm
 
 
 
@@ -475,7 +478,8 @@ class RootWidget(BoxLayout):
             self.ids.midi_clock_activity.source = 'media/off_led.png'
 
         bpm = self.midi_manager.clock_source.get_bpm()
-        self.clock_LED_event.timeout = 60.0/bpm
+        if bpm != 0:
+            self.clock_LED_event.timeout = 60.0/bpm
 
         #self.midi_in_activity()
 

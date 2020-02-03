@@ -37,6 +37,7 @@ class MidiPort:
         self.ports = None
         self.port_name = None
         self.midi_activity_callback = None
+        self.midiin_callback = None
 
     def register_midi_activity_callback(self, callback):
         self.midi_activity_callback = callback
@@ -48,6 +49,9 @@ class MidiPort:
         return self.ports
 
     #def error_callback(self, func, data);
+
+    def remember_midin_callback(self, callback): 
+        self.midiin_callback = callback
 
     def open_port(self, port_name):
         if self.ports is None:
@@ -81,11 +85,16 @@ class MidiPort:
 
         self.port_name = self.midi.get_port_name(port_index)
         log.info(f"Opened MIDI port: {self.port_name}")
+        if self.midiin_callback  is not None:
+            self.midi.set_callback(self.midiin_callback)
 
-        #self.midi.set_error_callback(self.error_callback)
+
+        #self.midi.set_error_callback(self.error_callback) not necessary
+
+
 
     def close_port(self):
-        self.midi.close_port()
+        self.midi.close_port() # safely removes callback for midiin
         log.info(f"Closed MIDI port: {self.port_name}")
         self.port_name = None
 
@@ -100,7 +109,7 @@ class MidiClockSource:
     base class for a clock source either external or internal
     """
     def __init__(self):
-        self.bpm = 0
+        self.bpm = 1 
         self.clock_callback = None
         self.clock_delta_time = 0.0   # the time between clock msgs
         self.tick = 0
@@ -118,7 +127,10 @@ class MidiClockSource:
     def register_clock_callback(self, callback, data=None):
         self.clock_callback = callback
         self.clock_data = data
+        self.tick = 1
+        self.clock_delta_time = 0.0
 
+    
     def stop_clock(self):
         self.clock_callback = None
         self.clock_data = None
@@ -135,12 +147,72 @@ class MidiClockSource:
         self.clock_callback(self.tick, self.clock_data)
 
 
+class MidiInternalClock(MidiClockSource):
+    """
+    looks like a MidiInput object, but runs off a internal clock instead of a external midi clock
+    can send clocks externally though
+    """
+    def __init__(self, settings, cc_controls=None, bpm=60):
+        super().__init__()
+        self.settings = settings
+        self.min = self.settings.get('internal_clock_bpm_min', 10)
+        self.max = self.settings.get('internal_clock_bpm_max', 240)
+        self.bpm = self.settings.get('internal_clock_bpm', bpm)
+        self.cc_controls = cc_controls
+        self.midiout = None # send clock out if  exists
+        # 24 beats per quarter note, (60/60)/24 = 41.6 msec
+        self.tick_time = (60.0/self.bpm)/24.0
+        self.time_alarm = False # gets set if we run out of time between ticks
+        if self.cc_controls is not None:
+            self.cc_controls.add(name='InternalClockBPMControlCC',
+                                 cc_default=29,
+                                 control_callback=self.change_bpm,
+                                 min=self.min,
+                                 max=self.max)
+
+    def change_bpm(self, bpm):
+        if bpm < self.min:
+            return
+
+        if bpm > self.max:
+            return
+
+        self.bpm = bpm
+        self.tick_time = (60.0/self.bpm)/24.0
+        log.info(f'internal bpm: {bpm}')
+        self.settings.set('internal_clock_bpm', self.bpm)
+
+    def callback(self):
+        while True:
+            if self.clock_callback is None:
+                return # exit thread
+
+            start = time.time()
+
+            self.process_tick(self.tick_time)
+            
+            time_to_sleep = self.tick_time - (time.time() - start) # subtract off time we worked
+            #log.info(f'Internal clock sleepy time: {time_to_sleep}, tick: {self.clock_counts}')
+            if time_to_sleep <= 0.0:
+                self.time_alarm = True
+            else:
+                time.sleep(time_to_sleep)
+
+    def run(self):
+        if self.clock_callback is None:
+            return
+        log.info(f"Starting internal clock: {self.tick_time}")
+        timerThread = threading.Thread(target=self.callback)
+        timerThread.start()
+
+
 
 class MidiInput(MidiPort, MidiClockSource):
     def __init__(self, q_size_limit=1024):
-        super(MidiInput, self).__init__()
+        MidiPort.__init__(self)
+        MidiClockSource.__init__(self)
         self.midi = rtmidi.MidiIn(queue_size_limit=q_size_limit)
-
+        
         self.note_callback = None
         self.clock_midiin = None
         self.control_callback = None
@@ -148,6 +220,7 @@ class MidiInput(MidiPort, MidiClockSource):
 
     def set_as_clock_source(self, set):
         if set:
+            log.info(f'Midiin set as clock source')
             self.midi.ignore_types(timing = False) # don't ignore MIDI clock messages
         else:
             self.midi.ignore_types(timing = True) # ignore MIDI clock messages
@@ -155,7 +228,6 @@ class MidiInput(MidiPort, MidiClockSource):
     def register_note_callback(self, callback, clock_midiin):
         self.note_callback = callback
         self.clock_midiin = clock_midiin
-
 
     def register_control_callback(self, callback, data=None):
         self.control_callback = callback
@@ -167,11 +239,14 @@ class MidiInput(MidiPort, MidiClockSource):
         data_type = message[0]
 
         if self.clock_callback is not None:
+           
             if data_type == TIMING_CLOCK:
+                log.info('midin clock')
                 self.process_tick(msg_dt[1])
                 return 
 
         if self.note_callback is not None:
+           
             if data_type is NOTE_OFF or data_type is NOTE_ON:
                 gstart_debug_timer = time.time()
                 
@@ -191,6 +266,7 @@ class MidiInput(MidiPort, MidiClockSource):
 
     def run(self):
         self.midi.set_callback(self.callback)
+        self.remember_midin_callback(self.callback) # reregister if port is changed
 
 
 class MidiOutput(MidiPort):
@@ -483,7 +559,7 @@ class MidiManager():
 
 
         self.clock_source.register_clock_callback(callback=self.clock_callback, data=self.clock_data)   
-        # wip a lot more logic here and there...
+       
 
     def register_midiin_activity_callback(self, callback):
         self.midiin.register_midi_activity_callback(callback)
@@ -508,65 +584,6 @@ class MidiManager():
     def panic(self):
         self.midiout.panic()
 
-
-# wip create clock class for this and midiin
-class MidiInternalClock(MidiClockSource):
-    """
-    looks like a MidiInput object, but runs off a internal clock instead of a external midi clock
-    can send clocks externally though
-    """
-    def __init__(self, settings, cc_controls=None, bpm=60):
-        super().__init__()
-        self.settings = settings
-        self.min = self.settings.get('internal_clock_bpm_min', 10)
-        self.max = self.settings.get('internal_clock_bpm_max', 240)
-        self.bpm = self.settings.get('internal_clock_bpm', bpm)
-        self.cc_controls = cc_controls
-        self.midiout = None # send clock out if  exists
-        # 24 beats per quarter note, (60/60)/24 = 41.6 msec
-        self.tick_time = (60.0/self.bpm)/24.0
-        self.time_alarm = False # gets set if we run out of time between ticks
-        if self.cc_controls is not None:
-            self.cc_controls.add(name='InternalClockBPMControlCC',
-                                 cc_default=29,
-                                 control_callback=self.change_bpm,
-                                 min=self.min,
-                                 max=self.max)
-
-    def change_bpm(self, bpm):
-        if bpm < self.min:
-            return
-
-        if bpm > self.max:
-            return
-
-        self.bpm = bpm
-        self.tick_time = (60.0/self.bpm)/24.0
-        log.info(f'internal bpm: {bpm}')
-        self.settings.set('internal_clock_bpm', self.bpm)
-
-    def callback(self):
-        while True:
-            if self.clock_callback is None:
-                return # exit thread
-
-            start = time.time()
-
-            self.process_tick(self.tick_time)
-            
-            time_to_sleep = self.tick_time - (time.time() - start) # subtract off time we worked
-            #log.info(f'Internal clock sleepy time: {time_to_sleep}, tick: {self.clock_counts}')
-            if time_to_sleep <= 0.0:
-                self.time_alarm = True
-            else:
-                time.sleep(time_to_sleep)
-
-    def run(self):
-        if self.clock_callback is None:
-            return
-        log.info(f"Starting internal clock: {self.tick_time}")
-        timerThread = threading.Thread(target=self.callback)
-        timerThread.start()
 
         
 
