@@ -396,7 +396,11 @@ class RootWidget(BoxLayout):
 
         self.ids.clock_bpm_slider.min = self.midi_manager.cc_controls.get_min('InternalClockBPMControlCC')
         self.ids.clock_bpm_slider.max = self.midi_manager.cc_controls.get_max('InternalClockBPMControlCC')
-        self.ids.clock_bpm_slider.value = self.midi_manager.clock.get_bpm()
+        bpm = self.midi_manager.clock.get_bpm()
+        if bpm < self.ids.clock_bpm_slider.min:
+            bpm = self.ids.clock_bpm_slider.min
+
+        self.ids.clock_bpm_slider.value = bpm
         self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
         cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')
         self.ids.InternalClockBPMControlCC.text = cc_str

@@ -161,7 +161,6 @@ class MidiInternalClock(MidiClockSource):
         self.max = self.settings.get('internal_clock_bpm_max', 240)
         self.bpm = self.settings.get('internal_clock_bpm', bpm)
         self.cc_controls = cc_controls
-        self.midiout = None # send clock out if  exists
         # 24 beats per quarter note, (60/60)/24 = 41.6 msec
         self.tick_time = (60.0/self.bpm)/24.0
         self.time_alarm = False # gets set if we run out of time between ticks
@@ -221,13 +220,6 @@ class MidiInput(MidiPort, MidiClockSource):
         self.control_callback = None
         self.control_data = None
 
-    def set_as_clock_source(self, set):
-        if set:
-            log.info(f'Midiin set as clock source')
-            self.midi.ignore_types(timing = False) # don't ignore MIDI clock messages
-        else:
-            self.midi.ignore_types(timing = True) # ignore MIDI clock messages
-
     def register_note_callback(self, callback, clock_midiin):
         self.note_callback = callback
         self.clock_midiin = clock_midiin
@@ -244,7 +236,7 @@ class MidiInput(MidiPort, MidiClockSource):
         if self.clock_callback is not None:
            
             if data_type == TIMING_CLOCK:
-                log.info('midin clock')
+                log.info(f'external clock tick: {self.tick}')
                 self.process_tick(msg_dt[1])
                 return 
 
@@ -266,10 +258,22 @@ class MidiInput(MidiPort, MidiClockSource):
                 if self.midi_activity_callback is not None:
                     self.midi_activity_callback()
 
+    def start_clock(self):
+        super(MidiInput, self).start_clock()
+        self.midi.ignore_types(timing = False) # don't ignore MIDI clock messages
+        log.info(f'Midiin set as clock source')
+
+
+    def stop_clock(self):
+        super(MidiInput, self).start_clock()
+        self.midi.ignore_types(timing = True)
+        log.info(f'Midiin ignoring clock')
+
 
     def run(self):
         self.midi.set_callback(self.callback)
         self.remember_midin_callback(self.callback) # reregister if port is changed
+
 
 
 class MidiOutput(MidiPort):
@@ -315,6 +319,120 @@ class MidiOutput(MidiPort):
             return
 
         self.midi.send_message([TIMING_CLOCK])
+
+
+
+
+class MidiManager():
+    """
+    Manages midi in, midi out and midi clock
+    """
+
+    def __init__(self, settings):
+        self.settings = settings
+        self.midiin = MidiInput()
+        self.midiout = MidiOutput()
+        self.cc_controls = CCControls(settings, self.midiin)
+        # clock stuff
+        self.clock_midiin = None # can be set to a midiin port to get external clock
+        self.internal_clock = MidiInternalClock(self.settings, cc_controls=self.cc_controls)
+        self.clock_source = self.settings.get('ClockSource', 'internal')
+        self.clock_callback = None
+        self.clock_data = None
+        self.clock = None # clock object
+        self.set_clock_source(self.clock_source)
+
+
+    def get_midi_in_ports(self):
+        try:
+            names = self.midiin.get_port_names()
+        except:
+            return None
+        return names
+
+    def get_midi_out_ports(self):
+        try:
+            names = self.midiout.get_port_names()
+        except:
+            return None
+        return names
+
+    def set_midi_in_port(self, name):
+        try:
+            self.midiin.open_port(name)
+        except:
+            return False
+        return True
+
+    def set_midi_out_port(self, name):
+        try:
+            self.midiout.open_port(name)
+        except:
+            return False
+        return True
+
+    def close_midi_out_port(self):
+        try:
+            self.midiout.close_port()
+        except:
+            return False
+        return True
+
+    def close_midi_in_port(self):
+        try:
+            self.midiin.close_port()
+        except:
+            return False
+        return True
+
+            
+    def set_clock_source(self, clock_source):
+        if clock_source == self.clock_source and self.clock is not None:
+            return  # no change
+
+        if self.clock is not None:
+            self.clock.stop_clock() # gracefully stop clock at the source
+
+        if clock_source == 'internal':
+            self.clock = self.internal_clock
+
+        if clock_source == 'external':
+            self.clock = self.midiin
+
+        self.clock.register_clock_callback(callback=self.clock_callback, data=self.clock_data)  
+        self.clock.send_clock_out(self.midiout) # might make option...
+        self.clock.start_clock()
+        self.clock_source = clock_source
+        self.settings.set('ClockSource', clock_source)
+
+       
+
+    def register_midiin_activity_callback(self, callback):
+        self.midiin.register_midi_activity_callback(callback)
+
+    def register_midiout_activity_callback(self, callback):
+        self.midiout.register_midi_activity_callback(callback)
+
+    def register_note_callback(self, callback):
+        self.midiin.register_note_callback(callback, self.clock_source) # pass clock source so we know when notes arrive
+
+    def register_clock_callback(self, callback, data=None):
+        """
+        called from effect manager to register its clock callback
+        """
+        if self.clock is not None:
+            self.clock.stop_clock()
+            self.clock.register_clock_callback(callback, data) 
+            self.clock.start_clock()
+
+        # rememeber in case we switch clock sources
+        self.clock_callback = callback
+        self.clock_data = data
+
+
+    def panic(self):
+        self.midiout.panic()
+
 
 
 class CCControls:
@@ -481,121 +599,9 @@ class CCControls:
 
         if ui_callback is not None:
             ui_callback[0](value, ui_callback[1])
-
-
-class MidiManager():
-    """
-    Manages midi in, midi out and midi clock
-    """
-
-    def __init__(self, settings):
-        self.settings = settings
-        self.midiin = MidiInput()
-        self.midiout = MidiOutput()
-        self.cc_controls = CCControls(settings, self.midiin)
-        # clock stuff
-        self.clock_midiin = None # can be set to a midiin port to get external clock
-        self.internal_clock = MidiInternalClock(self.settings, cc_controls=self.cc_controls)
-        self.clock_source = self.settings.get('ClockSource', 'internal')
-        self.clock_callback = None
-        self.clock_data = None
-        self.clock = None # clock object
-        self.set_clock_source(self.clock_source)
-
-
-    def get_midi_in_ports(self):
-        try:
-            names = self.midiin.get_port_names()
-        except:
-            return None
-        return names
-
-    def get_midi_out_ports(self):
-        try:
-            names = self.midiout.get_port_names()
-        except:
-            return None
-        return names
-
-    def set_midi_in_port(self, name):
-        try:
-            self.midiin.open_port(name)
-        except:
-            return False
-        return True
-
-    def set_midi_out_port(self, name):
-        try:
-            self.midiout.open_port(name)
-        except:
-            return False
-        return True
-
-    def close_midi_out_port(self):
-        try:
-            self.midiout.close_port()
-        except:
-            return False
-        return True
-
-    def close_midi_in_port(self):
-        try:
-            self.midiin.close_port()
-        except:
-            return False
-        return True
-
             
-    def set_clock_source(self, clock_source):
-        if clock_source == self.clock_source and self.clock is not None:
-            return  # no change
-
-        if self.clock is not None:
-            self.clock.stop_clock() # gracefully stop clock at the source
-
-        if clock_source == 'internal':
-            self.clock = self.internal_clock
-            self.midiin.set_as_clock_source(False)
-
-        if clock_source == 'external':
-            self.clock = self.midiin
-            self.midiin.set_as_clock_source(True)
-
-        self.clock.register_clock_callback(callback=self.clock_callback, data=self.clock_data)  
-        self.clock.start_clock()
-        self.clock_source = clock_source
-        self.settings.set('ClockSource', clock_source)
-
-       
-
-    def register_midiin_activity_callback(self, callback):
-        self.midiin.register_midi_activity_callback(callback)
-
-    def register_midiout_activity_callback(self, callback):
-        self.midiout.register_midi_activity_callback(callback)
-
-    def register_note_callback(self, callback):
-        self.midiin.register_note_callback(callback, self.clock_source) # pass clock source so we know when notes arrive
-
-    def register_clock_callback(self, callback, data=None):
-        """
-        called from effect manager to register its clock callback
-        """
-        if self.clock is not None:
-            self.clock.stop_clock()
-            self.clock.register_clock_callback(callback, data) 
-            self.clock.start_clock()
-
-        # rememeber in case we switch clock sources
-        self.clock_callback = callback
-        self.clock_data = data
 
 
-    def panic(self):
-        self.midiout.panic()
-
-
-        
 
 class MidiNoteMessage:
     def __init__(self, message):
