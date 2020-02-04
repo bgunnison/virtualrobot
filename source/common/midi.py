@@ -216,13 +216,13 @@ class MidiInput(MidiPort, MidiClockSource):
         self.midi = rtmidi.MidiIn(queue_size_limit=q_size_limit)
         
         self.note_callback = None
-        self.clock_midiin = None
+        self.clock = None   # clock source
         self.control_callback = None
         self.control_data = None
 
-    def register_note_callback(self, callback, clock_midiin):
+    def register_note_callback(self, callback, clock):
         self.note_callback = callback
-        self.clock_midiin = clock_midiin
+        self.clock = clock
 
     def register_control_callback(self, callback, data=None):
         self.control_callback = callback
@@ -234,10 +234,13 @@ class MidiInput(MidiPort, MidiClockSource):
         data_type = message[0]
 
         if self.clock_callback is not None:
-           
             if data_type == TIMING_CLOCK:
                 log.info(f'external clock tick: {self.tick}')
                 self.process_tick(msg_dt[1])
+                # to get bpm from an external clock we use the delta time
+                # self.tick_time = (60.0/self.bpm)/24.0
+                self.bpm = round(60/(24 * self.clock_delta_time))
+                #log.info(f'ext clock bpm: {self.bpm}')
                 return 
 
         if self.note_callback is not None:
@@ -246,7 +249,7 @@ class MidiInput(MidiPort, MidiClockSource):
                 gstart_debug_timer = time.time()
                 
                 log.info(f"{self.port_name} - Note In: {message}")
-                self.note_callback(message, self.clock_midiin)
+                self.note_callback(message, self.clock)
                 if self.midi_activity_callback is not None:
                     self.midi_activity_callback()
                 return
@@ -414,7 +417,7 @@ class MidiManager():
         self.midiout.register_midi_activity_callback(callback)
 
     def register_note_callback(self, callback):
-        self.midiin.register_note_callback(callback, self.clock_source) # pass clock source so we know when notes arrive
+        self.midiin.register_note_callback(callback, self.clock) # pass clock so we know when notes arrive
 
     def register_clock_callback(self, callback, data=None):
         """

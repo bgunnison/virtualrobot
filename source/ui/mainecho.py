@@ -491,6 +491,9 @@ class RootWidget(BoxLayout):
         if bpm != 0:
             self.clock_LED_event.timeout = 60.0/bpm
 
+        if self.ids.clock_bpm_slider.disabled == True:
+            self.ids.clock_bpm_slider.value = self.midi_manager.clock.get_bpm() #external clock
+
         #self.midi_in_activity()
 
     def start_activity_LEDs(self):
@@ -498,6 +501,9 @@ class RootWidget(BoxLayout):
         The LEDS are toggled by a kivy clock interval or MIDI activity
         """
         bpm = self.midi_manager.clock.get_bpm()
+        if bpm == 0:
+            bpm = 1
+
         self.clock_LED_event = Clock.schedule_interval(self.update_clock_LED, 60.0/bpm)
         self.midi_manager.register_midiin_activity_callback(self.midi_in_activity)
         self.midi_manager.register_midiout_activity_callback(self.midi_out_activity)
