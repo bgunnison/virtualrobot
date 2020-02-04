@@ -13,9 +13,27 @@ import logging
 from pathlib import Path
 import shelve
 from datetime import datetime
+import rsa
 
 logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
+
+class license:
+    def __init__(self, email, signature):
+
+        self.valid = False
+        pubkey = ''
+        try:
+            rsa.verify(email.encode('utf-8'), signature, pubkey)
+        except rsa.VerificationError:
+            log.error(f'Invalid key: {email}')
+            return
+
+        log.info(f'Valid key: {email}')
+        self.valid = True
+
+    def is_valid(self):
+        return self.valid
 
 class Settings:
     """
