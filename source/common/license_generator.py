@@ -11,16 +11,17 @@
 import rsa # pip install rsa
 import argparse
 import logging
-
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 #in the application, but also here totest. 
-class license:
+class License:
     def __init__(self, settings, email, signature):
-
         self.valid = False
+
+    def verify(self, settings, email, signature):
         pubkey = settings.get('SpecialData', '')
         try:
             rsa.verify(email.encode('utf-8'), signature, pubkey)
@@ -34,12 +35,49 @@ class license:
     def is_valid(self):
         return self.valid
 
-def gen_keys():
-    pubkey, privkey = rsa.newkeys(2048)
-    print(f'{pubkey}')
-    print(f'')
-    print(f'{privkey}')
 
+class Keys:
+    def __init__(self):
+        pass
+
+
+    def gen(self):
+        snow = datetime.now()
+        dt = snow.strftime("%m_%d_%Y_%H_%M_%S")
+        self.priv_file = f'VirtualRobotPrivateKey{dt}.pem'
+        self.pub_file = f'VirtualRobotPublicKey{dt}.pem'
+
+        pubkey, privkey = rsa.newkeys(2048)
+        pub = pubkey.save_pkcs1().decode('ascii')
+        pri = privkey.save_pkcs1().decode('ascii')
+        
+        f = open(self.priv_file, 'w')
+        f.write(pri)
+        f.close()
+        f = open(self.pub_file, 'w')
+        f.write(pub)
+        f.close()
+
+        print(f'{pub}')
+        print(f'')
+        print(f'{pri}')
+
+
+    def load_priv_key(name):
+        with open(name, mode='rb') as privatefile:
+            keydata = privatefile.read()
+        return rsa.PrivateKey.load_pkcs1(keydata)
+
+
+    def load_pub_key(name):
+        with open(name, mode='rb') as pubfile:
+            keydata = pubfile.read()
+        return rsa.PublicKey.load_pkcs1(keydata)
+
+    def sign(Self, message, privkey):
+        signature = rsa.sign(mesage.encode('utf-8'), privkey, 'SHA-1')
+        from base64 import b64encode
+        print(data + '\n' + b64encode(signature).decode('ascii'))
 
 
 
@@ -56,21 +94,12 @@ def gen_pub_key():
         log.error(f'No @ in email: {args["email"]}')
         return 
 
-    try:
-        privkey = open(args['privkeyfile'], 'r').read() 
-    except:
-        log.error('Cannot open private key file: {args["privkeyfile"]}')
-        return
 
-    # input email and priv key file (somewhere hidden on computer)
-    data = args['email']
-    signature = rsa.sign(data.encode('utf-8'), privkey, 'SHA-1')
-    from base64 import b64encode
-    print(data + '\n' + b64encode(signature).decode('ascii'))
+    k = Keys()
+
+    k.gen()
 
 
- 
-# construct the argument parse and parse the arguments
 
 if __name__ == '__main__':
     gen_keys()
