@@ -9,6 +9,7 @@
  https://build-system.fman.io/generating-license-keys
 """
 import rsa # pip install rsa
+from base64 import b64encode
 import argparse
 import logging
 from datetime import datetime
@@ -18,11 +19,13 @@ log = logging.getLogger(__name__)
 
 #in the application, but also here totest. 
 class License:
-    def __init__(self, settings, email, signature):
+    def __init__(self):
         self.valid = False
 
-    def verify(self, settings, email, signature):
-        pubkey = settings.get('SpecialData', '')
+    def verify(self, email, signature, pubkey= None, settings=None):
+        if settings is not None:
+            pubkey = settings.get('VirtualRobotPublicKey', '')
+
         try:
             rsa.verify(email.encode('utf-8'), signature, pubkey)
         except rsa.VerificationError:
@@ -76,32 +79,45 @@ class Keys:
 
     def sign(Self, message, privkey):
         signature = rsa.sign(mesage.encode('utf-8'), privkey, 'SHA-1')
-        from base64 import b64encode
-        print(data + '\n' + b64encode(signature).decode('ascii'))
+        l = b64encode(signature).decode('ascii')
+        print(data + '\n' + l)
+        return l
 
 
 
-def gen_pub_key():
+def test_keys():
 
     log.info('Virtual Robot License generator, do not distribute')
 
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(argparse.SUPPRESS)
     ap.add_argument("-e", "--email", required=True, help="email of user")
-    ap.add_argument("-p", "--privkeyfile", required=True, help="private key file")
+    ap.add_argument("-v", "--privkeyfile", required=True, help="private key file")
+    ap.add_argument("-p", "--pubkeyfile", required=True, help="public key file")
     args = vars(ap.parse_args())
 
     if '@' not in args['email']:
         log.error(f'No @ in email: {args["email"]}')
         return 
 
-
     k = Keys()
 
     k.gen()
 
+    if args['privkeyfile'] == None:
+        privkf = k.priv_file
+
+    if args['pubkeyfile'] == None:
+        pubkf = k.pub_file
+
+
+
+    sig = k.sign(args['email'], k.load_priv_key(privkf))
+
+    l = License()
+    l.verify(args['email'], l, k.load_pub_key(pubkf))
+
 
 
 if __name__ == '__main__':
-    gen_keys()
-    gen_pub_key()
+   test_keys()
 
