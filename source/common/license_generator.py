@@ -15,32 +15,11 @@ from base64 import b64encode, b64decode
 import argparse
 import logging
 from datetime import datetime
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from common.license import License
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
-
-#in the application, but also here totest. 
-class License:
-    def __init__(self):
-        self.valid = False
-
-    def verify(self, email, signature, pubkey= None, settings=None):
-        if settings is not None:
-            pubkey = settings.get('VirtualRobotPublicKey', '')
-
-        s = b64decode(signature)
-
-        try:
-            rsa.verify(email.encode('utf-8'), s, pubkey)
-        except rsa.VerificationError:
-            log.error(f'Invalid key: {email}')
-            return
-
-        log.info(f'Valid key: {email}')
-        self.valid = True
-
-    def is_valid(self):
-        return self.valid
 
 
 class Keys:
@@ -48,11 +27,11 @@ class Keys:
         pass
 
 
-    def gen(self):
+    def gen(self, product):
         snow = datetime.now()
         dt = snow.strftime("%m_%d_%Y_%H_%M_%S")
-        self.priv_file = f'VirtualRobotPrivateKey_{dt}.pem'
-        self.pub_file = f'VirtualRobotPublicKey_{dt}.pem'
+        self.priv_file = f'VirtualRobot{product}PrivateKey_{dt}.pem'
+        self.pub_file = f'VirtualRobot{product}PublicKey_{dt}.pem'
 
         pubkey, privkey = rsa.newkeys(512)
         pub = pubkey.save_pkcs1().decode('ascii')
@@ -98,33 +77,31 @@ def test_keys():
     log.info('Virtual Robot License generator, do not distribute\n')
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("-e", "--email", help="email of user", nargs='?', default=None)
-    ap.add_argument("-v", "--privkeyfile", help="private key file", nargs='?', default=None)
+    ap.add_argument("-n", "--newkeys", help="generate new key files", nargs='?', default=None)
+    ap.add_argument("-v", "--version", help="product version", nargs='?', default='0.1')
+    ap.add_argument("-k", "--product", help="product name", nargs='?', default='generic')
+    ap.add_argument("-e", "--email", help="email of user", nargs='?', default='fred@boogie.com')
+    ap.add_argument("-l", "--privkeyfile", help="private key file", nargs='?', default=None)
     ap.add_argument("-p", "--pubkeyfile", help="public key file", nargs='?', default=None)
     args = ap.parse_args()
 
     email = args.email
 
-    if email is None:
-        email = 'fred@boogie.com'
-
     if '@' not in email:
         log.error(f'No @ in email: {args["email"]}')
         return 
 
-    k = Keys()
-
-    k.gen()
-
-    if args.privkeyfile == None:
+    if args.newkeys is not None:
+        k = Keys()
+        k.gen(args.product)
         privkf = k.priv_file
-
-    if args.pubkeyfile == None:
         pubkf = k.pub_file
+    else:
+        privkf = args.privkeyfile
+        pubkf = args.pubkeyfile
 
-    version = '0.1'
-    serial = 1435  # todo database of emails and serial #s (start big so we look like large sales ;)
-    message = f'VirtualRobot MIDI ECHO Version: {version} SN: {serial} - ' + email
+    serial = 1435  # use a shelve todo database of emails and serial #s (start big so we look like large sales ;)
+    message = f'VirtualRobot {args.product} Version: {args.version} SN: {serial} - ' + email
     sig = k.sign(message, k.load_priv_key(privkf))
 
     l = License()

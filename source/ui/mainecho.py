@@ -35,6 +35,7 @@ from midiapps.midi_echo import MidiEchoEffect
 from midiapps.midi_effect_manager import MidiEffectManager
 from common.midi import MidiManager, MidiConstants
 from common.upper_class_utils import Settings
+from common.license import License
 
 import kivy
 kivy.require('1.11.1')

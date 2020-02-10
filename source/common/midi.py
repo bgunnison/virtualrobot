@@ -194,7 +194,7 @@ class MidiInternalClock(MidiClockSource):
             self.process_tick(self.tick_time)
             
             time_to_sleep = self.tick_time - (time.time() - start) # subtract off time we worked
-            log.info(f'Internal clock tick: {self.tick}')
+           # log.info(f'Internal clock tick: {self.tick}')
             if time_to_sleep <= 0.0:
                 self.time_alarm = True
             else:
