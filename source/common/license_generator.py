@@ -77,7 +77,7 @@ def test_keys():
     log.info('Virtual Robot License generator, do not distribute\n')
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("-n", "--newkeys", help="generate new key files", nargs='?', default=None)
+    ap.add_argument("-n", "--newkeys", help="generate new key files", nargs='?', default=True)
     ap.add_argument("-v", "--version", help="product version", nargs='?', default='0.1')
     ap.add_argument("-k", "--product", help="product name", nargs='?', default='generic')
     ap.add_argument("-e", "--email", help="email of user", nargs='?', default='fred@boogie.com')
@@ -88,17 +88,24 @@ def test_keys():
     email = args.email
 
     if '@' not in email:
-        log.error(f'No @ in email: {args["email"]}')
+        log.error(f'No @ in email: {email}')
         return 
 
+    k = Keys()
     if args.newkeys is not None:
-        k = Keys()
+        log.info('Generating new key files')
         k.gen(args.product)
         privkf = k.priv_file
         pubkf = k.pub_file
     else:
+        if args.privkeyfile is None or args.pubkeyfile is None:
+            log.error('Must specify pub and priv key file if not generating new keys')
+            return
+
         privkf = args.privkeyfile
         pubkf = args.pubkeyfile
+
+    log.info(f'Pub key file: {pubkf}, Priv key file: {privkf}')
 
     serial = 1435  # use a shelve todo database of emails and serial #s (start big so we look like large sales ;)
     message = f'VirtualRobot {args.product} Version: {args.version} SN: {serial} - ' + email

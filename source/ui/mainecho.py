@@ -533,6 +533,54 @@ class RootWidget(BoxLayout):
     def get_help_text(self):
         return help_text
 
+    def license_entered(self):
+        """
+        Verify entered values  
+        """
+        pass
+
+
+    def registered(self):
+        """
+        if registered say so , else ask to register
+        """
+        return self.bold('REGISTER')
+
+
+    def register(self):
+        """
+        here we accept the email and license key and activate the product
+        """
+        fl = FloatLayout()
+        fl.add_widget(Label(
+                            markup=True,
+                            text=self.bold('Enter Email and license key'),
+                            size_hint=(None, None),
+                            size=(300, 200),
+                            ))
+
+        fl.add_widget(TextInput(
+                                #markup=True,
+                                text='',
+                                size_hint=(None, None),
+                                size=(300, 20),
+                                ))
+
+        fl.add_widget(TextInput(
+                                #markup=True,
+                                text='',
+                                size_hint=(None, None),
+                                size=(300, 20),
+                                ))
+
+
+
+        popup = Popup(title='VIRTUAL ROBOT', content=fl)
+
+        popup.bind(on_dismiss=self.license_entered)
+        popup.open()
+
+
   
 def save_settings(args):
     if gsettings is not None:
