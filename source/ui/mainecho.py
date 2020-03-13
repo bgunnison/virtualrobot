@@ -158,15 +158,19 @@ class RootWidget(BoxLayout):
         # reopen midi ports if in settings
         midi_port = self.settings.get('midi_in_port')
         if midi_port is not None:
-            if midi_port in self.midi_manager.get_midi_in_ports():
-                self.ids.midi_port_in.text = midi_port
-                self.select_midi_input_port(self.ids.midi_port_in)
+            ports = self.midi_manager.get_midi_in_ports()
+            if ports is not None:
+                if midi_port in ports:
+                    self.ids.midi_port_in.text = midi_port
+                    self.select_midi_input_port(self.ids.midi_port_in)
 
         midi_port = self.settings.get('midi_out_port')
         if midi_port is not None:
-            if midi_port in self.midi_manager.get_midi_out_ports():
-                self.ids.midi_port_out.text = midi_port
-                self.select_midi_output_port(self.ids.midi_port_out)
+            ports = self.midi_manager.get_midi_out_ports()
+            if ports is not None:
+                if midi_port in ports:
+                    self.ids.midi_port_out.text = midi_port
+                    self.select_midi_output_port(self.ids.midi_port_out)
 
 
     def update_echo_screen(self):
