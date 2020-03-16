@@ -35,7 +35,7 @@ from midiapps.midi_echo import MidiEchoEffect
 from midiapps.midi_effect_manager import MidiEffectManager
 from common.midi import MidiManager, MidiConstants
 from common.upper_class_utils import Settings
-from common.license import License
+#from common.license import License
 
 import kivy
 kivy.require('1.11.1')
@@ -430,6 +430,9 @@ class RootWidget(BoxLayout):
         but.state = 'down'
         self.ids['screen_manager'].current = screen_name
         self.settings.set('start_screen', screen_name)
+        log.info(f'cwd: {os.getcwd()}')
+        #Window.screenshot(name=f'{screen_name}' +'.png') # for website takes a snap of the screen
+
    
     def select_midi_input_port(self, selector):
         log.info(f'midi in port desired: {selector.text}') 
@@ -533,11 +536,12 @@ class RootWidget(BoxLayout):
     def get_help_text(self):
         return help_text
 
-    def license_entered(self):
+    def license_entered(self, ti):
         """
         Verify entered values  
         """
-        pass
+        log.info(f'User email: {ti.text}')
+        self.register_popup.dismiss()
 
 
     def registered(self):
@@ -550,35 +554,36 @@ class RootWidget(BoxLayout):
     def register(self):
         """
         here we accept the email and license key and activate the product
+        WE are just asking for a email address no license or key etc. 
         """
         fl = FloatLayout()
         fl.add_widget(Label(
                             markup=True,
-                            text=self.bold('Enter Email and license key'),
+                            text=self.bold('ENTER EMAIL'),
                             size_hint=(None, None),
                             size=(300, 200),
+                            pos_hint={'x':.05, 'center_y':.8}
                             ))
 
-        fl.add_widget(TextInput(
-                                #markup=True,
-                                text='',
+        input_email = TextInput(
+                               # focus=True,
+                                multiline=False,
                                 size_hint=(None, None),
-                                size=(300, 20),
-                                ))
+                                size=(300, 30),
+                                pos_hint={'x':.05, 'center_y':.6}
+                                )
 
-        fl.add_widget(TextInput(
-                                #markup=True,
-                                text='',
-                                size_hint=(None, None),
-                                size=(300, 20),
-                                ))
+        input_email.bind(on_text_validate=self.license_entered)
 
+        fl.add_widget(input_email)
 
+        popup = Popup(title='VIRTUAL ROBOT', 
+                      content=fl,
+                      size_hint=(None, None), 
+                      size=(400, 200))
 
-        popup = Popup(title='VIRTUAL ROBOT', content=fl)
-
-        popup.bind(on_dismiss=self.license_entered)
         popup.open()
+        self.register_popup = popup
 
 
   

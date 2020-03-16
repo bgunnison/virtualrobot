@@ -24,7 +24,7 @@ class License:
 
     def verify(self, email, signature, pubkey=None, settings=None):
         if settings is not None:
-            pubkey = settings.get('VirtualRobotPublicKey', '')
+            pubkey = settings.get('MyCompanyPublicKey', '')
 
         s = b64decode(signature)
 
