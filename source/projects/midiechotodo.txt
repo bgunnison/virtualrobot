@@ -1,0 +1,32 @@
+midi echo
+	icon done
+	registration done
+	test test test
+	help text?
+	version
+	manual link
+
+
+build
+	all files
+install
+	make smaller
+	test test
+
+
+stripe
+	send link to download
+	account
+
+website
+	coming soon products
+	midi echo manual
+	FAQ
+		midi ports
+		midi clocking
+		Examples
+		
+OSX
+	vmware?
+	
+	

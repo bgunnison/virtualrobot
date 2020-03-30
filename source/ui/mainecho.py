@@ -11,23 +11,21 @@ import os
 import time
 import logging
 
-help_text = 'Welcome to VirtualRobots MIDI ECHO. \
-To get started quickly on the left are navigating buttons, \
+help_text = 'Welcome to VIRTUAL ROBOT MIDI ECHO. \
+To get started quickly: on the left are navigation buttons, \
 press “MIDI” and select a MIDI input device. \
-This app will echo the notes coming in here. Then select an output \
-device so you can hear the echoed notes. The clock should be set to \
-“INTERNAL” to make sure we get echoes. Via the “ECHO” navigator button \
-go to the “ECHO” settings screen and enable the effect. Generate a input \
+This app will echo the notes coming in from this device. Select an output \
+device to hear the echoed notes. Set the clock to \
+“INTERNAL”. Via the “ECHO” navigator button \
+set the effect to "on". Generate a input \
 note and you should hear the echoes on the output device. The green boxes \
-next to buttons or sliders are the MIDI controller that can change the setting. \
+next to buttons or sliders are the MIDI controller that can also change the setting. \
 Click inside the box and move the MIDI controller to learn. Or change the number \
-by typing a new one. If you look carefully at the right side of the MIDI output selection \
-The skull is a MIDI panic button. Press this to cancel any stuck notes or echoes \
-that are going on too long. For detailed help read the manual at the link above. \
-Also please check out the other VirtualRobot MIDI apps at the website.' 
+by typing a new one. For detailed help read the manual at the link above. \
+Also please check out the other VIRTUAL ROBOT MIDI apps at the website.' 
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -44,7 +42,6 @@ from kivy.config import Config
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'multisamples', 8)
-Config.set('kivy','window_icon','media/logo.ico') # no work...
 
 
 from kivy.app import App
@@ -108,6 +105,11 @@ class RootWidget(BoxLayout):
         self.settings = Settings('MidiEcho')    # our persistant settings
         global gsettings
         gsettings = self.settings   # so when the app exits we save
+
+        #registration does nothing but stro what was entered
+        self.ids.RegisteredUserBut.text = self.bold(self.settings.get('registered_user', 'REGISTER'))
+        self.register_popup_text_box = None
+        self.register_popup = None
 
         self.midi_manager = MidiManager(self.settings)
         self.effect = MidiEchoEffect(self.settings, self.midi_manager.cc_controls)
@@ -540,20 +542,34 @@ class RootWidget(BoxLayout):
     def get_help_text(self):
         return help_text
 
-    def license_entered(self, ti):
+    def set_license(self, text):
         """
         Verify entered values  
         """
-        log.info(f'User email: {ti.text}')
+        if text == '':
+            text = 'REGISTER'
+
+        log.info(f'User email: {text}')
+        self.settings.set('registered_user', text)
         self.register_popup.dismiss()
+        self.ids.RegisteredUserBut.text = self.bold(text)
+        self.register_popup_text_box = None
+        self.register_popup = None
 
-
-    def registered(self):
+    def license_entered(self, ti):
         """
-        if registered say so , else ask to register
+        return hit in text box  
         """
-        return self.bold('REGISTER')
+        self.set_license(ti.text)
+        
 
+    def license_pressed(self, but):
+        """
+        Verify entered values  
+        """
+        
+        self.set_license(self.register_popup_text_box.text)
+        
 
     def register(self):
         """
@@ -566,20 +582,34 @@ class RootWidget(BoxLayout):
                             text=self.bold('ENTER EMAIL'),
                             size_hint=(None, None),
                             size=(300, 200),
-                            pos_hint={'x':.05, 'center_y':.8}
+                            pos_hint={'center_x':.5, 'center_y':.8}
                             ))
 
         input_email = TextInput(
                                # focus=True,
+                                id='licenseTextBox', 
                                 multiline=False,
                                 size_hint=(None, None),
                                 size=(300, 30),
-                                pos_hint={'x':.05, 'center_y':.6}
+                                pos_hint={'center_x':.5, 'center_y':.6}
                                 )
 
         input_email.bind(on_text_validate=self.license_entered)
 
         fl.add_widget(input_email)
+        self.register_popup_text_box = input_email
+
+        input_email_but = Button(
+                                markup=True,
+                                text=self.bold('DONE'),
+                                size_hint=(None, None),
+                                size=(60, 30),
+                                pos_hint={'center_x':.5, 'center_y':.3}
+                                )
+
+        input_email_but.bind(on_press=self.license_pressed)
+
+        fl.add_widget(input_email_but)
 
         popup = Popup(title='VIRTUAL ROBOT', 
                       content=fl,
@@ -600,7 +630,8 @@ def save_settings(args):
 
 class MainEchoApp(App):
     def build(self):
-        self.title = 'Virtual Robot MIDI Echo'
+        self.title = 'VIRTUAL ROBOT MIDI ECHO'
+        self.icon = 'media/logoico.png'
           # Execute cleaning function when exiting app
         Window.bind(on_request_close=save_settings)
         return RootWidget() 

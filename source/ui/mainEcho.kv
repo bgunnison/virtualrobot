@@ -464,14 +464,15 @@
                         size_hint: 1, None
                         pos_hint: {'top':.7}
                         markup: True
-                        text: root.bold('VERSION: FEB. 15, 2020')
+                        text: root.bold('VERSION: APRIL 15, 2020')
                     Button:
+                        id: RegisteredUserBut
                         font_size: 16
                         height: 30
                         size_hint: .2, None
                         pos_hint: {'center_x':0.5, 'top':.6}
                         markup: True
-                        text: root.bold(root.registered())
+                        text: root.bold('REGISTER')
                         on_press: root.register()
                     ScrollableLabel:
                         pos_hint: {'top':.5}

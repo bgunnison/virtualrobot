@@ -50,107 +50,107 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\VirtualRobotMidiEcho.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\VirtualRobotMidiEcho.exe.manifest"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\win32api.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\win32file.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\win32gui.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\win32trace.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\win32ui.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\win32wnet.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_bz2.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_ctypes.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_decimal.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_elementtree.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_hashlib.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_lzma.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_multiprocessing.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_queue.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_socket.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_ssl.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\_win32sysloader.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-console-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-datetime-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-debug-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-errorhandling-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-file-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-file-l1-2-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-file-l2-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-handle-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-heap-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-interlocked-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-libraryloader-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-localization-l1-2-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-memory-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-namedpipe-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-processenvironment-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-processthreads-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-processthreads-l1-1-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-profile-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-rtlsupport-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-string-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-synch-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-synch-l1-2-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-sysinfo-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-timezone-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-core-util-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-conio-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-convert-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-environment-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-filesystem-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-heap-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-locale-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-math-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-multibyte-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-process-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-runtime-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-stdio-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-string-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-time-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\api-ms-win-crt-utility-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\base_library.zip"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\ffi-7.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\glew32.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\glib-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\gmodule-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\gobject-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\intl-8.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\libfreetype-6.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\libjpeg-9.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.FLAC.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.freetype.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.jpeg.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.modplug.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.mpg123.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.ogg-vorbis.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.opus.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.opusfile.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.png.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.tiff.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.webp.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\LICENSE.zlib.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\mainecho.kv"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\mfc140u.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\pyexpat.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\python37.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\pythoncom37.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\pywintypes37.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\SDL2.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\SDL2_image.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\SDL2_mixer.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\SDL2_ttf.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\select.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\ucrtbase.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\unicodedata.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\docutils\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\Include\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\kivy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\kivy_install\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\media\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\rtmidi\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho1\win32com\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\VirtualRobotMidiEcho.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\VirtualRobotMidiEcho.exe.manifest"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32api.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32file.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32gui.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32trace.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32ui.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32wnet.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_bz2.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_ctypes.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_decimal.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_elementtree.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_hashlib.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_lzma.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_multiprocessing.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_queue.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_socket.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_ssl.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\_win32sysloader.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-console-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-datetime-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-debug-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-errorhandling-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-file-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-file-l1-2-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-file-l2-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-handle-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-heap-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-interlocked-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-libraryloader-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-localization-l1-2-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-memory-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-namedpipe-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-processenvironment-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-processthreads-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-processthreads-l1-1-1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-profile-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-rtlsupport-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-string-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-synch-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-synch-l1-2-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-sysinfo-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-timezone-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-core-util-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-conio-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-convert-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-environment-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-filesystem-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-heap-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-locale-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-math-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-multibyte-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-process-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-runtime-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-stdio-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-string-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-time-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\api-ms-win-crt-utility-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\base_library.zip"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\ffi-7.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\glew32.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\glib-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\gmodule-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\gobject-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\intl-8.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\libfreetype-6.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\libjpeg-9.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.FLAC.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.freetype.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.jpeg.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.modplug.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.mpg123.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.ogg-vorbis.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.opus.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.opusfile.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.png.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.tiff.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.webp.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.zlib.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\mainecho.kv"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\mfc140u.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\pyexpat.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\python37.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\pythoncom37.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\pywintypes37.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\SDL2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\SDL2_image.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\SDL2_mixer.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\SDL2_ttf.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\select.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\ucrtbase.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\unicodedata.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\docutils\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\Include\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\kivy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\kivy_install\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\media\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\rtmidi\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32com\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

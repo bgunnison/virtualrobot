@@ -15,7 +15,10 @@ a = Analysis([  '..\\ui\\mainecho.py',
              binaries=[ ('../ui/mainecho.kv', '.'), 
                         ('../ui/media/logo.zip', 'media'),
                         ('../ui/media/red_led.png', 'media'),
-                        ('../ui/media/off_led.png', 'media')
+                        ('../ui/media/off_led.png', 'media'),
+                        ('../ui/media/start_panic.png', 'media'),
+                        ('../ui/media/end_panic.png', 'media'),
+
                         ],
              datas=[],
              hiddenimports=[],
