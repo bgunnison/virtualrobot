@@ -10,7 +10,8 @@ a = Analysis([  '..\\ui\\mainecho.py',
                 '..\\midiapps\\midi_echo.py',
                 '..\\midiapps\\midi_effect_manager.py',
                 '..\\common\\midi.py',
-                '..\\common\\upper_class_utils.py'],
+                '..\\common\\upper_class_utils.py'
+                ],
              pathex=['C:\\projects\\virtualrobotcompany\\bgunnison\\virtualrobot\\source\\build'],
              binaries=[ ('../ui/mainecho.kv', '.'), 
                         ('../ui/media/logo.zip', 'media'),
@@ -40,11 +41,13 @@ exe = EXE(pyz,
           [],
           exclude_binaries=True,
           name='VirtualRobotMidiEcho',
+          icon='logo.ico',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False )
+          console=False 
+          )
 coll = COLLECT(exe,
               
                a.binaries,

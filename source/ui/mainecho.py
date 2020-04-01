@@ -25,7 +25,7 @@ by typing a new one. For detailed help read the manual at the link above. \
 Also please check out the other VIRTUAL ROBOT MIDI apps at the website.' 
 
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -95,16 +95,12 @@ class ScrollableLabel(ScrollView):
     pass
 
     
-gsettings = None
-
 class RootWidget(BoxLayout):
 
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
 
         self.settings = Settings('MidiEcho')    # our persistant settings
-        global gsettings
-        gsettings = self.settings   # so when the app exits we save
 
         #registration does nothing but stro what was entered
         self.ids.RegisteredUserBut.text = self.bold(self.settings.get('registered_user', 'REGISTER'))
@@ -139,6 +135,16 @@ class RootWidget(BoxLayout):
 
     def bold(self, text):
         return '[b]' + text + '[/b]' # markup must be true, this is our style plus CAPS
+
+    def destroy(self):
+        """
+        call when exiting app
+        """
+        self.effect.panic()
+        self.midi_manager.destroy()
+        self.settings.close()
+        log.info('destroy finished')
+
 
     def midi_panic(self, dt):
         self.effect.panic()
@@ -621,23 +627,23 @@ class RootWidget(BoxLayout):
 
 
   
-def save_settings(args):
-    if gsettings is not None:
-        gsettings.close()
-
-    return False    # do not return True or window cannot be closed
-
 
 class MainEchoApp(App):
     def build(self):
         self.title = 'VIRTUAL ROBOT MIDI ECHO'
         self.icon = 'media/logoico.png'
-          # Execute cleaning function when exiting app
-        Window.bind(on_request_close=save_settings)
-        return RootWidget() 
+        self.root_widget = RootWidget()
+        return  self.root_widget
+
+    def on_stop(self):
+        log.info('on_stop')
+        self.root_widget.destroy()
+        log.info('on_stop exited')
 
     
 
 if __name__ == '__main__':
-    MainEchoApp().run()
-    log.info('exiting')
+    app = MainEchoApp()
+    app.run() 
+    log.info('run exited')
+   

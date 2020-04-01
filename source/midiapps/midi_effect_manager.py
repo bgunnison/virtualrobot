@@ -67,13 +67,3 @@ class MidiEffectManager:
         #log.info(f"Clock callback: {tick}")
         self.effect.note_manager.run(tick, self.midi_manager.midiout)
     
-
-"""
-if __name__ == '__main__':
-    app = MidiEffectManager(EchoEffect())
-    app.run()
-    while True:
-        time.sleep(0.2)
-
-    app.panic()
-"""

@@ -408,7 +408,6 @@ class MidiManager():
         self.clock_source = clock_source
         self.settings.set('ClockSource', clock_source)
 
-       
 
     def register_midiin_activity_callback(self, callback):
         self.midiin.register_midi_activity_callback(callback)
@@ -436,6 +435,13 @@ class MidiManager():
     def panic(self):
         self.midiout.panic()
 
+    def destroy(self):
+        """
+        app exiting make sure all is stopped and closed
+        """
+        self.internal_clock.register_clock_callback(callback=None)
+        self.midiin.close_port()
+        self.midiout.close_port()
 
 
 class CCControls:
