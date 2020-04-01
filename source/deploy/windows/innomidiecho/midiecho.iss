@@ -118,18 +118,7 @@ Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dis
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\intl-8.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\libfreetype-6.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\libjpeg-9.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.FLAC.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.freetype.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.jpeg.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.modplug.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.mpg123.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.ogg-vorbis.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.opus.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.opusfile.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.png.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.tiff.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.webp.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\LICENSE.zlib.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\libpng16-16.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\mainecho.kv"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\mfc140u.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\pyexpat.pyd"; DestDir: "{app}"; Flags: ignoreversion
@@ -144,13 +133,13 @@ Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dis
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\ucrtbase.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\unicodedata.pyd"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\docutils\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\Include\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\kivy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\kivy_install\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\media\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\rtmidi\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32com\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\docutils\*"; DestDir: "{app}\docutils"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\Include\*"; DestDir: "{app}\Include"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\kivy\*"; DestDir: "{app}\kivy"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\kivy_install\*"; DestDir: "{app}\kivy_install"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\media\*"; DestDir: "{app}\media"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\rtmidi\*"; DestDir: "{app}\rtmidi"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\build\dist\VirtualRobotMidiEcho\win32com\*"; DestDir: "{app}\win32com"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
