@@ -18,14 +18,6 @@
     sync_height: True
    
 
-
-<ClockSourceToggleButton@ToggleButton>:
-    group: 'clock_source'
-    markup: True
-    size_hint: None, None
-    width: 100
-    height: 30
-
 <OnOffToggleButton@ToggleButton>:
     group: 'onoff'
     markup: True
@@ -99,7 +91,7 @@
                     size: self.size
             Label:
                 markup: True
-                text: root.bold('- MIDI ECHO -')
+                text: root.bold('- MIDI CHORD -')
                 height: 60
                 font_size: 50
 
@@ -116,13 +108,9 @@
                 text: root.bold('MIDI')
                 on_press: root.nav_button_pressed(self, 'screen_midi')
             NavButton:
-                id: nav_echo
-                text: root.bold('ECHO')
-                on_press: root.nav_button_pressed(self, 'screen_echo')
-            #NavButton:
-            #    id: nav_live
-            #    text: root.bold('LIVE')
-            #    on_press: root.nav_button_pressed(self, 'screen_live')
+                id: nav_chord
+                text: root.bold('CHORD')
+                on_press: root.nav_button_pressed(self, 'screen_chord')
             NavButton:
                 id: nav_help
                 text: root.bold('HELP')
@@ -200,87 +188,15 @@
                             on_press: root.start_midi_panic(self)
                             on_release: root.end_midi_panic(self)
 
-
-                            
-
-                    Label:
-                        markup: True
-                        text: '[b]MIDI CLOCK[/b]'
-                        font_size: 30
-                        height: 20
-                        size_hint: 1, None
-                        pos_hint: {'top':.5}
-                    FloatLayout:
-                        height: 60
-                        size_hint: 1, None
-                        pos_hint: {'top':.4}
-                        ClockSourceToggleButton:
-                            id: clock_internal
-                            text: root.bold('INTERNAL')
-                            pos_hint: {'x':.32, 'center_y':0.5}
-                            on_press: root.select_clock_source(self, True)
-                        ClockSourceToggleButton:
-                            id: clock_external
-                            text: root.bold('EXTERNAL')
-                            pos_hint: {'x':.47, 'center_y':0.5}
-                            on_press: root.select_clock_source(self, False)
-                    FloatLayout:
-                        height: 60
-                        size_hint: 1, None
-                        pos_hint: {'top':.3}
-
-                        Slider:
-                            id: clock_bpm_slider
-                            pos_hint: {'center_x':.5, 'center_y':.5}
-                            width: 600
-                            size_hint: None, 1
-                            min: 10
-                            max: 240
-                            value: 60
-                            on_value: root.change_internal_clock_bpm(self.value)
-                            #Label:
-                            #    pos: (root.value_pos[0] - sp(16), root.center_y - sp(27)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
-                            #    size_hint: None, None
-                            #    size: sp(32), sp(32)
-                            #    text: str(root.value)
-                    FloatLayout:
-                        height: 60
-                        size_hint: 1, None
-                        pos_hint: {'top':.2}
-                        MyLEDImage:
-                            id: midi_clock_activity
-                            pos_hint: {'x':.39, 'center_y':.5}
-                        Label:
-                            width: 15
-                            size_hint: None, 1
-                            pos_hint: {'x':.45, 'center_y':.5}
-                            markup: True
-                            text: root.bold('BPM:')
-                        Label:
-                            width: 10
-                            size_hint: None, 1
-                            pos_hint: {'x':.5, 'center_y':.5}
-                            markup: True
-                            text: root.bold(str(int(clock_bpm_slider.value)))
-                        CCEntryBox:
-                            id: InternalClockBPMControlCC
-                            name: 'InternalClockBPMControlCC'
-                            pos_hint: {'x':.55, 'center_y':0.5}
-                            on_text_validate: root.ui_control_map(self)
-                            on_focus: root.control_cc_learn(self, self.focus)
-
-
-
-
-            EchoScreen:
-                id: screen_echo
-                name: 'screen_echo'
+            ChordScreen:
+                id: screen_chord
+                name: 'screen_chord'
                 manager: 'screen_manager'
                 FloatLayout:
                     orientation: 'vertical'
                     Label:
                         markup: True
-                        text: root.bold('ECHO CONTROLS')
+                        text: root.bold('CHORD CONTROLS')
                         font_size: 30
                         height: 20
                         size_hint: 1, None
@@ -317,27 +233,27 @@
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.6}
+                    pos_hint: {'top':.65}
                     Label:
                         width: 15
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('DELAY TYPE:')
+                        text: root.bold('CHORD NAME:')
                     Label:
-                        id: EchoEffectDelayTypeValue
+                        id: ChordEffectNameValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
-                        text: root.bold('Type')
+                        text: root.bold('Name')
                     EffectControlSlider:
-                        id: EchoEffectDelayTypeSlider
-                        name: 'EchoEffectDelayTypeControlCC'
+                        id: ChordEffectNameSlider
+                        name: 'ChordEffectNameControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: EchoEffectDelayTypeControlCC
-                        name: 'EchoEffectDelayTypeControlCC'
+                        id: ChordEffectNameControlCC
+                        name: 'ChordEffectNameControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
@@ -345,54 +261,27 @@
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.5}
+                    pos_hint: {'top':.55}
                     Label:
                         width: 15
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('ECHOES:')
+                        text: root.bold('WIDTH:')
                     Label:
-                        id: EchoEffectNumberEchoesValue
+                        id: ChordEffectWidthValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
-                        text: root.bold('24')
+                        text: root.bold('3')
                     EffectControlSlider:
-                        id: EchoEffectNumberEchoesSlider
-                        name: 'EchoEffectNumberEchoesControlCC'
+                        id: ChordEffectWidthSlider
+                        name: 'ChordEffectWidthControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: EchoEffectNumberEchoesControlCC
-                        name: 'EchoEffectNumberEchoesControlCC'
-                        pos_hint: {'x':.85, 'center_y':0.5}
-                        on_text_validate: root.ui_control_map(self)
-                        on_focus: root.control_cc_learn(self, self.focus)
-                FloatLayout:
-                    height: 60   
-                    size_hint: 1, None
-                    pos_hint: {'top':.4}
-                    Label:
-                        width: 15
-                        size_hint: None, 1
-                        pos_hint: {'x':.1, 'center_y':.5}
-                        markup: True
-                        text: root.bold('DELAY:')
-                    Label:
-                        id: EchoEffectDelayStartTicksValue
-                        width: 10
-                        size_hint: None, 1
-                        pos_hint: {'x':.23, 'center_y':.5}
-                        markup: True
-                        text: root.bold('24')
-                    EffectControlSlider:
-                        id: EchoEffectDelayStartTicksSlider
-                        name: 'EchoEffectDelayStartTicksControlCC'
-                        on_value: root.effect_control_update(self.value, self.name)
-                    CCEntryBox:
-                        id: EchoEffectDelayStartTicksControlCC
-                        name: 'EchoEffectDelayStartTicksControlCC'
+                        id: ChordEffectWidthControlCC
+                        name: 'ChordEffectWidthControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
@@ -400,38 +289,32 @@
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.3}
+                    pos_hint: {'top':.45}
                     Label:
                         width: 15
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('END VELOCITY:')
+                        text: root.bold('STRUM:')
                     Label:
-                        id: EchoEffectEndVelocityValue
+                        id: ChordEffectStrumValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
-                        text: root.bold('24')
+                        text: root.bold('0')
                     EffectControlSlider:
-                        id: EchoEffectEndVelocitySlider
-                        name: 'EchoEffectEndVelocityControlCC'
+                        id: ChordEffectStrumSlider
+                        name: 'ChordEffectStrumControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: EchoEffectEndVelocityControlCC
-                        name: 'EchoEffectEndVelocityControlCC'
+                        id: ChordEffectStrumControlCC
+                        name: 'ChordEffectStrumControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
                                         
-            #LiveScreen:
-            #    id: screen_live
-            #    name: 'screen_live'
-            #    manager: 'screen_manager'
-            #    Label:
-            #        text: 'LIVE'
             HelpScreen:
                 id: screen_help
                 name: 'screen_help'
@@ -453,7 +336,7 @@
                         height: 20
                         size_hint: 1, None
                         pos_hint: {'top':.8}
-                        text: root.bold('[size=22]MANUAL: [/size]') + root.bold(' [u][color=#87e8f9][size=22][ref=http://virtualrobot.net/midiechomanual/]MIDI ECHO[/ref][/size][/color][/u]')
+                        text: root.bold('[size=22]MANUAL: [/size]') + root.bold(' [u][color=#87e8f9][size=22][ref=http://virtualrobot.net/midichordmanual/]MIDI CHORD[/ref][/size][/color][/u]')
                         markup: True
                         on_ref_press:
                             import webbrowser

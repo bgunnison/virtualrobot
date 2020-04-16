@@ -1,20 +1,33 @@
 """
  Copyright (C) 2020 Brian R. Gunnison
  
- This file is part of MIDI ECHO project
+ This file is part of MIDI CHORD project
  
- MIDI ECHO can not be copied and/or distributed without the express
+ MIDI CHORD can not be copied and/or distributed without the express
  permission of Brian R. Gunnison
 """
 import sys
 import os
 import time
 import logging
+
+help_text = 'Welcome to VIRTUAL ROBOT MIDI CHORD. \
+To get started quickly: on the left are navigation buttons, \
+press “MIDI” and select a MIDI input device. \
+This app will play a chord based on the notes coming in from this device. Select an output \
+device to hear the chord notes. Generate a input \
+note and you should hear the chord on the output device. The green boxes \
+next to buttons or sliders are the MIDI controller that can also change the setting. \
+Click inside the box and move the MIDI controller to learn. Or change the number \
+by typing a new one. For detailed help read the manual at the link above. \
+Also please check out the other VIRTUAL ROBOT MIDI apps at the website.' 
+
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from midiapps.midi_echo import MidiEchoEffect
+from midiapps.midi_chord import MidiChordEffect
 from midiapps.midi_effect_manager import MidiEffectManager
 from common.midi import MidiManager, MidiConstants
 from common.upper_class_utils import Settings
@@ -26,11 +39,11 @@ from kivy.config import Config
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'multisamples', 8)
-Config.set('kivy','window_icon','media/logo.ico') # no work...
 
 
 from kivy.app import App
 from kivy.core.window import Window
+from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
 from kivy.uix.image import Image
 from kivy.uix.label import Label
@@ -38,6 +51,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
+from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Color, Rectangle
 from kivy.uix.spinner import Spinner
 from kivy.uix.slider import Slider
@@ -60,42 +74,41 @@ class MainScreenManager(ScreenManager):
 class MidiScreen(Screen):
     pass 
 
-class EchoScreen(Screen):
+class ChordScreen(Screen):
     pass
        
-class LiveScreen(Screen):
-     pass
-
 class HelpScreen(Screen):
     pass
 
-
 class CCControlInput(TextInput):
     pass
-    
-gsettings = None
 
+class ScrollableLabel(ScrollView):
+    pass
+
+    
 class RootWidget(BoxLayout):
 
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
 
-        self.settings = Settings('MidiEcho')    # our persistant settings
-        global gsettings
-        gsettings = self.settings   # so when the app exits we save
+        self.settings = Settings('MidiChord')    # our persistant settings
+
+        #registration does nothing but store what was entered
+        self.ids.RegisteredUserBut.text = self.bold(self.settings.get('registered_user', 'REGISTER'))
+        self.register_popup_text_box = None
+        self.register_popup = None
 
         self.midi_manager = MidiManager(self.settings)
-        self.effect = MidiEchoEffect(self.settings, self.midi_manager.cc_controls)
+        self.effect = MidiChordEffect(self.settings, self.midi_manager.cc_controls)
         self.effect_manager = MidiEffectManager(self.settings, self.effect, self.midi_manager)
         self.effect_controls = {} # dict keyd by effect control name with ui ids to update if we get a CC control
         # restore screen in settings
         screen = self.settings.get('start_screen', 'screen_midi')
         if 'midi' in screen:
             but = self.ids.nav_midi
-        if 'echo' in screen:
-            but = self.ids.nav_echo
-        if 'live' in screen:
-            but = self.ids.nav_live
+        if 'chord' in screen:
+            but = self.ids.nav_chord
         if 'help' in screen:
             but = self.ids.nav_help
 
@@ -103,7 +116,7 @@ class RootWidget(BoxLayout):
 
         self.update_midi_screen()
 
-        self.update_echo_screen()
+        self.update_chord_screen()
 
         # call last
         self.effect_manager.run()
@@ -112,6 +125,16 @@ class RootWidget(BoxLayout):
 
     def bold(self, text):
         return '[b]' + text + '[/b]' # markup must be true, this is our style plus CAPS
+
+    def destroy(self):
+        """
+        call when exiting app
+        """
+        self.effect.panic()
+        self.midi_manager.destroy()
+        self.settings.close()
+        log.info('destroy finished')
+
 
     def midi_panic(self, dt):
         self.effect.panic()
@@ -128,23 +151,26 @@ class RootWidget(BoxLayout):
         called at startup
         """
         self.update_port_selections()
-        self.update_clock_selections()
 
         # reopen midi ports if in settings
         midi_port = self.settings.get('midi_in_port')
         if midi_port is not None:
-            if midi_port in self.midi_manager.get_midi_in_ports():
-                self.ids.midi_port_in.text = midi_port
-                self.select_midi_input_port(self.ids.midi_port_in)
+            ports = self.midi_manager.get_midi_in_ports()
+            if ports is not None:
+                if midi_port in ports:
+                    self.ids.midi_port_in.text = midi_port
+                    self.select_midi_input_port(self.ids.midi_port_in)
 
         midi_port = self.settings.get('midi_out_port')
         if midi_port is not None:
-            if midi_port in self.midi_manager.get_midi_out_ports():
-                self.ids.midi_port_out.text = midi_port
-                self.select_midi_output_port(self.ids.midi_port_out)
+            ports = self.midi_manager.get_midi_out_ports()
+            if ports is not None:
+                if midi_port in ports:
+                    self.ids.midi_port_out.text = midi_port
+                    self.select_midi_output_port(self.ids.midi_port_out)
 
 
-    def update_echo_screen(self):
+    def update_chord_screen(self):
         self.midi_manager.cc_controls.register_ui_callback('EffectEnableControlCC', self.ui_effect_on)
         cc_str = self.midi_manager.cc_controls.get_cc_str('EffectEnableControlCC')
         self.ids.EffectEnableControlCC.text = cc_str
@@ -186,42 +212,33 @@ class RootWidget(BoxLayout):
         current value can be a number or text
         """
         # create a database of effect ids, funcs etc, used for setup and control
-        self.effect_controls['EchoEffectDelayTypeControlCC'] = {'control_name':'EchoEffectDelayTypeControlCC',
-                                                                'settings_name':'EchoEffectDelayType',
-                                                                'slider_id':self.ids.EchoEffectDelayTypeSlider, # update slider
-                                                                'value_id':self.ids.EchoEffectDelayTypeValue, # update text
-                                                                'control_cc_id':self.ids.EchoEffectDelayTypeControlCC,
-                                                                'text_function':self.effect.get_delay_type_label, # only if control has text values instead of a number
-                                                                'update_function':self.effect.control_delay_type} 
+        self.effect_controls['ChordEffectNameControlCC'] = {'control_name':'ChordEffectNameControlCC',
+                                                                'settings_name':'ChordEffectName',
+                                                                'slider_id':self.ids.ChordEffectNameSlider, # update slider
+                                                                'value_id':self.ids.ChordEffectNameValue, # update text
+                                                                'control_cc_id':self.ids.ChordEffectNameControlCC,
+                                                                'text_function':self.effect.get_chord_name_label, # only if control has text values instead of a number
+                                                                'update_function':self.effect.control_chord_name} 
 
-        self.update_effect_control('EchoEffectDelayTypeControlCC')
+        self.update_effect_control('ChordEffectNameControlCC')
 
-        self.effect_controls['EchoEffectNumberEchoesControlCC'] = {'control_name':'EchoEffectNumberEchoesControlCC',
-                                                                   'settings_name':'EchoEffectNumberEchoes',
-                                                                   'slider_id':self.ids.EchoEffectNumberEchoesSlider, # update slider
-                                                                   'value_id':self.ids.EchoEffectNumberEchoesValue, # update text
-                                                                   'control_cc_id':self.ids.EchoEffectNumberEchoesControlCC,
-                                                                   'update_function':self.effect.control_echoes} 
+        self.effect_controls['ChordEffectWidthControlCC'] = {'control_name':'ChordEffectWidthControlCC',
+                                                                   'settings_name':'ChordEffectWidth',
+                                                                   'slider_id':self.ids.ChordEffectWidthSlider, # update slider
+                                                                   'value_id':self.ids.ChordEffectWidthValue, # update text
+                                                                   'control_cc_id':self.ids.ChordEffectWidthControlCC,
+                                                                   'update_function':self.effect.control_chord_width} 
 
-        self.update_effect_control('EchoEffectNumberEchoesControlCC')
+        self.update_effect_control('ChordEffectWidthControlCC')
 
-        self.effect_controls['EchoEffectDelayStartTicksControlCC'] = {'control_name':'EchoEffectDelayStartTicksControlCC',
-                                                                   'settings_name':'EchoEffectDelayStartTicks',
-                                                                   'slider_id':self.ids.EchoEffectDelayStartTicksSlider, # update slider
-                                                                   'value_id':self.ids.EchoEffectDelayStartTicksValue, # update text
-                                                                   'control_cc_id':self.ids.EchoEffectDelayStartTicksControlCC,
-                                                                   'update_function':self.effect.control_delay_tick} 
+        self.effect_controls['ChordEffectStrumControlCC'] = {'control_name':'ChordEffectStrumControlCC',
+                                                                   'settings_name':'ChordEffectStrum',
+                                                                   'slider_id':self.ids.ChordEffectStrumSlider, # update slider
+                                                                   'value_id':self.ids.ChordEffectStrumValue, # update text
+                                                                   'control_cc_id':self.ids.ChordEffectStrumControlCC,
+                                                                   'update_function':self.effect.control_chord_strum} 
 
-        self.update_effect_control('EchoEffectDelayStartTicksControlCC')
-
-        self.effect_controls['EchoEffectEndVelocityControlCC'] = {'control_name':'EchoEffectEndVelocityControlCC',
-                                                                   'settings_name':'EchoEffectEndVelocity',
-                                                                   'slider_id':self.ids.EchoEffectEndVelocitySlider, # update slider
-                                                                   'value_id':self.ids.EchoEffectEndVelocityValue, # update text
-                                                                   'control_cc_id':self.ids.EchoEffectEndVelocityControlCC,
-                                                                   'update_function':self.effect.control_end_velocity} 
-
-        self.update_effect_control('EchoEffectEndVelocityControlCC')
+        self.update_effect_control('ChordEffectStrumControlCC')
 
 
     def ui_effect_control_update(self, value, id_str):
@@ -359,47 +376,14 @@ class RootWidget(BoxLayout):
             ports.insert(0,'None')
             self.ids.midi_port_out.values = ports
 
-    def update_clock_selections(self):
-        """
-        called once at startup
-        """
-        if self.midi_manager.internal_clock:
-            self.ids.clock_internal.state = 'down'
-            self.ids.clock_bpm_slider.disabled = False
-            self.ids.clock_bpm_slider.min = self.midi_manager.cc_controls.get_min('InternalClockBPMControlCC')
-            self.ids.clock_bpm_slider.max = self.midi_manager.cc_controls.get_max('InternalClockBPMControlCC')
-            self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
-            self.midi_manager.cc_controls.register_ui_callback('InternalClockBPMControlCC', self.ui_change_internal_clock_bpm)
-            cc_str = self.midi_manager.cc_controls.get_cc_str('InternalClockBPMControlCC')
-            self.ids.InternalClockBPMControlCC.text = cc_str
-
-        else:
-            self.ids.clock_external.state = 'down'
-            self.ids.clock_bpm_slider.disabled = True
-
-
-    def ui_change_internal_clock_bpm(self, control, data):
-        """
-        changes slider if control changes
-        """
-        self.ids.clock_bpm_slider.disabled = True
-        self.ids.clock_bpm_slider.value = self.midi_manager.clock_source.get_bpm()
-        self.ids.clock_bpm_slider.disabled = False
-
-    def change_internal_clock_bpm(self, value):
-        """
-        from slider changes clock bpm
-        """
-        if self.ids.clock_bpm_slider.disabled == True:
-             return
-
-        self.midi_manager.clock_source.change_bpm(int(value))
-
     def nav_button_pressed(self, but, screen_name):
         log.info(screen_name)
         but.state = 'down'
         self.ids['screen_manager'].current = screen_name
         self.settings.set('start_screen', screen_name)
+        log.info(f'cwd: {os.getcwd()}')
+        #Window.screenshot(name=f'{screen_name}' +'.png') # for website takes a snap of the screen
+
    
     def select_midi_input_port(self, selector):
         log.info(f'midi in port desired: {selector.text}') 
@@ -433,32 +417,11 @@ class RootWidget(BoxLayout):
         self.settings.set('midi_out_port', selector.text)
         log.error('error opening output port')
 
-    def select_clock_source(self, but, internal_source):
-        but.state = 'down'
-        if internal_source:
-            self.ids.clock_bpm_slider.disabled = False
-            self.midi_manager.set_clock_source(internal=True)
-        else:
-            self.ids.clock_bpm_slider.disabled = True
-
-
-    def update_clock_LED(self, dt):
-        if 'off' in self.ids.midi_clock_activity.source:
-            self.ids.midi_clock_activity.source = 'media/red_led.png'
-        else:
-            self.ids.midi_clock_activity.source = 'media/off_led.png'
-
-        bpm = self.midi_manager.clock_source.get_bpm()
-        self.clock_LED_event.timeout = 60.0/bpm
-
-        #self.midi_in_activity()
 
     def start_activity_LEDs(self):
         """
         The LEDS are toggled by a kivy clock interval or MIDI activity
-        """
-        bpm = self.midi_manager.clock_source.get_bpm()
-        self.clock_LED_event = Clock.schedule_interval(self.update_clock_LED, 60.0/bpm)
+        """        
         self.midi_manager.register_midiin_activity_callback(self.midi_in_activity)
         self.midi_manager.register_midiout_activity_callback(self.midi_out_activity)
         log.info('Started activity LEDs')
@@ -483,23 +446,105 @@ class RootWidget(BoxLayout):
          else:
             self.ids.midi_out_activity.source = 'media/off_led.png'
 
+    def get_help_text(self):
+        return help_text
+
+    def set_license(self, text):
+        """
+        Verify entered values  
+        """
+        if text == '':
+            text = 'REGISTER'
+
+        log.info(f'User email: {text}')
+        self.settings.set('registered_user', text)
+        self.register_popup.dismiss()
+        self.ids.RegisteredUserBut.text = self.bold(text)
+        self.register_popup_text_box = None
+        self.register_popup = None
+
+    def license_entered(self, ti):
+        """
+        return hit in text box  
+        """
+        self.set_license(ti.text)
+        
+
+    def license_pressed(self, but):
+        """
+        Verify entered values  
+        """
+        
+        self.set_license(self.register_popup_text_box.text)
+        
+
+    def register(self):
+        """
+        here we accept the email and license key and activate the product
+        WE are just asking for a email address no license or key etc. 
+        """
+        fl = FloatLayout()
+        fl.add_widget(Label(
+                            markup=True,
+                            text=self.bold('ENTER EMAIL'),
+                            size_hint=(None, None),
+                            size=(300, 200),
+                            pos_hint={'center_x':.5, 'center_y':.8}
+                            ))
+
+        input_email = TextInput(
+                               # focus=True,
+                                id='licenseTextBox', 
+                                multiline=False,
+                                size_hint=(None, None),
+                                size=(300, 30),
+                                pos_hint={'center_x':.5, 'center_y':.6}
+                                )
+
+        input_email.bind(on_text_validate=self.license_entered)
+
+        fl.add_widget(input_email)
+        self.register_popup_text_box = input_email
+
+        input_email_but = Button(
+                                markup=True,
+                                text=self.bold('DONE'),
+                                size_hint=(None, None),
+                                size=(60, 30),
+                                pos_hint={'center_x':.5, 'center_y':.3}
+                                )
+
+        input_email_but.bind(on_press=self.license_pressed)
+
+        fl.add_widget(input_email_but)
+
+        popup = Popup(title='VIRTUAL ROBOT', 
+                      content=fl,
+                      size_hint=(None, None), 
+                      size=(400, 200))
+
+        popup.open()
+        self.register_popup = popup
+
+
   
-def save_settings(args):
-    if gsettings is not None:
-        gsettings.close()
 
-    return False    # do not return True or window cannot be closed
-
-
-class MainEchoApp(App):
+class MainChordApp(App):
     def build(self):
-        self.title = 'Virtual Robot MIDI Echo'
-          # Execute cleaning function when exiting app
-        Window.bind(on_request_close=save_settings)
-        return RootWidget() 
+        self.title = 'VIRTUAL ROBOT MIDI CHORD'
+        self.icon = 'media/logoico.png'
+        self.root_widget = RootWidget()
+        return  self.root_widget
+
+    def on_stop(self):
+        log.info('on_stop')
+        self.root_widget.destroy()
+        log.info('on_stop exited')
 
     
 
 if __name__ == '__main__':
-    MainEchoApp().run()
-    log.info('exiting')
+    app = MainChordApp()
+    app.run() 
+    log.info('run exited')
+   

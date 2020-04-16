@@ -331,19 +331,21 @@ class MidiManager():
     Manages midi in, midi out and midi clock
     """
 
-    def __init__(self, settings):
+    def __init__(self, settings, use_clock=True):
         self.settings = settings
         self.midiin = MidiInput()
         self.midiout = MidiOutput()
         self.cc_controls = CCControls(settings, self.midiin)
-        # clock stuff
-        self.clock_midiin = None # can be set to a midiin port to get external clock
-        self.internal_clock = MidiInternalClock(self.settings, cc_controls=self.cc_controls)
-        self.clock_source = self.settings.get('ClockSource', 'internal')
-        self.clock_callback = None
-        self.clock_data = None
-        self.clock = None # clock object
-        self.set_clock_source(self.clock_source)
+        self.internal_clock = None
+        if use_clock:
+            # clock stuff
+            self.clock_midiin = None # can be set to a midiin port to get external clock
+            self.internal_clock = MidiInternalClock(self.settings, cc_controls=self.cc_controls)
+            self.clock_source = self.settings.get('ClockSource', 'internal')
+            self.clock_callback = None
+            self.clock_data = None
+            self.clock = None # clock object
+            self.set_clock_source(self.clock_source)
 
 
     def get_midi_in_ports(self):
@@ -439,7 +441,8 @@ class MidiManager():
         """
         app exiting make sure all is stopped and closed
         """
-        self.internal_clock.register_clock_callback(callback=None)
+        if self.internal_clock is not None:
+            self.internal_clock.register_clock_callback(callback=None)
         self.midiin.close_port()
         self.midiout.close_port()
 
@@ -623,4 +626,15 @@ class MidiNoteMessage:
 
     def get_message(self):
         return [self.data_type, self.note, self.velocity]
+
+    def is_note_on(self):
+        if self.data_type == NOTE_ON:
+            return True
+        return False
+
+    def is_note_off(self):
+        if self.data_type == NOTE_OFF:
+            return True
+        return False
+
 
