@@ -24,7 +24,7 @@ DisableProgramGroupPage=yes
 LicenseFile=C:\projects\virtualrobotcompany\bgunnison\virtualrobot\source\deploy\media\Software License Agreement.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputBaseFilename=mysetup
+OutputBaseFilename=VirtualRobotMidiEcho
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
