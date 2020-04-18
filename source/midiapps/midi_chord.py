@@ -97,23 +97,24 @@ class MidiChordEffect(Effect):
     """
     def __init__(self, settings, cc_controls=None):
         super().__init__(settings, cc_controls)
-        self.note_manager = NoteManager()
         self.update = True # set if we need to update delays
         self.chord_names = ChordInfo().get_names()
         self.chord_index = self.settings.get('ChordEffectName', 0) # major chord
-   # default a 3 note major chord 
+        # default a 3 note major chord 
         self.new_chord_index = self.chord_index
         self.chord_width = self.settings.get('ChordEffectWidth', 3) # triad
         self.new_chord_width = self.chord_width
 
-        self.chord_strum = self.settings.get('ChordEffectStrum', 0) # 0 = no strum
-        self.new_chord_strum = self.chord_strum
+        # for strum
+        self.strummer = Strummer()
+        strum_delay = self.settings.get('ChordEffectStrumDelay', 0) # 0 = no strum
+        if strum_delay:
+            self.strummer.set_delay(strum_delay)
+            self.strummer.run()
 
         # do last
         if self.cc_controls is not None:
             self.add_controls()
-
-
 
     def __str__(self):
         return f'Chord effect - Type: {self.chord_name}, Notes: {self.chord_width}'
@@ -122,7 +123,8 @@ class MidiChordEffect(Effect):
         """
         cancels all future notes
         """
-        self.note_manager.panic()
+        self.strummer.stop()
+           
 
     def get_chord_name_label(self, index):
         if index >= len(self.chord_names):
@@ -147,11 +149,11 @@ class MidiChordEffect(Effect):
                                  min=1,
                                  max=8) # polyphony limit ?
 
-        self.cc_controls.add(name='ChordEffectStrumControlCC',
+        self.cc_controls.add(name='ChordEffectStrumDelayControlCC',
                                  cc_default=24,
-                                 control_callback=self.control_chord_strum,
+                                 control_callback=self.control_chord_strum_delay,
                                  min=0,
-                                 max=50) # in 100ths of seconds
+                                 max=30) # in tenths of seconds
 
     def control_chord_name(self, control):
         """
@@ -165,8 +167,9 @@ class MidiChordEffect(Effect):
         if self.chord_index == control:
             return
 
-        self.panic() # halts notes in progress
+        #self.panic() # halts notes in progress
         self.new_chord_index = control
+        self.settings.set('ChordEffectName', control)
         log.info(f"Chord: {self.chord_names[self.new_chord_index]}")
 
     def control_chord_width(self, control):
@@ -182,17 +185,24 @@ class MidiChordEffect(Effect):
         # we do not need to stop anything
 
         self.new_chord_width = control
+        self.settings.set('ChordEffectWidth', control)
         log.info(f"Chord width: {self.new_chord_width}")
 
-    def control_chord_strum(self, control):
+    def control_chord_strum_delay(self, control):
         """
         A All controls are mapped to the value range set in add_controls
         """
-        if control == self.chord_strum:
-            return
+        if control > 0 and self.strummer.is_running() == False:
+            self.strummer.run() # start strum clock
+            
+            
 
-        self.new_chord_strum = control
-        log.info(f"Chord strum: {self.chord_strum}")
+        if control == 0 and self.strummer.is_running() == True:
+            self.strummer.stop()  # stop strum clock
+
+        self.strummer.set_delay(control)  
+        self.settings.set('ChordEffectStrumDelay', control)
+        log.info(f"Chord strum delay: {control}")
 
 
     def run(self, tick, midiout, message):
@@ -204,10 +214,6 @@ class MidiChordEffect(Effect):
                 self.chord_index = self.new_chord_index
             if self.chord_width != self.new_chord_width:
                 self.chord_width = self.new_chord_width
-            if self.chord_strum != self.new_chord_strum:
-                self.chord_strum = self.new_chord_strum
-
-
 
         midiout.send_message(message)  # send original note event
 
@@ -217,17 +223,68 @@ class MidiChordEffect(Effect):
         except:
             return
 
-        strum_delay = self.chord_strum * 0.01
-        note_count = 1
+        num = 1
         for note in chord.notes():
             onote.note = note
-
-            if onote.is_note_on() and strum_delay != 0:
-                time.sleep(note_count * strum_delay)
-                note_count += 1
-
-            midiout.send_message(onote.get_message())
+            if self.strummer.is_running() == True:
+               self.strummer.add(num, onote.get_message(), midiout)
+               num += 1
+            else:
+                midiout.send_message(onote.get_message())
 
         
+       
+class Strummer:
+    """
+    fires off a thread to play delayed strum notes
+    Runs at 10 msec intervals
+    """
+    def __init__(self):
         
+        self.tick_time = 0.01 # 10 msec
+        self.running = False
+        self.note_manager = NoteManager() 
+        self.midiout = None
+        self.tick = 0
+        self.delay_ticks = 0
+
+    def set_delay(self, ticks):
+        self.delay_ticks = ticks
+
+    def add(self, num, message, midiout):
+        play_tick = self.tick + (num * self.delay_ticks)
+        log.info(f'Strummer add: {play_tick}')
+        self.note_manager.add(play_tick, message)
+        self.midiout = midiout
+
+    def thread(self):
+        while True:
+            if self.running == False:
+                log.info('Exiting Strummer')
+                return # exit thread
+
+            start = time.time()
+
+            self.note_manager.run(self.tick, self.midiout)
+            self.tick += 1 # count forever
+            
+            time_to_sleep = self.tick_time - (time.time() - start) # subtract off time we worked
+            if time_to_sleep < 0.0:
+                time_to_sleep = 0.0
+
+            # log.info(f'Internal clock tick: {self.tick}'
+            time.sleep(time_to_sleep)
+
+    def run(self):
+        log.info('Starting Strummer ')
+        self.running = True
+        timerThread = threading.Thread(target=self.thread)
+        timerThread.start()
+
+    def is_running(self):
+        return self.running
+
+    def stop(self):
+        self.note_manager.panic()
+        self.running = False
 

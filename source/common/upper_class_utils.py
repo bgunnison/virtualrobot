@@ -131,6 +131,7 @@ class Effect:
         self.settings = settings
         self.name = 'MIDI Effect'
         self.cc_controls = cc_controls
+        self.note_manager = None
 
 
     def get_name(self):
@@ -174,7 +175,7 @@ class NoteManager:
         """
         Add a message to the priority queue
         """
-        self.note_events.put((tick,message))
+        self.note_events.put((tick, message))
         #log.info(f"Add: {message}, {tick}")
 
     def panic(self):

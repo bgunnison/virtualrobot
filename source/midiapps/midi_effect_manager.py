@@ -52,10 +52,13 @@ class MidiEffectManager:
         """
         invoked by our input when a note is on or off
         """ 
-        tick = clock_source.get_tick()
+        tick = 0
+        if clock_source is not None:
+            tick = clock_source.get_tick()
         #log.info(f"Note callback: {message}, {tick}")
         self.apply_effect(tick, message)         # may add  note events for the future
-        self.effect.note_manager.run(tick, self.midi_manager.midiout)        
+        if self.effect.note_manager is not None:
+            self.effect.note_manager.run(tick, self.midi_manager.midiout)        
 
 
     def clock_callback(self, tick, data):

@@ -311,7 +311,7 @@ class MidiOutput(MidiPort):
 
         self.midi.send_message(message)
         time_passed = time.time() - gstart_debug_timer
-        log.info(f'tp: {time_passed:.04f}')
+        #log.info(f'tp: {time_passed:.04f}')
 
         if self.midi_activity_callback is not None:
             self.midi_activity_callback()
@@ -337,14 +337,15 @@ class MidiManager():
         self.midiout = MidiOutput()
         self.cc_controls = CCControls(settings, self.midiin)
         self.internal_clock = None
+        self.clock_callback = None
+        self.clock_data = None
+        self.clock = None # clock object
+        self.clock_source = None
         if use_clock:
             # clock stuff
             self.clock_midiin = None # can be set to a midiin port to get external clock
             self.internal_clock = MidiInternalClock(self.settings, cc_controls=self.cc_controls)
             self.clock_source = self.settings.get('ClockSource', 'internal')
-            self.clock_callback = None
-            self.clock_data = None
-            self.clock = None # clock object
             self.set_clock_source(self.clock_source)
 
 

@@ -297,19 +297,19 @@
                         markup: True
                         text: root.bold('STRUM:')
                     Label:
-                        id: ChordEffectStrumValue
+                        id: ChordEffectStrumDelayValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
                         text: root.bold('0')
                     EffectControlSlider:
-                        id: ChordEffectStrumSlider
-                        name: 'ChordEffectStrumControlCC'
+                        id: ChordEffectStrumDelaySlider
+                        name: 'ChordEffectStrumDelayControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: ChordEffectStrumControlCC
-                        name: 'ChordEffectStrumControlCC'
+                        id: ChordEffectStrumDelayControlCC
+                        name: 'ChordEffectStrumDelayControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)

@@ -99,7 +99,7 @@ class RootWidget(BoxLayout):
         self.register_popup_text_box = None
         self.register_popup = None
 
-        self.midi_manager = MidiManager(self.settings)
+        self.midi_manager = MidiManager(self.settings, use_clock=False)
         self.effect = MidiChordEffect(self.settings, self.midi_manager.cc_controls)
         self.effect_manager = MidiEffectManager(self.settings, self.effect, self.midi_manager)
         self.effect_controls = {} # dict keyd by effect control name with ui ids to update if we get a CC control
@@ -231,14 +231,14 @@ class RootWidget(BoxLayout):
 
         self.update_effect_control('ChordEffectWidthControlCC')
 
-        self.effect_controls['ChordEffectStrumControlCC'] = {'control_name':'ChordEffectStrumControlCC',
-                                                                   'settings_name':'ChordEffectStrum',
-                                                                   'slider_id':self.ids.ChordEffectStrumSlider, # update slider
-                                                                   'value_id':self.ids.ChordEffectStrumValue, # update text
-                                                                   'control_cc_id':self.ids.ChordEffectStrumControlCC,
-                                                                   'update_function':self.effect.control_chord_strum} 
+        self.effect_controls['ChordEffectStrumDelayControlCC'] = {'control_name':'ChordEffectStrumDelayControlCC',
+                                                                   'settings_name':'ChordEffectStrumDelay',
+                                                                   'slider_id':self.ids.ChordEffectStrumDelaySlider, # update slider
+                                                                   'value_id':self.ids.ChordEffectStrumDelayValue, # update text
+                                                                   'control_cc_id':self.ids.ChordEffectStrumDelayControlCC,
+                                                                   'update_function':self.effect.control_chord_strum_delay} 
 
-        self.update_effect_control('ChordEffectStrumControlCC')
+        self.update_effect_control('ChordEffectStrumDelayControlCC')
 
 
     def ui_effect_control_update(self, value, id_str):
