@@ -209,7 +209,7 @@
                         font_size: 30
                         height: 20
                         size_hint: 1, None
-                        pos_hint: {'top':.5}
+                        pos_hint: {'top':.45}
                     FloatLayout:
                         height: 60
                         size_hint: 1, None
@@ -217,60 +217,50 @@
                         ClockSourceToggleButton:
                             id: clock_internal
                             text: root.bold('INTERNAL')
-                            pos_hint: {'x':.32, 'center_y':0.5}
+                            pos_hint: {'x':.35, 'center_y':0.5}
                             on_press: root.select_clock_source(self, True)
                         ClockSourceToggleButton:
                             id: clock_external
                             text: root.bold('EXTERNAL')
-                            pos_hint: {'x':.47, 'center_y':0.5}
+                            pos_hint: {'x':.5, 'center_y':0.5}
                             on_press: root.select_clock_source(self, False)
                     FloatLayout:
-                        height: 60
+                        height: 60   
                         size_hint: 1, None
                         pos_hint: {'top':.3}
-
+                        Label:
+                            width: 15
+                            size_hint: None, 1
+                            pos_hint: {'x':.13, 'center_y':.5}
+                            markup: True
+                            text: root.bold('BPM:')
+                        Label:
+                            id: clock_bpm_control_slider_value
+                            width: 10
+                            size_hint: None, 1
+                            pos_hint: {'x':.19,'center_y':.5}
+                            markup: True
+                            text: root.bold(str(int(clock_bpm_slider.value)))
                         Slider:
                             id: clock_bpm_slider
-                            pos_hint: {'center_x':.5, 'center_y':.5}
-                            width: 600
+                            pos_hint: {'x':.21, 'center_y':.5}
+                            width: 400
                             size_hint: None, 1
                             min: 10
                             max: 240
                             value: 60
-                            on_value: root.change_internal_clock_bpm(self.value)
-                            #Label:
-                            #    pos: (root.value_pos[0] - sp(16), root.center_y - sp(27)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
-                            #    size_hint: None, None
-                            #    size: sp(32), sp(32)
-                            #    text: str(root.value)
-                    FloatLayout:
-                        height: 60
-                        size_hint: 1, None
-                        pos_hint: {'top':.2}
+                            on_value:  root.change_internal_clock_bpm(self.value)
                         MyLEDImage:
                             id: midi_clock_activity
-                            pos_hint: {'x':.39, 'center_y':.5}
-                        Label:
-                            width: 15
-                            size_hint: None, 1
-                            pos_hint: {'x':.45, 'center_y':.5}
-                            markup: True
-                            text: root.bold('BPM:')
-                        Label:
-                            width: 10
-                            size_hint: None, 1
-                            pos_hint: {'x':.5, 'center_y':.5}
-                            markup: True
-                            text: root.bold(str(int(clock_bpm_slider.value)))
+                            pos_hint: {'x':.74, 'center_y':.5}
                         CCEntryBox:
                             id: InternalClockBPMControlCC
                             name: 'InternalClockBPMControlCC'
-                            pos_hint: {'x':.55, 'center_y':0.5}
+                            pos_hint: {'x':.79, 'center_y':0.5}
                             on_text_validate: root.ui_control_map(self)
                             on_focus: root.control_cc_learn(self, self.focus)
 
-
-
+                   
 
             EchoScreen:
                 id: screen_echo
