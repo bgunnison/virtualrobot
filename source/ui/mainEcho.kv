@@ -144,17 +144,17 @@
                         font_size: 30
                         height: 20
                         size_hint: 1, None
-                        pos_hint: {'top':.9}
+                        pos_hint: {'top':.8}
                     
                     FloatLayout:
                         height: 60
                         size_hint: 1, None
-                        pos_hint: {'top':.8}
+                        pos_hint: {'top':.75}
                        
                         Label:
                             markup: True
                             text: root.bold('INPUT:')
-                            pos_hint: {'x':.13, 'center_y':0.5}
+                            pos_hint: {'x':.12, 'center_y':0.5}
                             width: 20
                             size_hint: None, 1
                            
@@ -166,15 +166,43 @@
                         MyLEDImage:
                             id: midi_in_activity
                             pos_hint: {'x':.75, 'center_y':.5}
+                    # channel selectors TBD
+                    
+#                    FloatLayout:
+##                        size_hint: 1, None
+#                        pos_hint: {'top':.77}
+#                        Label:
+#                            width: 15
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.1, 'center_y':.5}
+#                            markup: True
+#                            text: root.bold('CHANNEL:')
+#                        Label:
+#                            id: midi_input_channel_value
+#                            width: 10
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.18,'center_y':.5}
+#                            markup: True
+#                            text: root.bold(str(int(clock_bpm_slider.value)))
+#                        Slider:
+#                            id: midi_input_channel_slider
+#                            pos_hint: {'x':.21, 'center_y':.5}
+#                            width: 400
+#                            size_hint: None, 1
+#                            min: 0
+#                            max: 16
+#                            value: 0
+#                            on_value:  root.change_midi_input_channel(self.value)
+                    
 
                     FloatLayout:
                         height: 60
                         size_hint: 1, None
-                        pos_hint: {'top':.7}
+                        pos_hint: {'top':.65}
                         Label:
                             markup: True
                             text: root.bold('OUTPUT:')
-                            pos_hint: {'x':.12, 'center_y':0.5}
+                            pos_hint: {'x':.11, 'center_y':0.5}
                             width: 20
                             size_hint: None, 1
                         MidiPortSelectSpinner:
@@ -199,8 +227,34 @@
                             text: ''# root.bold('PANIC')
                             on_press: root.start_midi_panic(self)
                             on_release: root.end_midi_panic(self)
-
-
+                    
+#                    FloatLayout:
+#                        height: 60   
+#                        size_hint: 1, None
+#                        pos_hint: {'top':.57}
+##                        Label:
+#                            width: 15
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.1, 'center_y':.5}
+#                            markup: True
+#                            text: root.bold('CHANNEL:')
+#                        Label:
+#                            id: midi_output_channel_value
+#                            width: 10
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.18,'center_y':.5}
+#                            markup: True
+#                            text: root.bold(str(int(clock_bpm_slider.value)))
+#                        Slider:
+#                            id: midi_output_channel_slider
+#                            pos_hint: {'x':.21, 'center_y':.5}
+#                            width: 400
+#                            size_hint: None, 1
+#                            min: 0
+#                            max: 16
+#                            value: 0
+#                            on_value:  root.change_midi_output_channel(self.value)
+                    
                             
 
                     Label:
@@ -209,11 +263,11 @@
                         font_size: 30
                         height: 20
                         size_hint: 1, None
-                        pos_hint: {'top':.45}
+                        pos_hint: {'top':.4}
                     FloatLayout:
                         height: 60
                         size_hint: 1, None
-                        pos_hint: {'top':.4}
+                        pos_hint: {'top':.35}
                         ClockSourceToggleButton:
                             id: clock_internal
                             text: root.bold('INTERNAL')
@@ -227,7 +281,7 @@
                     FloatLayout:
                         height: 60   
                         size_hint: 1, None
-                        pos_hint: {'top':.3}
+                        pos_hint: {'top':.25}
                         Label:
                             width: 15
                             size_hint: None, 1

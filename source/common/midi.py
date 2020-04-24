@@ -38,6 +38,16 @@ class MidiPort:
         self.port_name = None
         self.midi_activity_callback = None
         self.midiin_callback = None
+        self.channel_filter = 0 # 0 accepts or sends all channels WIP
+
+    def set_channel_filter(self, filter):
+        if filter > 16:
+            filter = 0
+
+        self.channel_filter = filter
+
+    def get_channel_filter(self):
+        return self.channel_filter
 
     def register_midi_activity_callback(self, callback):
         self.midi_activity_callback = callback
@@ -90,8 +100,6 @@ class MidiPort:
 
 
         #self.midi.set_error_callback(self.error_callback) not necessary
-
-
 
     def close_port(self):
         self.midi.close_port() # safely removes callback for midiin
@@ -231,7 +239,7 @@ class MidiInput(MidiPort, MidiClockSource):
     def callback(self, msg_dt, data):
         global gstart_debug_timer
         message = msg_dt[0]
-        data_type = message[0]
+        data_type = message[0] & 0xF0 # now we accept all channels
 
         if self.clock_callback is not None:
             if data_type == TIMING_CLOCK:
@@ -245,7 +253,7 @@ class MidiInput(MidiPort, MidiClockSource):
 
         if self.note_callback is not None:
            
-            if data_type is NOTE_OFF or data_type is NOTE_ON:
+            if data_type == NOTE_OFF or data_type == NOTE_ON:
                 gstart_debug_timer = time.time()
                 
                 log.info(f"{self.port_name} - Note In: {message}")
@@ -255,7 +263,7 @@ class MidiInput(MidiPort, MidiClockSource):
                 return
 
         if self.control_callback is not None:
-            if data_type is CONTROL_CHANGE:
+            if data_type == CONTROL_CHANGE:
                 log.info(f"{self.port_name} - Control: {message}")
                 self.control_callback(message[1], message[2], self.control_data)
                 if self.midi_activity_callback is not None:
@@ -271,7 +279,6 @@ class MidiInput(MidiPort, MidiClockSource):
         super(MidiInput, self).start_clock()
         self.midi.ignore_types(timing = True)
         log.info(f'Midiin ignoring clock')
-
 
     def run(self):
         self.midi.set_callback(self.callback)
@@ -303,10 +310,10 @@ class MidiOutput(MidiPort):
             return
 
         log.info(f"{self.port_name} - Note out: {message}")
-        data_type = message[0]
-        if data_type is NOTE_OFF:
+        data_type = message[0] & 0xF0 # all channels
+        if data_type == NOTE_OFF:
             self.notes_pending -= 1
-        if data_type is NOTE_ON:
+        if data_type == NOTE_ON:
             self.notes_pending += 1
 
         self.midi.send_message(message)
@@ -618,15 +625,16 @@ class CCControls:
 
 class MidiNoteMessage:
     def __init__(self, message):
-        self.data_type = message[0]
-        if self.data_type is NOTE_OFF or self.data_type is NOTE_ON:
+        self.data_type = message[0] & 0xF0
+        if self.data_type == NOTE_OFF or self.data_type == NOTE_ON:
             self.velocity = message[2]
             self.note = message[1]
+            self.type_channel = message[0]
         else:
             raise Exception('Not a midi note message')
 
     def get_message(self):
-        return [self.data_type, self.note, self.velocity]
+        return [self.type_channel, self.note, self.velocity]
 
     def is_note_on(self):
         if self.data_type == NOTE_ON:
