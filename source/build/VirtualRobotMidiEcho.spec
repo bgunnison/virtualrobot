@@ -6,7 +6,8 @@ from kivy.tools.packaging.pyinstaller_hooks import get_deps_minimal, get_deps_al
 block_cipher = None
 
 
-a = Analysis([  '..\\ui\\mainecho.py',
+a = Analysis([  '..\\ui\\mainapp.py',
+                '..\\ui\\mainecho.py',
                 '..\\midiapps\\midi_echo.py',
                 '..\\midiapps\\midi_effect_manager.py',
                 '..\\common\\midi.py',

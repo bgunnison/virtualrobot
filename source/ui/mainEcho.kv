@@ -116,13 +116,9 @@
                 text: root.bold('MIDI')
                 on_press: root.nav_button_pressed(self, 'screen_midi')
             NavButton:
-                id: nav_echo
+                id: nav_effect
                 text: root.bold('ECHO')
-                on_press: root.nav_button_pressed(self, 'screen_echo')
-            #NavButton:
-            #    id: nav_live
-            #    text: root.bold('LIVE')
-            #    on_press: root.nav_button_pressed(self, 'screen_live')
+                on_press: root.nav_button_pressed(self, 'screen_effect')
             NavButton:
                 id: nav_help
                 text: root.bold('HELP')
@@ -316,9 +312,9 @@
 
                    
 
-            EchoScreen:
-                id: screen_echo
-                name: 'screen_echo'
+            EffectScreen:
+                id: screen_effect
+                name: 'screen_effect'
                 manager: 'screen_manager'
                 FloatLayout:
                     orientation: 'vertical'

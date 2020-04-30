@@ -108,9 +108,9 @@
                 text: root.bold('MIDI')
                 on_press: root.nav_button_pressed(self, 'screen_midi')
             NavButton:
-                id: nav_chord
+                id: nav_effect
                 text: root.bold('CHORD')
-                on_press: root.nav_button_pressed(self, 'screen_chord')
+                on_press: root.nav_button_pressed(self, 'screen_effect')
             NavButton:
                 id: nav_help
                 text: root.bold('HELP')
@@ -188,9 +188,9 @@
                             on_press: root.start_midi_panic(self)
                             on_release: root.end_midi_panic(self)
 
-            ChordScreen:
-                id: screen_chord
-                name: 'screen_chord'
+            EffectScreen:
+                id: screen_effect
+                name: 'screen_effect'
                 manager: 'screen_manager'
                 FloatLayout:
                     orientation: 'vertical'
