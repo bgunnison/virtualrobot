@@ -41,7 +41,7 @@ class ChordInfo:
                         'Sus2':[2,7],
                         'Sus4':[5,7],
                         'Aug':[4,8],
-                        'Custom':[]
+                        #'Custom':[]
                         }
 
     def get_intervals(self, name):

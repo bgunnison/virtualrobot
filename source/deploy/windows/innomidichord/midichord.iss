@@ -149,3 +149,8 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
+
+[UninstallDelete]
+Type: files; Name: "{localappdata}\VIRTUALROBOT\MidiChord\config.bak"
+Type: files; Name: "{localappdata}\VIRTUALROBOT\MidiChord\config.dat"
+Type: files; Name: "{localappdata}\VIRTUALROBOT\MidiChord\config.dir"

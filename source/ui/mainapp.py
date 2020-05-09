@@ -96,7 +96,7 @@ class RootWidget(BoxLayout):
         self.effect_controls = {} # dict keyd by effect control name with ui ids to update if we get a CC control
         # restore screen in settings
         but = None
-        screen = self.settings.get('start_screen', 'screen_midi')
+        screen = self.settings.get('start_screen', 'screen_help') # first screen at install is help
         if 'midi' in screen:
             but = self.ids.nav_midi
         if 'effect' in screen:
