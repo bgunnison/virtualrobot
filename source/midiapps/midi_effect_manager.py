@@ -13,6 +13,72 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
+from common.midi import MidiNoteMessage, MidiConstants
+
+
+
+class Effect:
+    """
+    Things common to midi effects
+    """
+    def __init__(self, settings, cc_controls=None):
+        self.settings = settings
+        self.name = 'MIDI Effect'
+        self.cc_controls = cc_controls
+        self.note_manager = None
+        # this for purge, any effect that creates notes adds them here.
+        # purge will send their note offs. Typically used for turning effect off in the middle
+        self.note_on_events = set([])
+
+    def add_note_on_event(self, message):
+        # keep a set of note on events pending, if the effect is turened off we can purge them
+        # if a note off event we remove the note from the set
+        #log.info(f'add_note_on_event msg: {message}')
+        
+        try:
+            note = MidiNoteMessage(message)
+        except:
+            log.debug('add_note_on_event message error')
+            return
+
+        if note.is_note_off():
+            note.make_note_on() # notes are stored as on
+            event = (note.type_channel, note.note)
+            log.info(f'note off event: {event}')
+            if event in self.note_on_events:
+                log.info(f'note off remove event: {event}')
+                self.note_on_events.remove(event)
+            return
+
+        # events are unique by note and channel
+        event = (note.type_channel, note.note)
+
+        log.info(f'note on add event: {event}')
+        self.note_on_events.add(event)
+
+    def purge(self, midiout):
+        if midiout is None:
+            self.note_on_events.clear()
+            return
+
+        log.info(f'Purging: {len(self.note_on_events)} ')
+
+        for event in self.note_on_events:
+            message = [event[0], event[1], 0]
+            note = MidiNoteMessage(message)
+            note.make_note_off()
+            midiout.send_message(message)
+
+        log.info('Purge finished')
+        self.note_on_events.clear()
+
+
+    def get_name(self):
+        return self.name
+
+    def run(self):
+        pass # override
+
 
 class MidiEffectManager:
 
@@ -27,6 +93,9 @@ class MidiEffectManager:
     def effect_enable(self, on):
         log.info(f'Effect: {self.effect.get_name()} is {on}')
         self.effect_enabled = on
+        if self.effect_enabled == False:
+            self.effect.purge(self.midi_manager.midiout) # get rid of any hanging notes
+            self.midi_manager.midiout.purge()
         self.settings.set('EffectEnabled', on)
 
 

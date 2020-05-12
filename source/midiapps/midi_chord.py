@@ -17,7 +17,9 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 from common.midi import *
-from common.upper_class_utils import Effect, NoteManager
+from common.upper_class_utils import NoteManager
+from midiapps.midi_effect_manager import Effect
+from common.midi import MidiNoteMessage, MidiConstants
 
 
 def fatal_exit(msg):
@@ -65,6 +67,8 @@ class MidiChord:
         if intervals is None:
             log.critical(f'Unrecognized chord name {name}')
             raise Exception(f'Unrecognized chord name: {name}')
+
+        log.info(f'Chord: {name}, intervals: {intervals}')
 
         iindex = 0
         for i in range(width):
@@ -209,11 +213,12 @@ class MidiChordEffect(Effect):
         """
         generate the added notes for the chord
         """
-        if midiout.get_notes_pending() == 0:    # if we change in the middle of a chord playing we get stuck notes
-            if self.chord_index != self.new_chord_index:
-                self.chord_index = self.new_chord_index
-            if self.chord_width != self.new_chord_width:
-                self.chord_width = self.new_chord_width
+        # if we change in the middle of a chord playing we get stuck notes
+        if self.chord_index != self.new_chord_index or self.chord_width != self.new_chord_width:
+            self.chord_index = self.new_chord_index
+            self.chord_width = self.new_chord_width
+            self.strummer.purge()
+            self.purge(midiout) # turns off pending notes. 
 
         midiout.send_message(message)  # send original note event
 
@@ -226,11 +231,14 @@ class MidiChordEffect(Effect):
         num = 1
         for note in chord.notes():
             onote.note = note
+            message = onote.get_message()
+            self.add_note_on_event(message) # keeps track of note on events if we need to purge
+
             if self.strummer.is_running() == True:
-               self.strummer.add(num, onote.get_message(), midiout)
+               self.strummer.add(num, message, midiout)
                num += 1
             else:
-                midiout.send_message(onote.get_message())
+                midiout.send_message(message)
 
         
        
@@ -284,7 +292,10 @@ class Strummer:
     def is_running(self):
         return self.running
 
+    def purge(self):
+        self.note_manager.purge()
+
     def stop(self):
-        self.note_manager.panic()
+        self.purge()
         self.running = False
 

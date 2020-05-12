@@ -18,7 +18,8 @@ logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 from common.midi import MidiNoteMessage, MidiConstants
-from common.upper_class_utils import Effect, NoteManager
+from common.upper_class_utils import NoteManager
+from midiapps.midi_effect_manager import Effect
 
 
 class MidiEchoEffect(Effect):
@@ -172,9 +173,10 @@ class MidiEchoEffect(Effect):
         # if we change number of echoes in the middle of echoing notes
         # we could miss note off events. 
         if self.update:
-            if self.note_manager.empty():
-                self.delays = self.new_delays
-                self.update = False
+            self.purge(midiout) # turns off pending notes. 
+            self.note_manager.purge()
+            self.delays = self.new_delays
+            self.update = False
 
 
         # divide the velocity range to get to min from original v
@@ -189,6 +191,7 @@ class MidiEchoEffect(Effect):
             if note.velocity < end_velocity:
                 break
 
+            self.add_note_on_event(note.get_message()) # keeps track of note on events if we need to purge
             self.note_manager.add(delay + tick, note.get_message())
             
 

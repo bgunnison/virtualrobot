@@ -293,17 +293,23 @@ class MidiOutput(MidiPort):
         self.notes_pending = 0
 
     def get_notes_pending(self):
+        # not a reliable method to see if any stuck notes...
         return self.notes_pending
 
     def panic(self):
         if self.midi.is_port_open() == False:
             return
 
+        self.notes_pending = 0
         log.info(f"Panic")
         for channel in range(16):
-            self.midi.send_message([CONTROL_CHANGE, ALL_SOUND_OFF, 0])
-            self.midi.send_message([CONTROL_CHANGE, RESET_ALL_CONTROLLERS, 0])
+            data = CONTROL_CHANGE + channel
+            self.midi.send_message([data, ALL_SOUND_OFF, 0])
+            #self.midi.send_message([data, RESET_ALL_CONTROLLERS, 0])
             time.sleep(0.05)
+
+    def purge(self):
+        self.notes_pending = 0
 
     def send_message(self, message):
         if self.midi.is_port_open() == False:
@@ -315,6 +321,8 @@ class MidiOutput(MidiPort):
             self.notes_pending -= 1
         if data_type == NOTE_ON:
             self.notes_pending += 1
+
+        #log.info(f'notes pending: {self.notes_pending}')
 
         self.midi.send_message(message)
         time_passed = time.time() - gstart_debug_timer
@@ -626,6 +634,7 @@ class CCControls:
 class MidiNoteMessage:
     def __init__(self, message):
         self.data_type = message[0] & 0xF0
+        self.channel = message[0] & 0x0F
         if self.data_type == NOTE_OFF or self.data_type == NOTE_ON:
             self.velocity = message[2]
             self.note = message[1]
@@ -645,5 +654,11 @@ class MidiNoteMessage:
         if self.data_type == NOTE_OFF:
             return True
         return False
+
+    def make_note_off(self):
+        self.type_channel = NOTE_OFF + self.channel
+
+    def make_note_on(self):
+        self.type_channel = NOTE_ON + self.channel
 
 

@@ -47,7 +47,7 @@ class Settings:
         then create the shelve files, if these fail we resort to a dictionay so set and get work, but persistance fails
         todo: multiple apps of same type?
         """
-        self.path = os.path.expanduser(os.path.join('~', 'VirtualRobot', app_name))
+        self.path = os.path.expanduser(os.path.join('~', 'AppData', 'Local', 'VIRTUALROBOT', app_name))
         self.settings = None
         self.persist = True
 
@@ -123,23 +123,6 @@ class Settings:
 
 
 
-class Effect:
-    """
-    Things common to midi effects
-    """
-    def __init__(self, settings, cc_controls=None):
-        self.settings = settings
-        self.name = 'MIDI Effect'
-        self.cc_controls = cc_controls
-        self.note_manager = None
-
-
-    def get_name(self):
-        return self.name
-
-    def run(self):
-        pass # override
-
 
 
 class NoteManager:
@@ -151,6 +134,7 @@ class NoteManager:
 
     def __init__(self):
         self.note_events = queue.PriorityQueue()
+        self.midiout = None
 
     def run(self, tick, midiout):
         """
@@ -171,6 +155,8 @@ class NoteManager:
         else:
             self.note_events.put(event)
 
+        self.midiout = midiout
+
     def add(self, tick, message):
         """
         Add a message to the priority queue
@@ -178,10 +164,14 @@ class NoteManager:
         self.note_events.put((tick, message))
         #log.info(f"Add: {message}, {tick}")
 
+    def purge(self):
+        self.note_events = None
+        self.note_events = queue.PriorityQueue()
+
     def panic(self):
         self.note_events = None
         self.note_events = queue.PriorityQueue()
 
-    def empty(self):
+    def is_empty(self):
         return self.note_events.empty()
 
