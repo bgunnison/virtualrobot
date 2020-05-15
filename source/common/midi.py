@@ -21,6 +21,9 @@ from rtmidi.midiconstants import *
 logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
+BPM_MIN = 10
+BPM_MAX = 500 # also in the kv slider file
+
 class MidiConstants:
     """
     exported outside this file as well as here
@@ -117,7 +120,7 @@ class MidiClockSource:
     base class for a clock source either external or internal
     """
     def __init__(self):
-        self.bpm = 1 
+        self.bpm = BPM_MIN 
         self.clock_callback = None
         self.clock_delta_time = 0.0   # the time between clock msgs
         self.tick = 0
@@ -138,12 +141,13 @@ class MidiClockSource:
         self.tick = 1
         self.clock_delta_time = 0.0
 
-    def start_clock(Self):
+    def start_clock(self):
         pass # override
     
     def stop_clock(self):
         self.clock_callback = None
         self.clock_data = None
+        log.info('stopping clock')
 
     def get_tick(self):
         return self.tick
@@ -154,7 +158,10 @@ class MidiClockSource:
 
         self.clock_delta_time = dt   # the time between clock msgs
         self.tick += 1           # number of clock msgs since inception
-        self.clock_callback(self.tick, self.clock_data)
+        if self.clock_callback is not None:
+            self.clock_callback(self.tick, self.clock_data)
+        else:
+            log.error('Clock callback is None')
 
 
 class MidiInternalClock(MidiClockSource):
@@ -165,9 +172,12 @@ class MidiInternalClock(MidiClockSource):
     def __init__(self, settings, cc_controls=None, bpm=60):
         super().__init__()
         self.settings = settings
-        self.min = self.settings.get('internal_clock_bpm_min', 10)
-        self.max = self.settings.get('internal_clock_bpm_max', 240)
+        self.min = self.settings.get('internal_clock_bpm_min', BPM_MIN)
+        self.max = self.settings.get('internal_clock_bpm_max', BPM_MAX)
         self.bpm = self.settings.get('internal_clock_bpm', bpm)
+        if self.bpm < self.min:
+            self.bpm = self.min
+
         self.cc_controls = cc_controls
         # 24 beats per quarter note, (60/60)/24 = 41.6 msec
         self.tick_time = (60.0/self.bpm)/24.0
@@ -188,7 +198,7 @@ class MidiInternalClock(MidiClockSource):
 
         self.bpm = bpm
         self.tick_time = (60.0/self.bpm)/24.0
-        log.info(f'internal bpm: {bpm}')
+        #log.info(f'internal bpm: {bpm}')
         self.settings.set('internal_clock_bpm', self.bpm)
 
     def callback(self):
@@ -227,27 +237,49 @@ class MidiInput(MidiPort, MidiClockSource):
         self.clock = None   # clock source
         self.control_callback = None
         self.control_data = None
+        # need to average the delta time if external clock comes in here so to display a non-jerky BPM
+        self.rave_order = 24
+        self.rave_samples = []
+        self.rave_sum = 0
 
-    def register_note_callback(self, callback, clock):
+    def register_note_callback(self, callback):
         self.note_callback = callback
+
+    def set_clock_source(self, clock):
         self.clock = clock
 
     def register_control_callback(self, callback, data=None):
         self.control_callback = callback
         self.control_data = data
 
+    def ave_clock_delta_time(self):
+        if len(self.rave_samples) == self.rave_order:
+            self.rave_sum -= self.rave_samples.pop(0)
+
+        self.rave_sum += self.clock_delta_time
+        self.rave_samples.append(self.clock_delta_time)
+        ave = self.rave_sum/float(len(self.rave_samples))
+        #log.info(f'Ave delta time: {ave:.03f}')
+
+        return ave
+
     def callback(self, msg_dt, data):
         global gstart_debug_timer
         message = msg_dt[0]
+        data0 = message[0]
         data_type = message[0] & 0xF0 # now we accept all channels
 
         if self.clock_callback is not None:
-            if data_type == TIMING_CLOCK:
-                log.info(f'external clock tick: {self.tick}')
+            if data0 == TIMING_CLOCK: # F8
+                #log.info(f'external clock tick: {self.tick}')
                 self.process_tick(msg_dt[1])
+                if self.clock_delta_time == 0.0:
+                    return
+
                 # to get bpm from an external clock we use the delta time
                 # self.tick_time = (60.0/self.bpm)/24.0
-                self.bpm = round(60/(24 * self.clock_delta_time))
+                # since it is not too accurate we average it
+                self.bpm = round(60/(24 * self.ave_clock_delta_time()))
                 #log.info(f'ext clock bpm: {self.bpm}')
                 return 
 
@@ -256,7 +288,7 @@ class MidiInput(MidiPort, MidiClockSource):
             if data_type == NOTE_OFF or data_type == NOTE_ON:
                 gstart_debug_timer = time.time()
                 
-                log.info(f"{self.port_name} - Note In: {message}")
+                #log.info(f"{self.port_name} - Note In: {message}")
                 self.note_callback(message, self.clock)
                 if self.midi_activity_callback is not None:
                     self.midi_activity_callback()
@@ -264,7 +296,7 @@ class MidiInput(MidiPort, MidiClockSource):
 
         if self.control_callback is not None:
             if data_type == CONTROL_CHANGE:
-                log.info(f"{self.port_name} - Control: {message}")
+                #log.info(f"{self.port_name} - Control: {message}")
                 self.control_callback(message[1], message[2], self.control_data)
                 if self.midi_activity_callback is not None:
                     self.midi_activity_callback()
@@ -272,11 +304,13 @@ class MidiInput(MidiPort, MidiClockSource):
     def start_clock(self):
         super(MidiInput, self).start_clock()
         self.midi.ignore_types(timing = False) # don't ignore MIDI clock messages
+        self.rave_samples = []
+        self.rave_sum = 0
         log.info(f'Midiin set as clock source')
 
 
     def stop_clock(self):
-        super(MidiInput, self).start_clock()
+        super(MidiInput, self).stop_clock()
         self.midi.ignore_types(timing = True)
         log.info(f'Midiin ignoring clock')
 
@@ -315,7 +349,7 @@ class MidiOutput(MidiPort):
         if self.midi.is_port_open() == False:
             return
 
-        log.info(f"{self.port_name} - Note out: {message}")
+        #log.info(f"{self.port_name} - Note out: {message}")
         data_type = message[0] & 0xF0 # all channels
         if data_type == NOTE_OFF:
             self.notes_pending -= 1
@@ -358,7 +392,6 @@ class MidiManager():
         self.clock_source = None
         if use_clock:
             # clock stuff
-            self.clock_midiin = None # can be set to a midiin port to get external clock
             self.internal_clock = MidiInternalClock(self.settings, cc_controls=self.cc_controls)
             self.clock_source = self.settings.get('ClockSource', 'internal')
             self.set_clock_source(self.clock_source)
@@ -422,6 +455,8 @@ class MidiManager():
 
         self.clock.register_clock_callback(callback=self.clock_callback, data=self.clock_data)  
         self.clock.send_clock_out(self.midiout) # might make option...
+        # pass clock so we know when notes arrive
+        self.midiin.set_clock_source(self.clock)
         self.clock.start_clock()
         self.clock_source = clock_source
         self.settings.set('ClockSource', clock_source)
@@ -434,7 +469,9 @@ class MidiManager():
         self.midiout.register_midi_activity_callback(callback)
 
     def register_note_callback(self, callback):
-        self.midiin.register_note_callback(callback, self.clock) # pass clock so we know when notes arrive
+        self.midiin.register_note_callback(callback) 
+        # pass clock so we know when notes arrive
+        self.midiin.set_clock_source(self.clock)
 
     def register_clock_callback(self, callback, data=None):
         """
@@ -563,7 +600,7 @@ class CCControls:
         """
         for cc, info in self.cc_controls.items():
             if name == info.get('name'):
-                log.info(f'Learning cc for {name}')
+                #log.info(f'Learning cc for {name}')
                 self.midiin.register_control_callback(self.cc_learn_callback, ui_data)
                 self.ui_learn_callback = ui_callback
                 self.learn_name = name

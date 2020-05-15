@@ -182,9 +182,9 @@ class RootWidget(BoxLayout):
         control_name = info.get('control_name')
         slider_id = info.get('slider_id')
         slider_id.disabled = True # The slider settings changed invoke the on_value call
-        log.info(f'{control_name}')
+        #log.info(f'{control_name}')
         slider_id.min = self.midi_manager.cc_controls.get_min(control_name)
-        log.info(f'{slider_id.min}')
+        #log.info(f'{slider_id.min}')
         slider_id.max = self.midi_manager.cc_controls.get_max(control_name)
         value = self.settings.get(info.get('settings_name'))
         slider_id.value = value
@@ -205,7 +205,7 @@ class RootWidget(BoxLayout):
         """
         update UI sliders to reflect CC changing the effect parm
         """
-        log.info(f'ui_effect_control_update: {id_str}')
+       # log.info(f'ui_effect_control_update: {id_str}')
         info = self.effect_controls.get(id_str)
         if info is None:
             log.error(f'Unknown effects control name {id_str}')
@@ -230,7 +230,7 @@ class RootWidget(BoxLayout):
         """
         from the slider update text and effect
         """
-        log.info(f'effect_control_update: {id_str}')
+        #log.info(f'effect_control_update: {id_str}')
         info = self.effect_controls.get(id_str)
         if info is None:
             log.error(f'Unknown effects control name {id_str}')

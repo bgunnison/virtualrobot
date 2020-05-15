@@ -89,7 +89,7 @@ class Settings:
 
     def set(self, name, value):
         self.settings[name] = value
-        log.info(f'Settings set: {self.path}, {name}, {value}')
+        #log.info(f'Settings set: {self.path}, {name}, {value}')
 
     def get(self, name, default_value=None):
         """

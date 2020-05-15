@@ -44,16 +44,16 @@ class Effect:
         if note.is_note_off():
             note.make_note_on() # notes are stored as on
             event = (note.type_channel, note.note)
-            log.info(f'note off event: {event}')
+            #log.info(f'note off event: {event}')
             if event in self.note_on_events:
-                log.info(f'note off remove event: {event}')
+               # log.info(f'note off remove event: {event}')
                 self.note_on_events.remove(event)
             return
 
         # events are unique by note and channel
         event = (note.type_channel, note.note)
 
-        log.info(f'note on add event: {event}')
+        #log.info(f'note on add event: {event}')
         self.note_on_events.add(event)
 
     def purge(self, midiout):
@@ -61,16 +61,24 @@ class Effect:
             self.note_on_events.clear()
             return
 
-        log.info(f'Purging: {len(self.note_on_events)} ')
+        try:
+            # saw an exception where someone was modifying this set whilst iterating over it below. 
+            purge_events = self.note_on_events.copy()
+            self.note_on_events.clear()
+        except:
+            log.debug('exception copying purge events')
+            return
 
-        for event in self.note_on_events:
+        log.info(f'Purging: {len(purge_events)} ')
+
+        for event in purge_events:
             message = [event[0], event[1], 0]
             note = MidiNoteMessage(message)
             note.make_note_off()
             midiout.send_message(message)
 
         log.info('Purge finished')
-        self.note_on_events.clear()
+        purge_events.clear()
 
 
     def get_name(self):

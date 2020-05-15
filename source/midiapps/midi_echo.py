@@ -46,7 +46,7 @@ class MidiEchoEffect(Effect):
         """
         cancels all echoes
         """
-        self.note_manager.panic()
+        self.update = True # catches this in run and purges pending notes. 
 
     def get_delay_type_label(self, index):
         if index >= len(self.delay_types):
@@ -108,7 +108,7 @@ class MidiEchoEffect(Effect):
                 self.new_delays.append(delay)
 
             if 'SLOW' in delay_type_str:
-                log.info(f"slow delays: {self.new_delays}")
+                #log.info(f"slow delays: {self.new_delays}")
                 return
 
             if 'FAST' in delay_type_str:
@@ -116,7 +116,7 @@ class MidiEchoEffect(Effect):
                 hi = self.new_delays[-1]
                 self.new_delays.reverse()
                 self.new_delays = [hi - d for d in self.new_delays]
-                log.info(f"fast delays: {self.new_delays}")
+                #log.info(f"fast delays: {self.new_delays}")
                 return
 
 
@@ -128,7 +128,7 @@ class MidiEchoEffect(Effect):
         self.delay_type = control
         self.calc_delays()
         self.settings.set('EchoEffectDelayType', self.delay_type)
-        log.info(f"Delay type: {self.delay_types[self.delay_type]}")
+       # log.info(f"Delay type: {self.delay_types[self.delay_type]}")
 
 
     def control_echoes(self, control):
@@ -138,7 +138,7 @@ class MidiEchoEffect(Effect):
         self.echoes = control
         self.calc_delays()
         self.settings.set('EchoEffectNumberEchoes', self.echoes)
-        log.info(f"echoes: {self.echoes}")
+        #log.info(f"echoes: {self.echoes}")
 
     def control_delay_tick(self, control):
         """
@@ -147,7 +147,7 @@ class MidiEchoEffect(Effect):
         self.delay_start_ticks = control
         self.settings.set('EchoEffectDelayStartTicks', self.delay_start_ticks)
         self.calc_delays()
-        log.info(f"delay ticks: {self.delay_start_ticks}")
+       # log.info(f"delay ticks: {self.delay_start_ticks}")
 
 
     def control_end_velocity(self, control):
@@ -178,7 +178,7 @@ class MidiEchoEffect(Effect):
             self.delays = self.new_delays
             self.update = False
 
-
+        #log.info(f'Tick: {tick}, msg: {message}')
         # divide the velocity range to get to min from original v
         ov = note.velocity
         dv = (ov - end_velocity)/float(len(self.delays))
