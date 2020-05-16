@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 BPM_MIN = 10
-BPM_MAX = 500 # also in the kv slider file
+BPM_MAX = 300 # also in the kv slider file
 
 class MidiConstants:
     """
@@ -105,8 +105,9 @@ class MidiPort:
         #self.midi.set_error_callback(self.error_callback) not necessary
 
     def close_port(self):
-        self.midi.close_port() # safely removes callback for midiin
-        log.info(f"Closed MIDI port: {self.port_name}")
+        if self.midi.is_port_open() == True:
+            self.midi.close_port() # safely removes callback for midiin
+            log.info(f"Closed MIDI port: {self.port_name}")
         self.port_name = None
 
     def __del__(self):

@@ -154,16 +154,16 @@ class RootWidget(BoxLayout):
             ports = self.midi_manager.get_midi_in_ports()
             if ports is not None:
                 if midi_port in ports:
-                    self.ids.midi_port_in.text = midi_port
-                    self.select_midi_input_port(self.ids.midi_port_in)
+                    self.ids.midi_port_in.text = midi_port # fires off select_midi_input_port
+                    #self.select_midi_input_port(self.ids.midi_port_in)
 
         midi_port = self.settings.get('midi_out_port')
         if midi_port is not None:
             ports = self.midi_manager.get_midi_out_ports()
             if ports is not None:
                 if midi_port in ports:
-                    self.ids.midi_port_out.text = midi_port
-                    self.select_midi_output_port(self.ids.midi_port_out)
+                    self.ids.midi_port_out.text = midi_port # fires off select_midi_input_port
+                    #self.select_midi_output_port(self.ids.midi_port_out)
 
 
     def update_effect_screen(self):

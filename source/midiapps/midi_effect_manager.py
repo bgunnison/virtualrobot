@@ -69,12 +69,12 @@ class Effect:
             log.debug('exception copying purge events')
             return
 
-        log.info(f'Purging: {len(purge_events)} ')
 
         for event in purge_events:
             message = [event[0], event[1], 0]
             note = MidiNoteMessage(message)
             note.make_note_off()
+            #log.info(f'Purging: {message} ')
             midiout.send_message(message)
 
         log.info('Purge finished')

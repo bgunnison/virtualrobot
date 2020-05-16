@@ -68,7 +68,7 @@ class MidiChord:
             log.critical(f'Unrecognized chord name {name}')
             raise Exception(f'Unrecognized chord name: {name}')
 
-        log.info(f'Chord: {name}, intervals: {intervals}')
+        #log.info(f'Chord: {name}, intervals: {intervals}')
 
         iindex = 0
         for i in range(width):
@@ -174,7 +174,7 @@ class MidiChordEffect(Effect):
         #self.panic() # halts notes in progress
         self.new_chord_index = control
         self.settings.set('ChordEffectName', control)
-        log.info(f"Chord: {self.chord_names[self.new_chord_index]}")
+        #log.info(f"Chord: {self.chord_names[self.new_chord_index]}")
 
     def control_chord_width(self, control):
         """
@@ -190,7 +190,7 @@ class MidiChordEffect(Effect):
 
         self.new_chord_width = control
         self.settings.set('ChordEffectWidth', control)
-        log.info(f"Chord width: {self.new_chord_width}")
+        #log.info(f"Chord width: {self.new_chord_width}")
 
     def control_chord_strum_delay(self, control):
         """
@@ -206,7 +206,7 @@ class MidiChordEffect(Effect):
 
         self.strummer.set_delay(control)  
         self.settings.set('ChordEffectStrumDelay', control)
-        log.info(f"Chord strum delay: {control}")
+        #log.info(f"Chord strum delay: {control}")
 
 
     def run(self, tick, midiout, message):
@@ -261,7 +261,7 @@ class Strummer:
 
     def add(self, num, message, midiout):
         play_tick = self.tick + (num * self.delay_ticks)
-        log.info(f'Strummer add: {play_tick}')
+        #log.info(f'Strummer add: {play_tick}')
         self.note_manager.add(play_tick, message)
         self.midiout = midiout
 

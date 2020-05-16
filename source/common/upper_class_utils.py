@@ -73,8 +73,12 @@ class Settings:
         # flag = 'n'  # NOT ON WINDOWS!! Always create a new, empty database, open for reading and writing
 
         try:
-            Path(self.path).mkdir(parents=True, exist_ok=True)
-            pathfile = os.path.expanduser(os.path.join(self.path, 'config'))
+            if Path(self.path).exists() == False:
+                log.info(f'Creating settings path: {self.path}')
+                Path(self.path).mkdir(parents=True)
+
+            pathfile = os.path.join(self.path, 'config')
+            log.info(f'Settings opening at: {pathfile}')
             self.settings = shelve.open(pathfile, writeback=False)
             self.persist = True
         except:
@@ -98,6 +102,7 @@ class Settings:
         try:
             value = self.settings[name]
         except:
+            log.info(f'Setting default: {name} to {default_value}')
             self.set(name, default_value)
             return default_value
 
