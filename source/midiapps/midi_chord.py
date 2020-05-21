@@ -268,23 +268,24 @@ class Strummer:
     def thread(self):
         while True:
             if self.running == False:
-                log.info('Exiting Strummer')
+                #log.info('Exiting Strummer')
                 return # exit thread
 
-            start = time.time()
+            start = time.perf_counter()
 
             self.note_manager.run(self.tick, self.midiout)
             self.tick += 1 # count forever
             
-            time_to_sleep = self.tick_time - (time.time() - start) # subtract off time we worked
+            time_to_sleep = self.tick_time - (time.perf_counter() - start) # subtract off time we worked
             if time_to_sleep < 0.0:
-                time_to_sleep = 0.0
+                log.error('Strummer work took too long')
+                time_to_sleep = self.tick_time # need to sleep else get stuck in this thread forever
 
             # log.info(f'Internal clock tick: {self.tick}'
             time.sleep(time_to_sleep)
 
     def run(self):
-        log.info('Starting Strummer ')
+        #log.info('Starting Strummer ')
         self.running = True
         timerThread = threading.Thread(target=self.thread)
         timerThread.start()

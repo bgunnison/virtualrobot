@@ -56,9 +56,24 @@ class MidiPort:
         self.midi_activity_callback = callback
 
     def get_port_names(self):
-        self.ports = self.midi.get_ports()
-        if len(self.ports) == 0:
-            raise Exception("No MIDI in ports found")
+        
+        n = self.midi.get_port_count()
+        if n == 0:
+             raise Exception("No MIDI ports found")
+
+        self.ports = []
+        for p in range(n):
+            name = self.midi.get_port_name(p)
+            log.info(f'Actual port name: {name}')
+            # in windows the ports are enumerated in the name i.e. lma 1, where the 1 changes on PC reboot
+            # so strip off the number so we open the same port next power cycle
+            s = name.split(' ')
+            if s[-1].isdigit():
+                s = s[:-1]
+                name = ' '.join(s)
+
+            self.ports.append(name)
+
         return self.ports
 
     #def error_callback(self, func, data);
@@ -96,7 +111,7 @@ class MidiPort:
             self.last_error = f'Cannot open MIDI port: {name}, internal error'
             raise Exception(self.last_error)
 
-        self.port_name = self.midi.get_port_name(port_index)
+        self.port_name = port_name # self.midi.get_port_name(port_index)
         log.info(f"Opened MIDI port: {self.port_name}")
         if self.midiin_callback  is not None:
             self.midi.set_callback(self.midiin_callback)
@@ -123,11 +138,18 @@ class MidiClockSource:
     def __init__(self):
         self.bpm = BPM_MIN 
         self.clock_callback = None
-        self.clock_delta_time = 0.0   # the time between clock msgs
         self.tick = 0
         self.midiout = None
 
     def get_bpm(self):
+        if self.bpm < BPM_MIN:
+            log.error(f'BPM too low:  {self.bpm}')
+            return BPM_MIN
+
+        if self.bpm > BPM_MAX:
+            log.error(f'BPM too high:  {self.bpm}')
+            return BPM_MAX
+
         return self.bpm
 
     def change_bpm(self, bpm):
@@ -153,11 +175,10 @@ class MidiClockSource:
     def get_tick(self):
         return self.tick
 
-    def process_tick(self, dt):
+    def process_tick(self):
         if self.midiout is not None:
             self.midiout.send_clock_message() 
 
-        self.clock_delta_time = dt   # the time between clock msgs
         self.tick += 1           # number of clock msgs since inception
         if self.clock_callback is not None:
             self.clock_callback(self.tick, self.clock_data)
@@ -208,14 +229,16 @@ class MidiInternalClock(MidiClockSource):
                 log.info('Exiting internal clock thread')
                 return # exit thread
 
-            start = time.time()
+            start = time.perf_counter()
 
-            self.process_tick(self.tick_time)
+            self.process_tick()
             
-            time_to_sleep = self.tick_time - (time.time() - start) # subtract off time we worked
+            time_to_sleep = self.tick_time - (time.perf_counter() - start) # subtract off time we worked
            # log.info(f'Internal clock tick: {self.tick}')
             if time_to_sleep <= 0.0:
                 self.time_alarm = True
+                log.error('Internal clock work took too long')
+                time.sleep(self.tick_time) # gotta sleep else we get stuck here
             else:
                 time.sleep(time_to_sleep)
 
@@ -239,6 +262,7 @@ class MidiInput(MidiPort, MidiClockSource):
         self.control_callback = None
         self.control_data = None
         # need to average the delta time if external clock comes in here so to display a non-jerky BPM
+        self.last_ext_clock_time = time.perf_counter()
         self.rave_order = 24
         self.rave_samples = []
         self.rave_sum = 0
@@ -253,16 +277,26 @@ class MidiInput(MidiPort, MidiClockSource):
         self.control_callback = callback
         self.control_data = data
 
-    def ave_clock_delta_time(self):
+    def calc_ext_clock_bpm(self):
+        now = time.perf_counter()
+        clock_delta_time = now - self.last_ext_clock_time
+        self.last_ext_clock_time = now
+
+        # to get bpm from an external clock we use the delta time
+        # self.tick_time = (60.0/self.bpm)/24.0
+        # since it is not too accurate we average it
+        bpm = round(60/(24 * clock_delta_time))
+
         if len(self.rave_samples) == self.rave_order:
             self.rave_sum -= self.rave_samples.pop(0)
 
-        self.rave_sum += self.clock_delta_time
-        self.rave_samples.append(self.clock_delta_time)
-        ave = self.rave_sum/float(len(self.rave_samples))
-        #log.info(f'Ave delta time: {ave:.03f}')
+        self.rave_sum += bpm
+        self.rave_samples.append(bpm)
+        self.bpm = round(self.rave_sum/float(len(self.rave_samples)))
 
-        return ave
+        #log.info(f'bpm: {self.bpm}')
+
+
 
     def callback(self, msg_dt, data):
         global gstart_debug_timer
@@ -272,22 +306,18 @@ class MidiInput(MidiPort, MidiClockSource):
 
         if self.clock_callback is not None:
             if data0 == TIMING_CLOCK: # F8
+                #msg_dt[1] is supposed to be time between clocks, but inaccurate
                 #log.info(f'external clock tick: {self.tick}')
-                self.process_tick(msg_dt[1])
-                if self.clock_delta_time == 0.0:
-                    return
+                self.process_tick()
 
-                # to get bpm from an external clock we use the delta time
-                # self.tick_time = (60.0/self.bpm)/24.0
-                # since it is not too accurate we average it
-                self.bpm = round(60/(24 * self.ave_clock_delta_time()))
-                #log.info(f'ext clock bpm: {self.bpm}')
+                # all this so we can display external clock rate on UI
+                self.calc_ext_clock_bpm()
                 return 
 
         if self.note_callback is not None:
            
             if data_type == NOTE_OFF or data_type == NOTE_ON:
-                gstart_debug_timer = time.time()
+                gstart_debug_timer = time.perf_counter()
                 
                 #log.info(f"{self.port_name} - Note In: {message}")
                 self.note_callback(message, self.clock)
@@ -360,7 +390,7 @@ class MidiOutput(MidiPort):
         #log.info(f'notes pending: {self.notes_pending}')
 
         self.midi.send_message(message)
-        time_passed = time.time() - gstart_debug_timer
+        time_passed = time.perf_counter() - gstart_debug_timer
         #log.info(f'tp: {time_passed:.04f}')
 
         if self.midi_activity_callback is not None:
@@ -402,14 +432,20 @@ class MidiManager():
         try:
             names = self.midiin.get_port_names()
         except:
+            log.debug('No input ports')
             return None
+
+        log.info(f'Input ports: {names}')
         return names
 
     def get_midi_out_ports(self):
         try:
             names = self.midiout.get_port_names()
         except:
+            log.debug('No output ports')
             return None
+
+        log.info(f'Input ports: {names}')
         return names
 
     def set_midi_in_port(self, name):

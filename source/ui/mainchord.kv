@@ -169,6 +169,7 @@
                             id: midi_port_out
                             pos_hint: {'x':.2, 'center_y':.5}
                             on_text: root.select_midi_output_port(self)
+                            on_press: root.update_port_selections()
                         MyLEDImage:
                             id: midi_out_activity
                             pos_hint: {'x':.75, 'center_y':.5}

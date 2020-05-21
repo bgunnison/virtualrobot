@@ -77,7 +77,7 @@ class Effect:
             #log.info(f'Purging: {message} ')
             midiout.send_message(message)
 
-        log.info('Purge finished')
+        #log.info('Purge finished')
         purge_events.clear()
 
 
