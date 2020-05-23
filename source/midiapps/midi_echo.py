@@ -58,6 +58,7 @@ class MidiEchoEffect(Effect):
         called at init to add cc controls map
         """
         # VI25 Alesis controller CC knobs start with 21
+        # cc defaults must be unique
         self.cc_controls.add(name='EchoEffectDelayTypeControlCC',
                                  cc_default=22,
                                  control_callback=self.control_delay_type,

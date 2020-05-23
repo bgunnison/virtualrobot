@@ -282,7 +282,10 @@ class RootWidget(BoxLayout):
 
         log.info(f'Mapping control CC: {cc} to {ccbox.name}')
 
-        self.midi_manager.cc_controls.remap(ccbox.name, cc)
+        if self.midi_manager.cc_controls.remap(ccbox.name, cc) == False:
+            # can't duplicate a CC map
+            cc = self.midi_manager.cc_controls.get_cc(ccbox.name)
+            ccbox.text = str(cc)
 
     def update_cc_box_learn(self, name, cc, ccbox):
         """
@@ -435,6 +438,10 @@ class RootWidget(BoxLayout):
         self.midi_manager.set_clock_source(source)
 
         bpm = self.midi_manager.clock.get_bpm()
+        if bpm < self.ids.clock_bpm_slider.min:
+            bpm = self.ids.clock_bpm_slider.min
+
+        self.ids.clock_bpm_slider.value = bpm
         if bpm != 0:
             self.clock_LED_event.timeout = 60.0/bpm
 

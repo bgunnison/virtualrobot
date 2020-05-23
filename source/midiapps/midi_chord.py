@@ -51,14 +51,25 @@ class ChordInfo:
 
     def get_names(self):
         return list(self.info.keys())
+"""
+ inversions
+0   t   4               7
+
+        third at bass
+1   t   t-12 + 4        t-12 + 7
+
+                        fifth at bass
+2   t   4               t-12 + 7
 
 
+3   t   4           7   t-12 + 11
 
+"""
 class MidiChord:
     """
     We can iterate over the midi note produced by the chord type and width
     """
-    def __init__(self, tonic=60, name='Major', width=3):
+    def __init__(self, tonic=60, name='Major', inversion=0, width=3):
         self.name = name
         self.midi_notes = [] # a list of midi chord notes sans tonic
         width -= 1 # only generate the other chord notes
@@ -141,6 +152,7 @@ class MidiChordEffect(Effect):
         called at init to add cc controls map
         """
         # VI25 Alesis controller CC knobs start with 21
+        # cc defaults must be unique
         self.cc_controls.add(name='ChordEffectNameControlCC',
                                  cc_default=22,
                                  control_callback=self.control_chord_name,

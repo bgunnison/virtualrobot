@@ -64,7 +64,7 @@ class MidiPort:
         self.ports = []
         for p in range(n):
             name = self.midi.get_port_name(p)
-            log.info(f'Actual port name: {name}')
+            #log.info(f'Actual port name: {name}')
             # in windows the ports are enumerated in the name i.e. lma 1, where the 1 changes on PC reboot
             # so strip off the number so we open the same port next power cycle
             s = name.split(' ')
@@ -170,7 +170,7 @@ class MidiClockSource:
     def stop_clock(self):
         self.clock_callback = None
         self.clock_data = None
-        log.info('stopping clock')
+        #log.info('stopping clock')
 
     def get_tick(self):
         return self.tick
@@ -206,7 +206,7 @@ class MidiInternalClock(MidiClockSource):
         self.time_alarm = False # gets set if we run out of time between ticks
         if self.cc_controls is not None:
             self.cc_controls.add(name='InternalClockBPMControlCC',
-                                 cc_default=29,
+                                 cc_default=28, # must be unique to effect CCs
                                  control_callback=self.change_bpm,
                                  min=self.min,
                                  max=self.max)
@@ -245,7 +245,7 @@ class MidiInternalClock(MidiClockSource):
     def start_clock(self):
         if self.clock_callback is None:
             return
-        log.info(f"Starting internal clock: {self.tick_time}")
+        log.info(f"Starting internal clock: {self.tick_time:.03f}")
         timerThread = threading.Thread(target=self.callback)
         timerThread.start()
 
@@ -262,8 +262,10 @@ class MidiInput(MidiPort, MidiClockSource):
         self.control_callback = None
         self.control_data = None
         # need to average the delta time if external clock comes in here so to display a non-jerky BPM
+        self.ext_clock_update_period = 0.5 # update every half second for UI
         self.last_ext_clock_time = time.perf_counter()
-        self.rave_order = 24
+        self.last_ext_tick_update = self.tick
+        self.rave_order = 6
         self.rave_samples = []
         self.rave_sum = 0
 
@@ -278,21 +280,32 @@ class MidiInput(MidiPort, MidiClockSource):
         self.control_data = data
 
     def calc_ext_clock_bpm(self):
+        """
+        This runs every clock tick, so we are only interested in updated the UI approx.
+        """
         now = time.perf_counter()
-        clock_delta_time = now - self.last_ext_clock_time
+        tp = now - self.last_ext_clock_time
+        if tp < self.ext_clock_update_period:
+            return
+
         self.last_ext_clock_time = now
+        ticks = self.tick - self.last_ext_tick_update
+        self.last_ext_tick_update = self.tick
+
+        # so now we know how many ticks passed in .5 seconds
+
+        clock_delta_time = self.ext_clock_update_period/float(ticks)
+        if len(self.rave_samples) == self.rave_order:
+            self.rave_sum -= self.rave_samples.pop(0)
+
+        self.rave_sum += clock_delta_time
+        self.rave_samples.append(clock_delta_time)
+        ave_delta_time = self.rave_sum/float(len(self.rave_samples))
 
         # to get bpm from an external clock we use the delta time
         # self.tick_time = (60.0/self.bpm)/24.0
         # since it is not too accurate we average it
-        bpm = round(60/(24 * clock_delta_time))
-
-        if len(self.rave_samples) == self.rave_order:
-            self.rave_sum -= self.rave_samples.pop(0)
-
-        self.rave_sum += bpm
-        self.rave_samples.append(bpm)
-        self.bpm = round(self.rave_sum/float(len(self.rave_samples)))
+        self.bpm = round(60/(24 * ave_delta_time))
 
         #log.info(f'bpm: {self.bpm}')
 
@@ -545,7 +558,7 @@ class CCControls:
     def __init__(self, settings, midiin):
         self.settings = settings
         self.midiin = midiin
-        self.cc_controls = {}    # a dict keyd by cc number
+        self.cc_controls = {}    # a dict keyd by cc number, cannot have two controls with same cc
         self.learn_name = None    # set to cc name to remap during midi learn
         self.ui_learn_callback = None # callback to ui when learning
 
@@ -587,6 +600,15 @@ class CCControls:
         return 0
 
 
+    def get_cc(self, name):
+        if name is not None:
+            for cc, info in self.cc_controls.items():
+                if info.get('name') == name:
+                    return cc
+
+        return 0
+
+
     def delete(self, cc=None, name=None):
         if cc is not None:
             if self.cc_controls.get(cc) is not None:
@@ -607,6 +629,13 @@ class CCControls:
         """
         find the named cc info and change its cc number
         """
+        # bug fix - learning an already mapped CC forgets the other cc
+        old_info = self.cc_controls.get(cc)
+        if old_info is not None:
+            if old_info.get('name') == name:
+                return True # already mapped to thsi cc
+            return False # cannot map to a CC in use
+
         for oldcc, info in self.cc_controls.items():
             if name == info.get('name'):
                 log.info(f'Remapping {name} cc: {oldcc} to {cc}')
@@ -664,7 +693,9 @@ class CCControls:
         if self.learn_name is None:
             return
 
-        self.remap(self.learn_name, cc)
+        if self.remap(self.learn_name, cc) == False:
+            return
+
         if self.ui_learn_callback is not None:
             self.ui_learn_callback(self.learn_name, cc, data)
 
