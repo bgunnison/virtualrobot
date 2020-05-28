@@ -16,7 +16,7 @@ import logging
 help_text = '' 
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -48,6 +48,7 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.slider import Slider
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
+
 
 class TitleBoxLayout(BoxLayout):
     pass

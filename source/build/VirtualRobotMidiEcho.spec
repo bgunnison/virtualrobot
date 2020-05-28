@@ -20,6 +20,7 @@ a = Analysis([  '..\\ui\\mainapp.py',
                         ('../ui/media/off_led.png', 'media'),
                         ('../ui/media/start_panic.png', 'media'),
                         ('../ui/media/end_panic.png', 'media'),
+                        ('../ui/media/logoico.png', 'media'),
 
                         ],
              datas=[],
