@@ -734,9 +734,22 @@ class CCControls:
             ui_callback[0](value, ui_callback[1])
             
 
+class MidiMessage:
+    """
+    compose a midi message from its parts
+    """
+    def __init__(self, note, velocity, type=NOTE_ON, channel=1):
+        self.message = [type & 0xF0 | channel, note, velocity]
+
+    def get_message(Self):
+        return self.message
+
 
 
 class MidiNoteMessage:
+    """
+    decompose a midi message to its parts
+    """
     def __init__(self, message):
         self.data_type = message[0] & 0xF0
         self.channel = message[0] & 0x0F

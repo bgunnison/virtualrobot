@@ -187,7 +187,13 @@ class RootWidget(BoxLayout):
         slider_id.min = self.midi_manager.cc_controls.get_min(control_name)
         #log.info(f'{slider_id.min}')
         slider_id.max = self.midi_manager.cc_controls.get_max(control_name)
-        value = self.settings.get(info.get('settings_name'))
+        settings_name = info.get('settings_name')
+        if 'XObject' in settings_name:
+             # get the current settings object number
+            settings_name.replace('XObject',f'{self.effect.get_settings_xobject()}')
+
+        value = self.settings.get(settings_name)
+           
         slider_id.value = value
         slider_id.disabled = False
         # effects can have text selections or numerical

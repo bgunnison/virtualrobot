@@ -1,0 +1,533 @@
+#:kivy 1.0.9
+#:import SwapTransition kivy.uix.screenmanager.SwapTransition
+
+<NavButton@ToggleButton>:
+    height: 60
+    size_hint: .9, None
+    pos_hint: {'center_x':.5, 'center_y':.5}
+    border: 10, 10, 10, 10
+    markup: True
+    group: 'nav'
+
+
+<MidiPortSelectSpinner@Spinner>:
+    size: (400,30) 
+    size_hint: None, None
+    markup: True
+    text: 'None'
+    sync_height: True
+   
+
+
+<ClockSourceToggleButton@ToggleButton>:
+    group: 'clock_source'
+    markup: True
+    size_hint: None, None
+    width: 100
+    height: 30
+
+<OnOffToggleButton@ToggleButton>:
+    group: 'onoff'
+    markup: True
+    size_hint: None, None
+    width: 30
+    height: 20
+
+<MyLEDImage@Image>:
+    source: 'media/off_led.png'
+    size_hint: None, None
+    size: (25,25)
+    
+<CCEntryBox@CCControlInput>:
+    input_filter: 'int'
+    multiline: False
+    size_hint: None, None
+    size: (35,35)
+    background_color: (.5,.8,.5,1) if self.focus else (0,.5,0,1)
+    forground_color: (0,1,0,1)
+    halign: 'center'
+
+
+<EffectControlSlider@Slider>:
+    pos_hint: {'x':.3, 'center_y':.5}
+    width: 400
+    size_hint: None, 1
+
+        
+                        
+
+
+<RootWidget>:
+    orientation: 'vertical' 
+    canvas.before:
+        Color:
+            rgba: 0.5, 0.5, 0.5, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    TitleBoxLayout:
+        orientation: 'horizontal' 
+        height: 60
+        size_hint: 1, None
+        pos_hint: {'x':0, 'top':1}
+        canvas.before:
+            Color:
+                rgb: 0,0,0
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        LogoZipped:
+            size: (600/7,600/7) #imag.size
+            size_hint: None, None
+            pos_hint: {'left':1, 'center_y':.5}
+            Image:
+                source: 'media/logo.zip'
+                anim_delay: 0.2
+
+        BoxLayout:
+            orientation: 'horizontal' 
+            height: 60
+            size_hint: 1, None
+            pos_hint: {'x':0, 'top':1}
+            canvas.before:
+                Color:
+                    rgb: 0.5,0,0
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                markup: True
+                text: root.bold('- MIDI BEAT -')
+                height: 60
+                font_size: 50
+
+    BoxLayout:
+        id: myscreens
+        orientation: 'horizontal'
+        NavButtons:    
+            orientation: 'vertical' 
+            width: 65
+            size_hint: None, .5
+            pos_hint: {'left':1, 'center_y':.8}
+            NavButton:
+                id: nav_midi
+                text: root.bold('MIDI')
+                on_press: root.nav_button_pressed(self, 'screen_midi')
+            NavButton:
+                id: nav_effect
+                text: root.bold('ECHO')
+                on_press: root.nav_button_pressed(self, 'screen_effect')
+            NavButton:
+                id: nav_help
+                text: root.bold('HELP')
+                on_press: root.nav_button_pressed(self, 'screen_help')
+
+        MainScreenManager:
+            id: screen_manager
+            transition: SwapTransition()
+
+            MidiScreen:
+                id: screen_midi
+                name: 'screen_midi'
+                manager: 'screen_manager'
+                FloatLayout:
+                    orientation: 'vertical'
+                    Label:
+                        markup: True
+                        text: root.bold('MIDI PORTS')
+                        font_size: 30
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.8}
+                    
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.75}
+                       
+                        Label:
+                            markup: True
+                            text: root.bold('INPUT:')
+                            pos_hint: {'x':.12, 'center_y':0.5}
+                            width: 20
+                            size_hint: None, 1
+                           
+                        MidiPortSelectSpinner:
+                            id: midi_port_in
+                            pos_hint: {'x':.2, 'center_y':.5}
+                            on_text: root.select_midi_input_port(self)
+                            on_press: root.update_port_selections()
+                        MyLEDImage:
+                            id: midi_in_activity
+                            pos_hint: {'x':.75, 'center_y':.5}
+                    # channel selectors TBD
+                    
+#                    FloatLayout:
+##                        size_hint: 1, None
+#                        pos_hint: {'top':.77}
+#                        Label:
+#                            width: 15
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.1, 'center_y':.5}
+#                            markup: True
+#                            text: root.bold('CHANNEL:')
+#                        Label:
+#                            id: midi_input_channel_value
+#                            width: 10
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.18,'center_y':.5}
+#                            markup: True
+#                            text: root.bold(str(int(clock_bpm_slider.value)))
+#                        Slider:
+#                            id: midi_input_channel_slider
+#                            pos_hint: {'x':.21, 'center_y':.5}
+#                            width: 400
+#                            size_hint: None, 1
+#                            min: 0
+#                            max: 16
+#                            value: 0
+#                            on_value:  root.change_midi_input_channel(self.value)
+                    
+
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.65}
+                        Label:
+                            markup: True
+                            text: root.bold('OUTPUT:')
+                            pos_hint: {'x':.11, 'center_y':0.5}
+                            width: 20
+                            size_hint: None, 1
+                        MidiPortSelectSpinner:
+                            id: midi_port_out
+                            pos_hint: {'x':.2, 'center_y':.5}
+                            on_text: root.select_midi_output_port(self)
+                            on_press: root.update_port_selections()
+
+                        MyLEDImage:
+                            id: midi_out_activity
+                            pos_hint: {'x':.75, 'center_y':.5}
+                        Button:
+                            id: midi_panic
+                            name: root.bold('PANIC')
+                            background_color: (1, 0, 0, 1)
+                            background_normal: 'media/start_panic.png'
+                            background_down: 'media/end_panic.png'
+                            border: (2, 2, 2, 2)
+                            size_hint: None, None
+                            width: 40
+                            height: 40
+                            pos_hint: {'x':.8, 'center_y':0.5}
+                            markup: True
+                            text: ''# root.bold('PANIC')
+                            on_press: root.start_midi_panic(self)
+                            on_release: root.end_midi_panic(self)
+                    
+#                    FloatLayout:
+#                        height: 60   
+#                        size_hint: 1, None
+#                        pos_hint: {'top':.57}
+##                        Label:
+#                            width: 15
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.1, 'center_y':.5}
+#                            markup: True
+#                            text: root.bold('CHANNEL:')
+#                        Label:
+#                            id: midi_output_channel_value
+#                            width: 10
+#                            size_hint: None, 1
+#                            pos_hint: {'x':.18,'center_y':.5}
+#                            markup: True
+#                            text: root.bold(str(int(clock_bpm_slider.value)))
+#                        Slider:
+#                            id: midi_output_channel_slider
+#                            pos_hint: {'x':.21, 'center_y':.5}
+#                            width: 400
+#                            size_hint: None, 1
+#                            min: 0
+#                            max: 16
+#                            value: 0
+#                            on_value:  root.change_midi_output_channel(self.value)
+                    
+                            
+
+                    Label:
+                        markup: True
+                        text: '[b]MIDI CLOCK[/b]'
+                        font_size: 30
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.4}
+                    FloatLayout:
+                        height: 60
+                        size_hint: 1, None
+                        pos_hint: {'top':.35}
+                        ClockSourceToggleButton:
+                            id: clock_internal
+                            text: root.bold('INTERNAL')
+                            pos_hint: {'x':.35, 'center_y':0.5}
+                            on_press: root.select_clock_source(self, True)
+                        ClockSourceToggleButton:
+                            id: clock_external
+                            text: root.bold('EXTERNAL')
+                            pos_hint: {'x':.5, 'center_y':0.5}
+                            on_press: root.select_clock_source(self, False)
+                    FloatLayout:
+                        height: 60   
+                        size_hint: 1, None
+                        pos_hint: {'top':.25}
+                        Label:
+                            width: 15
+                            size_hint: None, 1
+                            pos_hint: {'x':.13, 'center_y':.5}
+                            markup: True
+                            text: root.bold('BPM:')
+                        Label:
+                            id: clock_bpm_control_slider_value
+                            width: 10
+                            size_hint: None, 1
+                            pos_hint: {'x':.19,'center_y':.5}
+                            markup: True
+                            text: root.bold(str(int(clock_bpm_slider.value)))
+                        Slider:
+                            id: clock_bpm_slider
+                            pos_hint: {'x':.21, 'center_y':.5}
+                            width: 400
+                            size_hint: None, 1
+                            min: 10
+                            max: 300
+                            value: 60
+                            on_value:  root.change_internal_clock_bpm(self.value)
+                        MyLEDImage:
+                            id: midi_clock_activity
+                            pos_hint: {'x':.74, 'center_y':.5}
+                        CCEntryBox:
+                            id: InternalClockBPMControlCC
+                            name: 'InternalClockBPMControlCC'
+                            pos_hint: {'x':.79, 'center_y':0.5}
+                            on_text_validate: root.ui_control_map(self)
+                            on_focus: root.control_cc_learn(self, self.focus)
+
+                   
+
+            EffectScreen:
+                id: screen_effect
+                name: 'screen_effect'
+                manager: 'screen_manager'
+                FloatLayout:
+                    orientation: 'vertical'
+                    Label:
+                        markup: True
+                        text: root.bold('ECHO CONTROLS')
+                        font_size: 30
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.9}
+                FloatLayout
+                    height: 60
+                    size_hint: 1, None
+                    pos_hint: {'top':.8}
+                    Label:
+                        markup: True
+                        text: root.bold('EFFECT:')
+                        pos_hint: {'x':.08, 'center_y':0.5}
+                        width: 20
+                        size_hint: None, 1
+                    OnOffToggleButton:
+                        id: effect_on
+                        text: root.bold('ON')
+                        pos_hint: {'x':.14, 'center_y':0.5}
+                        on_press: root.effect_on(True)
+                        state: 'down'
+                    OnOffToggleButton:
+                        id: effect_off
+                        text: root.bold('OFF')
+                        pos_hint: {'x':.18, 'center_y':0.5}
+                        state: 'normal'
+                        on_press: root.effect_on(False)                          
+                    CCEntryBox:
+                        id: EffectEnableControlCC
+                        name: 'EffectEnableControlCC'
+                        pos_hint: {'x':.24, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.6}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('DELAY TYPE:')
+                    Label:
+                        id: EchoEffectDelayTypeValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('Type')
+                    EffectControlSlider:
+                        id: EchoEffectDelayTypeSlider
+                        name: 'EchoEffectDelayTypeControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: EchoEffectDelayTypeControlCC
+                        name: 'EchoEffectDelayTypeControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.5}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('ECHOES:')
+                    Label:
+                        id: EchoEffectNumberEchoesValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: EchoEffectNumberEchoesSlider
+                        name: 'EchoEffectNumberEchoesControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: EchoEffectNumberEchoesControlCC
+                        name: 'EchoEffectNumberEchoesControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.4}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('DELAY:')
+                    Label:
+                        id: EchoEffectDelayStartTicksValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: EchoEffectDelayStartTicksSlider
+                        name: 'EchoEffectDelayStartTicksControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: EchoEffectDelayStartTicksControlCC
+                        name: 'EchoEffectDelayStartTicksControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.3}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('END VELOCITY:')
+                    Label:
+                        id: EchoEffectEndVelocityValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: EchoEffectEndVelocitySlider
+                        name: 'EchoEffectEndVelocityControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: EchoEffectEndVelocityControlCC
+                        name: 'EchoEffectEndVelocityControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                                        
+            #LiveScreen:
+            #    id: screen_live
+            #    name: 'screen_live'
+            #    manager: 'screen_manager'
+            #    Label:
+            #        text: 'LIVE'
+            HelpScreen:
+                id: screen_help
+                name: 'screen_help'
+                manager: 'screen_manager'
+                FloatLayout:
+                    orientation: 'vertical'
+                    Label:
+                        font_size: 22
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.9}
+                        text: root.bold('[size=22]WEBSITE: [/size]') + root.bold(' [u][color=#87e8f9][size=22][ref=http://virtualrobot.net/]VIRTUAL ROBOT[/ref][/size][/color][/u]')
+                        markup: True
+                        on_ref_press:
+                            import webbrowser
+                            webbrowser.open(args[1])
+                    Label:
+                        font_size: 22
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.8}
+                        text: root.bold('[size=22]MANUAL: [/size]') + root.bold(' [u][color=#87e8f9][size=22][ref=http://virtualrobot.net/midiechomanual/]MIDI ECHO[/ref][/size][/color][/u]')
+                        markup: True
+                        on_ref_press:
+                            import webbrowser
+                            webbrowser.open(args[1])
+                    Label:
+                        font_size: 16
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.7}
+                        markup: True
+                        text: root.bold('VERSION: 1.1')
+                    Button:
+                        id: RegisteredUserBut
+                        font_size: 16
+                        height: 30
+                        size_hint: .2, None
+                        pos_hint: {'center_x':0.5, 'top':.6}
+                        markup: True
+                        text: root.bold('REGISTER')
+                        on_press: root.register()
+                    ScrollableLabel:
+                        pos_hint: {'top':.5}
+                        Label:
+                            pos_hint: {'left':.4}
+                            size_hint_y: None
+                            height: self.texture_size[1]
+                            text_size: self.width, None
+                            markup: True
+                            text: root.bold(root.get_help_text())
+
+
+
+
+        
+
