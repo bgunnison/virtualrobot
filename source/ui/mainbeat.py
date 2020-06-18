@@ -41,7 +41,7 @@ class BeatWidget(RootWidget):
         """
         # create a database of effect ids, funcs etc, used for setup and control
         # this control selects a beat which is then controlled by what follows
-        self.effect_controls['EchoEffectDelayTypeControlCC'] = {'control_name':'BeatEffectBeatSelectControlCC',
+        self.effect_controls['BeatEffectBeatSelectControlCC'] = {'control_name':'BeatEffectBeatSelectControlCC',
                                                                 'settings_name':'BeatEffectBeatSelect',
                                                                 'slider_id':self.ids.BeatEffectBeatSelectSlider, # update slider
                                                                 'value_id':self.ids.BeatEffectBeatSelectValue, # update text
@@ -84,14 +84,17 @@ class BeatWidget(RootWidget):
         return 'Welcome to VIRTUAL ROBOT MIDI BEAT. \
 To get started quickly: on the left are navigation buttons, \
 press “MIDI” and select a MIDI output device. \
-This app will send beats out to this this device. Set the clock to \
-“INTERNAL”. Via the “BEAT” navigator button \
+This app will send beats out to this this device. \
+Set the clock to “INTERNAL”. '
+"""
+Via the “BEAT” navigator button \
 set the beats to "on". A default 4 beats per 16 beat loop will start playing with a C2 note. \
 Select the beat you wish to modify with the "BEAT SELECT" slider. \ 
 The green boxes next to buttons or sliders are the MIDI controller that can also change the setting. \
 Click inside the box and move the MIDI controller to learn. Or change the number \
 by typing a new one. For detailed help read the manual at the link above. \
-Also please check out the other VIRTUAL ROBOT MIDI apps at the website.' 
+Also please check out the other VIRTUAL ROBOT MIDI apps at the website.
+"""
 
 
 

@@ -741,7 +741,7 @@ class MidiMessage:
     def __init__(self, note, velocity, type=NOTE_ON, channel=1):
         self.message = [type & 0xF0 | channel, note, velocity]
 
-    def get_message(Self):
+    def get_message(self):
         return self.message
 
 

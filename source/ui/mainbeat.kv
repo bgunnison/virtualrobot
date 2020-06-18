@@ -117,7 +117,7 @@
                 on_press: root.nav_button_pressed(self, 'screen_midi')
             NavButton:
                 id: nav_effect
-                text: root.bold('ECHO')
+                text: root.bold('BEAT')
                 on_press: root.nav_button_pressed(self, 'screen_effect')
             NavButton:
                 id: nav_help
@@ -322,7 +322,7 @@
                     orientation: 'vertical'
                     Label:
                         markup: True
-                        text: root.bold('ECHO CONTROLS')
+                        text: root.bold('BEAT CONTROLS')
                         font_size: 30
                         height: 20
                         size_hint: 1, None
@@ -333,7 +333,7 @@
                     pos_hint: {'top':.8}
                     Label:
                         markup: True
-                        text: root.bold('EFFECT:')
+                        text: root.bold('MUTE:')
                         pos_hint: {'x':.08, 'center_y':0.5}
                         width: 20
                         size_hint: None, 1
@@ -365,21 +365,21 @@
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('DELAY TYPE:')
+                        text: root.bold('BEAT:')
                     Label:
-                        id: EchoEffectDelayTypeValue
+                        id: BeatEffectBeatSelectValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
-                        text: root.bold('Type')
+                        text: root.bold('0')
                     EffectControlSlider:
-                        id: EchoEffectDelayTypeSlider
-                        name: 'EchoEffectDelayTypeControlCC'
+                        id: BeatEffectBeatSelectSlider
+                        name: 'BeatEffectBeatSelectControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: EchoEffectDelayTypeControlCC
-                        name: 'EchoEffectDelayTypeControlCC'
+                        id: BeatEffectBeatSelectControlCC
+                        name: 'BeatEffectBeatSelectControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
@@ -393,21 +393,21 @@
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('ECHOES:')
+                        text: root.bold('NOTE:')
                     Label:
-                        id: EchoEffectNumberEchoesValue
+                        id: BeatEffectBeatNoteValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
-                        text: root.bold('24')
+                        text: root.bold('60')
                     EffectControlSlider:
-                        id: EchoEffectNumberEchoesSlider
-                        name: 'EchoEffectNumberEchoesControlCC'
+                        id: BeatEffectBeatNoteSlider
+                        name: 'BeatEffectBeatNoteControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: EchoEffectNumberEchoesControlCC
-                        name: 'EchoEffectNumberEchoesControlCC'
+                        id: BeatEffectBeatNoteControlCC
+                        name: 'BeatEffectBeatNoteControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
@@ -420,21 +420,21 @@
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('DELAY:')
+                        text: root.bold('LOOP:')
                     Label:
-                        id: EchoEffectDelayStartTicksValue
+                        id: BeatEffectLoopLengthValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
                         text: root.bold('24')
                     EffectControlSlider:
-                        id: EchoEffectDelayStartTicksSlider
-                        name: 'EchoEffectDelayStartTicksControlCC'
+                        id: BeatEffectLoopLengthSlider
+                        name: 'BeatEffectLoopLengthControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: EchoEffectDelayStartTicksControlCC
-                        name: 'EchoEffectDelayStartTicksControlCC'
+                        id: BeatEffectLoopLengthControlCC
+                        name: 'BeatEffectLoopLengthControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
@@ -448,32 +448,26 @@
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('END VELOCITY:')
+                        text: root.bold('BEATS:')
                     Label:
-                        id: EchoEffectEndVelocityValue
+                        id: BeatEffectNumberBeatsValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
-                        text: root.bold('24')
+                        text: root.bold('4')
                     EffectControlSlider:
-                        id: EchoEffectEndVelocitySlider
-                        name: 'EchoEffectEndVelocityControlCC'
+                        id: BeatEffectNumberBeatsSlider
+                        name: 'BeatEffectNumberBeatsControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: EchoEffectEndVelocityControlCC
-                        name: 'EchoEffectEndVelocityControlCC'
+                        id: BeatEffectNumberBeatsControlCC
+                        name: 'BeatEffectNumberBeatsControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
                                         
-            #LiveScreen:
-            #    id: screen_live
-            #    name: 'screen_live'
-            #    manager: 'screen_manager'
-            #    Label:
-            #        text: 'LIVE'
             HelpScreen:
                 id: screen_help
                 name: 'screen_help'
@@ -495,7 +489,7 @@
                         height: 20
                         size_hint: 1, None
                         pos_hint: {'top':.8}
-                        text: root.bold('[size=22]MANUAL: [/size]') + root.bold(' [u][color=#87e8f9][size=22][ref=http://virtualrobot.net/midiechomanual/]MIDI ECHO[/ref][/size][/color][/u]')
+                        text: root.bold('[size=22]MANUAL: [/size]') + root.bold(' [u][color=#87e8f9][size=22][ref=http://virtualrobot.net/midibeatmanual/]MIDI BEAT[/ref][/size][/color][/u]')
                         markup: True
                         on_ref_press:
                             import webbrowser
@@ -506,7 +500,7 @@
                         size_hint: 1, None
                         pos_hint: {'top':.7}
                         markup: True
-                        text: root.bold('VERSION: 1.1')
+                        text: root.bold('VERSION: 0.1')
                     Button:
                         id: RegisteredUserBut
                         font_size: 16

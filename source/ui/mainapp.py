@@ -190,7 +190,7 @@ class RootWidget(BoxLayout):
         settings_name = info.get('settings_name')
         if 'XObject' in settings_name:
              # get the current settings object number
-            settings_name.replace('XObject',f'{self.effect.get_settings_xobject()}')
+            settings_name = settings_name.replace('XObject',f'{self.effect.get_settings_xobject()}')
 
         value = self.settings.get(settings_name)
            
