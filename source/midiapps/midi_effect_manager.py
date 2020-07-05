@@ -84,6 +84,12 @@ class Effect:
     def get_name(self):
         return self.name
 
+    def enable(self):
+        pass # override, called when effect on button is pressed
+
+    def disable(self):
+        pass # ovveride called when effect off button is pressed
+
     def run(self):
         pass # override
 
@@ -93,8 +99,8 @@ class MidiEffectManager:
     def __init__(self, settings, effect, midi_manager):
         self.settings = settings
         self.midi_manager = midi_manager      
-        self.effect_enabled = self.settings.get('EffectEnabled', False)
         self.effect = effect
+        self.effect_enable(self.settings.get('EffectEnabled', False))
         # button CCs are mapped to to enable (for example) the effect
         self.midi_manager.cc_controls.add(name='EffectEnableControlCC', cc_default=48, type='switch', control_callback=self.effect_enable)
 
@@ -102,8 +108,12 @@ class MidiEffectManager:
         log.info(f'Effect: {self.effect.get_name()} is {on}')
         self.effect_enabled = on
         if self.effect_enabled == False:
+            self.effect.disable()
             self.effect.purge(self.midi_manager.midiout) # get rid of any hanging notes
             self.midi_manager.midiout.purge()
+        else:
+            self.effect.enable()
+
         self.settings.set('EffectEnabled', on)
 
 

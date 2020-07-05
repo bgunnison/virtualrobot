@@ -573,10 +573,16 @@ class CCControls:
         return ''
 
     def add(self, name, cc_default,  control_callback, type='cont', min=0, max=127, ui_callback=None):
+        """
+        An effect adds its cc controls at init here
+        The cc number must be unique
+        """
         cc = self.settings.get(name, cc_default)
 
         if self.cc_controls.get(cc) is not None:
-            del self.cc_controls[cc]
+            log.error(f'CC {cc} already added')
+            return
+
 
         self.cc_controls[cc] = {'name':name,    # accessed by name
                                 'control_callback':control_callback, # midi callback
@@ -584,6 +590,8 @@ class CCControls:
                                 'min':min,        # map 0 - 127 to min/max
                                 'max':max,
                                 'ui_callback':ui_callback}  # call up to UI to change widgets
+
+        log.info(f'Added CC {cc} as {name}')
 
     def get_max(self, name):
         for cc, info in self.cc_controls.items():
@@ -658,6 +666,22 @@ class CCControls:
 
         log.error(f'register_ui_control_callback for {name} - must add cc first')
         return False
+
+    def get_ui_callback(self, name):
+        """
+        get the ui callback named
+        """
+        for cc, info in self.cc_controls.items():
+            if info.get('name') == name:
+                cbi = info.get('ui_callback')
+                if cbi is None:
+                    log.error(f'get_ui_callback for {name} no callback')
+                    return None
+
+                return cbi[0]
+
+        log.error(f'get_ui_callback for {name} does not exist')
+        return None
 
         
     def learn(self, name, ui_callback=None, ui_data=None):
@@ -738,8 +762,13 @@ class MidiMessage:
     """
     compose a midi message from its parts
     """
-    def __init__(self, note, velocity, type=NOTE_ON, channel=1):
-        self.message = [type & 0xF0 | channel, note, velocity]
+    def __init__(self, midi_number, velocity=127, note_on=True, channel=1):
+        if note_on:
+            type = NOTE_ON
+        else:
+            type = NOTE_OFF
+
+        self.message = [type & 0xF0 | channel, midi_number, velocity]
 
     def get_message(self):
         return self.message
@@ -778,5 +807,42 @@ class MidiNoteMessage:
 
     def make_note_on(self):
         self.type_channel = NOTE_ON + self.channel
+
+
+NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+MIN_OCTAVE = -1
+MAX_OCTAVE = 9
+OCTAVES = list(range(11))
+NOTES_IN_OCTAVE = len(NOTES)
+
+def midi_number_to_note(number):
+    """
+    convert midi note number to string i.e. "C2"
+    """
+    octave = number // NOTES_IN_OCTAVE
+    note = NOTES[number % NOTES_IN_OCTAVE] + str(octave)
+    return note
+
+def note_to_midi_number(octave, note):
+    """
+    convert octave and string note to midi number
+    octaves are -1, 0 - 9 midi notes 0 - 127 stops at G9
+    o
+    """
+    try:
+        ni = NOTES.index(note)
+    except ValueError:
+        log.error(f'Bad note {note}')
+        return None
+
+    octave += 1
+
+    number = ni + (octave * 12)
+
+    if number < 0 or number > 127:
+        log.error('Bad midi note or octave')
+        return None
+
+    return number
 
 

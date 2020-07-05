@@ -164,31 +164,6 @@
                             pos_hint: {'x':.75, 'center_y':.5}
                     # channel selectors TBD
                     
-#                    FloatLayout:
-##                        size_hint: 1, None
-#                        pos_hint: {'top':.77}
-#                        Label:
-#                            width: 15
-#                            size_hint: None, 1
-#                            pos_hint: {'x':.1, 'center_y':.5}
-#                            markup: True
-#                            text: root.bold('CHANNEL:')
-#                        Label:
-#                            id: midi_input_channel_value
-#                            width: 10
-#                            size_hint: None, 1
-#                            pos_hint: {'x':.18,'center_y':.5}
-#                            markup: True
-#                            text: root.bold(str(int(clock_bpm_slider.value)))
-#                        Slider:
-#                            id: midi_input_channel_slider
-#                            pos_hint: {'x':.21, 'center_y':.5}
-#                            width: 400
-#                            size_hint: None, 1
-#                            min: 0
-#                            max: 16
-#                            value: 0
-#                            on_value:  root.change_midi_input_channel(self.value)
                     
 
                     FloatLayout:
@@ -225,34 +200,7 @@
                             text: ''# root.bold('PANIC')
                             on_press: root.start_midi_panic(self)
                             on_release: root.end_midi_panic(self)
-                    
-#                    FloatLayout:
-#                        height: 60   
-#                        size_hint: 1, None
-#                        pos_hint: {'top':.57}
-##                        Label:
-#                            width: 15
-#                            size_hint: None, 1
-#                            pos_hint: {'x':.1, 'center_y':.5}
-#                            markup: True
-#                            text: root.bold('CHANNEL:')
-#                        Label:
-#                            id: midi_output_channel_value
-#                            width: 10
-#                            size_hint: None, 1
-#                            pos_hint: {'x':.18,'center_y':.5}
-#                            markup: True
-#                            text: root.bold(str(int(clock_bpm_slider.value)))
-#                        Slider:
-#                            id: midi_output_channel_slider
-#                            pos_hint: {'x':.21, 'center_y':.5}
-#                            width: 400
-#                            size_hint: None, 1
-#                            min: 0
-#                            max: 16
-#                            value: 0
-#                            on_value:  root.change_midi_output_channel(self.value)
-                    
+                                       
                             
 
                     Label:
@@ -359,7 +307,7 @@
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.6}
+                    pos_hint: {'top':.65}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -377,6 +325,8 @@
                         id: BeatEffectBeatSelectSlider
                         name: 'BeatEffectBeatSelectControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
+                        value_track: True
+                        value_track_color:[0.5, 0, 0, 1]
                     CCEntryBox:
                         id: BeatEffectBeatSelectControlCC
                         name: 'BeatEffectBeatSelectControlCC'
@@ -387,54 +337,27 @@
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.5}
+                    pos_hint: {'top':.57}
                     Label:
                         width: 15
                         size_hint: None, 1
                         pos_hint: {'x':.1, 'center_y':.5}
                         markup: True
-                        text: root.bold('NOTE:')
+                        text: root.bold('OCTAVE:')
                     Label:
-                        id: BeatEffectBeatNoteValue
+                        id: BeatEffectOctaveValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
-                        text: root.bold('60')
+                        text: root.bold('2')
                     EffectControlSlider:
-                        id: BeatEffectBeatNoteSlider
-                        name: 'BeatEffectBeatNoteControlCC'
+                        id: BeatEffectOctaveSlider
+                        name: 'BeatEffectOctaveControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: BeatEffectBeatNoteControlCC
-                        name: 'BeatEffectBeatNoteControlCC'
-                        pos_hint: {'x':.85, 'center_y':0.5}
-                        on_text_validate: root.ui_control_map(self)
-                        on_focus: root.control_cc_learn(self, self.focus)
-                FloatLayout:
-                    height: 60   
-                    size_hint: 1, None
-                    pos_hint: {'top':.4}
-                    Label:
-                        width: 15
-                        size_hint: None, 1
-                        pos_hint: {'x':.1, 'center_y':.5}
-                        markup: True
-                        text: root.bold('LOOP:')
-                    Label:
-                        id: BeatEffectLoopLengthValue
-                        width: 10
-                        size_hint: None, 1
-                        pos_hint: {'x':.23, 'center_y':.5}
-                        markup: True
-                        text: root.bold('24')
-                    EffectControlSlider:
-                        id: BeatEffectLoopLengthSlider
-                        name: 'BeatEffectLoopLengthControlCC'
-                        on_value: root.effect_control_update(self.value, self.name)
-                    CCEntryBox:
-                        id: BeatEffectLoopLengthControlCC
-                        name: 'BeatEffectLoopLengthControlCC'
+                        id: BeatEffectOctaveControlCC
+                        name: 'BeatEffectOctaveControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
@@ -442,7 +365,92 @@
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.3}
+                    pos_hint: {'top':.49}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('NOTE:')
+                    Label:
+                        id: BeatEffectNoteValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('C')
+                    EffectControlSlider:
+                        id: BeatEffectNoteSlider
+                        name: 'BeatEffectNoteControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: BeatEffectNoteControlCC
+                        name: 'BeatEffectNoteControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.41}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('LOUD:')
+                    Label:
+                        id: BeatEffectLoudValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('64')
+                    EffectControlSlider:
+                        id: BeatEffectLoudSlider
+                        name: 'BeatEffectLoudControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: BeatEffectLoudControlCC
+                        name: 'BeatEffectLoudControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.33}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('LOOP:')
+                    Label:
+                        id: BeatEffectLoopValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: BeatEffectLoopSlider
+                        name: 'BeatEffectLoopControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: BeatEffectLoopControlCC
+                        name: 'BeatEffectLoopControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.25}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -450,19 +458,47 @@
                         markup: True
                         text: root.bold('BEATS:')
                     Label:
-                        id: BeatEffectNumberBeatsValue
+                        id: BeatEffectBeatsValue
                         width: 10
                         size_hint: None, 1
                         pos_hint: {'x':.23, 'center_y':.5}
                         markup: True
                         text: root.bold('4')
                     EffectControlSlider:
-                        id: BeatEffectNumberBeatsSlider
-                        name: 'BeatEffectNumberBeatsControlCC'
+                        id: BeatEffectBeatsSlider
+                        name: 'BeatEffectBeatsControlCC'
                         on_value: root.effect_control_update(self.value, self.name)
                     CCEntryBox:
-                        id: BeatEffectNumberBeatsControlCC
-                        name: 'BeatEffectNumberBeatsControlCC'
+                        id: BeatEffectBeatsControlCC
+                        name: 'BeatEffectBeatsControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':.17}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('ROTATE:')
+                    Label:
+                        id: BeatEffectRotateValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('0')
+                    EffectControlSlider:
+                        id: BeatEffectRotateSlider
+                        name: 'BeatEffectRotateControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: BeatEffectRotateControlCC
+                        name: 'BeatEffectRotateControlCC'
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)

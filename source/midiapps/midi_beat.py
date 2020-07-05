@@ -10,14 +10,14 @@ import os
 import sys
 import math
 import logging
-
+from collections import deque
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-from common.midi import MidiNoteMessage, MidiMessage, MidiConstants
+from common.midi import MidiNoteMessage, MidiMessage, MidiConstants, note_to_midi_number, NOTES, MIN_OCTAVE, MAX_OCTAVE
 from midiapps.midi_effect_manager import Effect
 
 # uses a beat selector in UI to select a beat. 
@@ -30,6 +30,10 @@ class Bjorklund:
         if pulses > steps:
             raise ValueError    
         self.pattern = []
+        if pulses == 0:
+            self.pattern = [0] * steps
+            return
+
         level = 0
         counts = []
         remainders = []
@@ -70,93 +74,140 @@ class Beat:
     The algorithm fits beats evenly spaced in the loop size. 
     Uses the 
     """
-    def __init__(self, index=0, note=60, loop=16, beats=4):
-        self.velocity = 127
-        self.index = index
-        self.note = note
-        self.loop = loop
-        self.beats = beats
+    def __init__(self, parms, index=0):
+        self.index = index # which beat are we for logging
+        self.parms = parms # dict of parms
+
+        # we update note info in run loop to keep things synchronous
+        self.update_notes = True
+        try:
+            self.make_notes()
+        except:
+            raise ValueError
+
         self.update = True
-        self.last_message = None
         try:
             self.calc_beats()
         except:
             raise ValueError
 
+        self.mute = False
+        self.check_mute()
+
+
+    def make_notes(self):
+        try:
+            midi_note = note_to_midi_number(self.parms['Octave'], self.parms['Note'])
+        except:
+            raise ValueError
+
+        self.note_on_message = MidiMessage(midi_note, velocity=self.parms['Loud']).get_message() # used to do note on
+        self.note_off_message = MidiMessage(midi_note, velocity=self.parms['Loud'], note_on=False).get_message() # used to do note off
+        self.update_notes = False
+
     def calc_beats(self, new_truths=True):
+        loop = self.parms['Loop']
+        beats = self.parms['Beats']
+        if loop < beats:
+            log.error('Loop < beats')
+            self.update = False
+            return
+
         if new_truths:
             try:
-                b = Bjorklund(self.loop, self.beats)
+                b = Bjorklund(loop, beats)
                 self.truths = b.get_pattern() # returns [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
             except:
                 log.error('Beats > loop')
                 raise ValueError
 
-        # every 4 * 24 pulses defines a bar, the loop fits in a bar
-        beat_ticks = (4 * 24)/self.loop
-        self.events = [] # a list of beat to beat in ticks
-        tick = 0
-        for truth in self.truths:
-            if truth:
-                self.events.append(tick)
-            tick += beat_ticks
-        
-        log.info(f'Beat: {self.index}, Truths: {self.truths}, events: {self.events}')
-        self.event_index = 0
+        if self.parms['Rotate'] != 0:
+            dt = deque(self.truths) 
+            dt.rotate(self.parms['Rotate']) 
+            self.truths  = list(dt) 
+
+        # every 4 * 24 pulses defines a bar, the loop fits in 4 bars
+        self.beat_ticks = round((4 * 4 * 24)/loop) - 1
+        self.tick_count = 0 # we count ticks and when equal to above we examine our truths
+        self.truth_index = 0
+
+        log.info(f'Beat: {self.index}, Truths: {self.truths}')
         self.update = False
 
-    def set_loop(self, loop):
-        if loop < self.beats:
-            log.error('loop < beats')
+    def set(self, name, value):
+        if self.parms.get(name) is None:
+            log.error(f'Beat parm name {name} does not exist')
             return
 
-        self.loop = loop
-        self.update = True
-
-    def set_beats(self, beats):
-        if self.loop < beats:
-            log.error('beats > loop')
+        self.parms[name] = value
+        
+        if name == 'Note' or name == 'Octave' or name == 'Loud':
+            self.update_notes = True
             return
 
-        self.beats = beats
         self.update = True
 
-    def set_note(self, note):
-        self.note = note
+        self.check_mute()
 
-    def rotate(self, rotation):
-        """
-        rotates truths to the right
-        """
-        pass
+    def check_mute(self):
+        if self.parms['Beats'] == 0 or self.parms['Loud'] == 0:
+            self.mute = True
+        else:
+            self.mute = False
+
+    def get(self, name):
+        if self.parms.get(name) is None:
+            log.error(f'Beat parm name {name} does not exist')
+            return None
+
+        return self.parms[name]
+
+    def purge(self, midiout):
+        if midiout is None:
+            return
+     
+        midiout.send_message(self.note_off_message)
+
 
     def run(self, tick):
         """
         called at clock rate to update and return a note message if any
         """
         #log.info(f'Run: {self.index}, tick: {tick}')
+        if self.mute:
+            return (self.note_off_message,) # must be iterable
+
+        if self.update_notes:
+            try:
+                self.make_notes()
+            except:
+                log.error('Error making notes')
+                return (None,None) 
+
         if self.update:
             try:
                 self.calc_beats()
             except:
                 return (None, None)
 
-        if self.event_index == 0:
-            self.loop_start_tick = tick
+        msg_off = None
+        msg_on = None
 
-        tp = tick - self.loop_start_tick
-        if tp >= round(self.events[self.event_index]):
-            self.event_index += 1
-            if self.event_index == len(self.events):
-                self.event_index = 0
+        self.tick_count += 1
+        if self.tick_count == self.beat_ticks:
+            self.tick_count = 0
 
-            message = MidiMessage(self.note, self.velocity).get_message()
-            self.last_message = message
-            off = MidiNoteMessage(message)
-            off.make_note_off()
-            return (off.get_message(), message)
+            if self.truths[self.truth_index]:
+                # send a beat
+                # we turn off the last note
+                msg_off = self.note_off_message
+                msg_on = self.note_on_message
 
-        return (None, None) # no note ready
+            self.truth_index += 1
+            if self.truth_index == len(self.truths):
+                self.truth_index = 0
+
+        return (msg_off, msg_on) 
 
 
 class BeatManager:
@@ -164,7 +215,9 @@ class BeatManager:
     same interface as NoteManager, but plays looped beats in time
     """
     def __init__(self):
+        self.mute = True
         self.beats = []
+        self.midiout = None
 
     def run(self, tick, midiout):
         """
@@ -172,6 +225,11 @@ class BeatManager:
         called at clock rate
         async Controls are modifying the beat parameters
         """
+        self.midiout = midiout
+        if self.mute == True:
+            return
+
+        #log.info(f't: {tick}')
         for beat in self.beats:
             messages = beat.run(tick)
             for message in messages:
@@ -188,11 +246,21 @@ class BeatManager:
     def remove(self, beat_index):
         pass
 
-    def purge(self):
-        pass
+    def enable(self):
+        self.mute = False
 
+    def disable(self):
+        self.mute = True
+
+    def purge_beats(self, midiout):
+        for beat in self.beats:
+            beat.purge(midiout)
+
+    def purge(self, midiout):
+        self.purge_beats(midiout)
+        
     def panic(self):
-       pass
+        self.purge_beats(self.midiout)
 
     def is_empty(self):
         return True
@@ -213,18 +281,40 @@ class MidiBeatEffect(Effect):
         else:
             self.update_beat_index -= 1 # used as index
 
+        self.control_names = []
 
         for b in range(MAX_BEATS):
+            loop = self.settings.get(f'BeatEffectLoop{b}', 16)
+            beats = self.settings.get(f'BeatEffectBeats{b}', 4)
+            if beats > loop:
+                beats = loop
+                self.settings.set(f'BeatEffectNumberBeats{b}', beats)
+
+            octave = self.settings.get(f'BeatEffectOctave{b}', 4) # the octave and note are combined to make the midi note played per stream
+            ni = self.settings.get(f'BeatEffectNote{b}', 0) 
+            if ni >= len(NOTES):
+                log.error('Note out of range in settings')
+                self.settings.set(f'BeatEffectNote{b}', 0) 
+                ni = 0
+
+            note = NOTES[ni]
+            loud = self.settings.get(f'BeatEffectLoud{b}', 127) # note velocity
+            rotate = self.settings.get(f'BeatEffectRotate{b}', 0) # we shift the beats by this
+
+            # name the parms so we can get and set by name
+            parms = {'Octave':  octave,
+                     'Note':    note,
+                     'Loud':    loud, 
+                     'Loop':    loop, 
+                     'Beats':   beats,
+                     'Rotate':  rotate}
             try:
-                beat = Beat( b, self.settings.get(f'BeatEffectBeatNote{b}', 60+b),
-                                self.settings.get(f'BeatEffectLoopLength{b}', 16),
-                                self.settings.get(f'BeatEffectNumberBeats{b}', 4))
+                beat = Beat(parms, b)
             except:
                 log.error('Creating beat')
                 continue
 
             self.note_manager.add(beat)
-
 
         if self.cc_controls is not None:
             self.add_controls()
@@ -232,13 +322,25 @@ class MidiBeatEffect(Effect):
     def __str__(self):
         return 'Beat effect'
 
+    def enable(self):
+        self.note_manager.enable()
+
+    def disable(self):
+        self.note_manager.disable()
+
     def panic(self):
         """
         All active notes are turned off
         """
-        pass
+        self.note_manager.panic()
 
-   
+    def purge(self, midiout):
+        """
+        override Effect as a mute
+        called when effect disabled (or Mute button off)
+        """
+        self.note_manager.purge(midiout)
+
     def add_controls(self):
         """
         called at init to add cc controls map
@@ -248,31 +350,68 @@ class MidiBeatEffect(Effect):
 
         # selects which beat is being modified
         # limitation is CC controls only operate on selected beat. 
+        def next_cc():
+            cc = 21
+            while True:
+                yield cc
+                cc += 1
+
+        ccs = next_cc()
+
         self.cc_controls.add(name='BeatEffectBeatSelectControlCC',
-                                 cc_default=22,
+                                 cc_default=next(ccs),
                                  control_callback=self.control_beat_select,
                                  min=1,
                                  max=MAX_BEATS)
 
         # these control the beat selected above
-        self.cc_controls.add(name='BeatEffectBeatNoteControlCC',
-                                 cc_default=23,
-                                 control_callback=self.control_beat_note,
-                                 min=0,
-                                 max=MidiConstants().CC_MAX)
+        self.cc_controls.add(name='BeatEffectOctaveControlCC',
+                                 cc_default=next(ccs),
+                                 control_callback=self.control_octave,
+                                 min=-1,
+                                 max=9)
 
-        self.cc_controls.add(name='BeatEffectLoopLengthControlCC',
-                                 cc_default=24,
-                                 control_callback=self.control_loop_length,
+        self.control_names.append('Octave') # remember the names so selecting a beat can update its controls
+
+        self.cc_controls.add(name='BeatEffectNoteControlCC',
+                                 cc_default=next(ccs),
+                                 control_callback=self.control_note,
+                                 min=0,
+                                 max=len(NOTES) - 1)
+
+        self.control_names.append('Note') # remember the names so selecting a beat can update its controls
+
+        self.cc_controls.add(name='BeatEffectLoudControlCC',
+                                 cc_default=next(ccs),
+                                 control_callback=self.control_loud,
+                                 min=0,
+                                 max=127)
+
+        self.control_names.append('Loud') # remember the names so selecting a beat can update its controls
+
+        self.cc_controls.add(name='BeatEffectLoopControlCC',
+                                 cc_default=next(ccs),
+                                 control_callback=self.control_loop,
                                  min=1,
                                  max=MAX_LOOP_LENGTH)
 
-        self.cc_controls.add(name='BeatEffectNumberBeatsControlCC',
-                                 cc_default=25,
-                                 control_callback=self.control_number_beats,
+        self.control_names.append('Loop') # remember the names so selecting a beat can update its controls
+
+        self.cc_controls.add(name='BeatEffectBeatsControlCC',
+                                 cc_default=next(ccs),
+                                 control_callback=self.control_beats,
                                  min=0, # 0 disables beat stream
                                  max=MAX_LOOP_LENGTH)
 
+        self.control_names.append('Beats') # remember the names so selecting a beat can update its controls
+
+        self.cc_controls.add(name='BeatEffectRotateControlCC',
+                                 cc_default=next(ccs),
+                                 control_callback=self.control_rotate,
+                                 min=0, 
+                                 max=MAX_LOOP_LENGTH)
+
+        self.control_names.append('Rotate') # remember the names so selecting a beat can update its controls
 
 
     def control_beat_select(self, control):
@@ -285,41 +424,103 @@ class MidiBeatEffect(Effect):
             return
 
         self.update_beat_index = control - 1
+
+        # get the beat params and update the sliders 
+        # the slider ui callbacks are in the cc_controls
+        for name in self.control_names:
+            value = self.note_manager.beats[self.update_beat_index].get(name)
+            if value is None:
+                continue
+
+            ui_name = 'BeatEffect' + name + 'ControlCC'
+
+            ui_callback = self.cc_controls.get_ui_callback(ui_name)
+            if ui_callback is None:
+                continue
+
+            if name == 'Note':
+                value = NOTES.index(value)
+
+            ui_callback(value, ui_name)
+
         
         self.settings.set('BeatEffectBeatSelect', control)
         log.info(f"control_beat_select: {control}")
 
-    def control_beat_note(self, control):
-        if control >= MidiConstants().CC_MAX:
+
+    def control_octave(self, control):
+        if control < MIN_OCTAVE or control > MAX_OCTAVE:
+            log.error('control_octave control out of range')
+            return
+
+        self.note_manager.beats[self.update_beat_index].set('Octave', control)
+        
+        self.settings.set(f'BeatEffectOctave{self.update_beat_index}', control)
+        log.info(f'control_beat_octave {self.update_beat_index}: {control}')
+
+
+    def get_note_label(self, note_index):
+        if note_index >= len(NOTES):
+            return 'Unknown'
+
+        return NOTES[note_index]
+
+
+    def control_note(self, control):
+        if control >= len(NOTES):
             log.error('control_beat_note control too big')
             return
 
-        self.note_manager.beats[self.update_beat_index].set_note(control)
+        note = NOTES[control]
+
+        self.note_manager.beats[self.update_beat_index].set('Note', note) # beat uses the letter note
         
-        self.settings.set(f'BeatEffectBeatNote{self.update_beat_index}', control)
-        log.info(f'control_beat_note {self.update_beat_index}: {control}')
+        self.settings.set(f'BeatEffectNote{self.update_beat_index}', control) # we store the index
+        log.info(f'control_beat_note {self.update_beat_index}: {note}')
+
+    def control_loud(self, control):
+        if control > 127:
+            log.error('control_loud control too big')
+            return
+
+        self.note_manager.beats[self.update_beat_index].set('Loud', control)
+        
+        self.settings.set(f'BeatEffectLoud{self.update_beat_index}', control)
+        log.info(f'control_loud {self.update_beat_index}: {control}')
 
 
-    def control_loop_length(self, control):
+    def control_loop(self, control):
         if control >= MAX_LOOP_LENGTH:
             log.error('control_loop_length control too big')
             return
 
-        self.note_manager.beats[self.update_beat_index].set_loop(control)
+        self.note_manager.beats[self.update_beat_index].set('Loop', control)
         
-        self.settings.set(f'BeatEffectBeatLoop{self.update_beat_index}', control)
-        log.info(f"control_loop_length {self.update_beat_index}: {control}")
+        self.settings.set(f'BeatEffectLoop{self.update_beat_index}', control)
+        log.info(f"control_loop {self.update_beat_index}: {control}")
 
 
-    def control_number_beats(self, control):
+    def control_beats(self, control):
         if control >= MAX_LOOP_LENGTH:
             log.error('control_number_beats control too big')
             return
 
-        self.note_manager.beats[self.update_beat_index].set_beats(control)
+        self.note_manager.beats[self.update_beat_index].set('Beats', control)
         
-        self.settings.set(f'BeatEffectNumberBeats{self.update_beat_index}', control)
-        log.info(f"control_number_beats {self.update_beat_index}: {control}")
+        self.settings.set(f'BeatEffectBeats{self.update_beat_index}', control)
+        log.info(f"control_beats {self.update_beat_index}: {control}")
+
+
+    def control_rotate(self, control):
+        if control >= MAX_LOOP_LENGTH:
+            log.error('control_rotate control too big')
+            return
+
+        self.note_manager.beats[self.update_beat_index].set('Rotate', control)
+        
+        self.settings.set(f'BeatEffectRotate{self.update_beat_index}', control)
+        log.info(f"control_rotate {self.update_beat_index}: {control}")
+
 
     def get_settings_xobject(self):
         """

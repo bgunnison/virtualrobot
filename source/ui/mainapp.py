@@ -395,7 +395,7 @@ class RootWidget(BoxLayout):
         but.state = 'down'
         self.ids['screen_manager'].current = screen_name
         self.settings.set('start_screen', screen_name)
-        log.info(f'cwd: {os.getcwd()}')
+       # log.info(f'cwd: {os.getcwd()}')
         #Window.screenshot(name=f'{screen_name}' +'.png') # for website takes a snap of the screen
 
    
