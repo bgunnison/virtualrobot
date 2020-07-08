@@ -275,10 +275,12 @@
                         height: 20
                         size_hint: 1, None
                         pos_hint: {'top':.9}
+
+                #:set ystart 0.85
                 FloatLayout
                     height: 60
                     size_hint: 1, None
-                    pos_hint: {'top':.8}
+                    pos_hint: {'top':ystart}
                     Label:
                         markup: True
                         text: root.bold('MUTE:')
@@ -304,10 +306,13 @@
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
+                # these are all .08 Y distance
+                #:set ysliders (ystart - 0.075)
+                #:set ysliders_dist 0.08
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.65}
+                    pos_hint: {'top': ysliders}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -334,10 +339,11 @@
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
+                #:set yslider1 (ysliders  - (1 * ysliders_dist))
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.57}
+                    pos_hint: {'top':yslider1}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -362,10 +368,11 @@
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
+                #:set yslider2 (ysliders  - (2 * ysliders_dist))
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.49}
+                    pos_hint: {'top':yslider2}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -390,10 +397,11 @@
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
+                #:set yslider3 (ysliders  - (3 * ysliders_dist))
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.41}
+                    pos_hint: {'top':yslider3}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -419,10 +427,40 @@
                         on_focus: root.control_cc_learn(self, self.focus)
 
 
+                #:set yslider4 (ysliders  - (4 * ysliders_dist))
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.33}
+                    pos_hint: {'top':yslider4}
+                    Label:
+                        width: 15
+                        size_hint: None, 1
+                        pos_hint: {'x':.1, 'center_y':.5}
+                        markup: True
+                        text: root.bold('BARS:')
+                    Label:
+                        id: BeatEffectBarsValue
+                        width: 10
+                        size_hint: None, 1
+                        pos_hint: {'x':.23, 'center_y':.5}
+                        markup: True
+                        text: root.bold('24')
+                    EffectControlSlider:
+                        id: BeatEffectBarsSlider
+                        name: 'BeatEffectBarsControlCC'
+                        on_value: root.effect_control_update(self.value, self.name)
+                    CCEntryBox:
+                        id: BeatEffectBarsControlCC
+                        name: 'BeatEffectBarsControlCC'
+                        pos_hint: {'x':.85, 'center_y':0.5}
+                        on_text_validate: root.ui_control_map(self)
+                        on_focus: root.control_cc_learn(self, self.focus)
+
+                #:set yslider5 (ysliders  - (5 * ysliders_dist))
+                FloatLayout:
+                    height: 60   
+                    size_hint: 1, None
+                    pos_hint: {'top':yslider5}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -447,10 +485,11 @@
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
+                #:set yslider6 (ysliders  - (6 * ysliders_dist))
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.25}
+                    pos_hint: {'top':yslider6}
                     Label:
                         width: 15
                         size_hint: None, 1
@@ -475,10 +514,11 @@
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
 
+                #:set yslider7 (ysliders  - (7 * ysliders_dist))
                 FloatLayout:
                     height: 60   
                     size_hint: 1, None
-                    pos_hint: {'top':.17}
+                    pos_hint: {'top':yslider7}
                     Label:
                         width: 15
                         size_hint: None, 1

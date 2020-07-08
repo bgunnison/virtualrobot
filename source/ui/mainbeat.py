@@ -80,6 +80,15 @@ class BeatWidget(RootWidget):
 
         self.update_effect_control('BeatEffectLoudControlCC')
 
+        self.effect_controls['BeatEffectBarsControlCC'] = {'control_name':'BeatEffectBarsControlCC',
+                                                                   'settings_name':'BeatEffectBarsXObject',
+                                                                   'slider_id':self.ids.BeatEffectBarsSlider, # update slider
+                                                                   'value_id':self.ids.BeatEffectBarsValue, # update text
+                                                                   'control_cc_id':self.ids.BeatEffectBarsControlCC,
+                                                                   'update_function':self.effect.control_bars} 
+
+        self.update_effect_control('BeatEffectBarsControlCC')
+
         self.effect_controls['BeatEffectLoopControlCC'] = {'control_name':'BeatEffectLoopControlCC',
                                                                    'settings_name':'BeatEffectLoopXObject',
                                                                    'slider_id':self.ids.BeatEffectLoopSlider, # update slider

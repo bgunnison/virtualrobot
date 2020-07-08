@@ -108,6 +108,7 @@ class Beat:
     def calc_beats(self, new_truths=True):
         loop = self.parms['Loop']
         beats = self.parms['Beats']
+        bars = self.parms['Bars']
         if loop < beats:
             log.error('Loop < beats')
             self.update = False
@@ -126,8 +127,8 @@ class Beat:
             dt.rotate(self.parms['Rotate']) 
             self.truths  = list(dt) 
 
-        # every 4 * 24 pulses defines a bar, the loop fits in 4 bars
-        self.beat_ticks = round((4 * 4 * 24)/loop) - 1
+        # every 4 * 24 pulses defines a bar, the loop fits in bars
+        self.beat_ticks = round((bars * 4 * 24)/loop) - 1
         self.tick_count = 0 # we count ticks and when equal to above we examine our truths
         self.truth_index = 0
 
@@ -284,6 +285,7 @@ class MidiBeatEffect(Effect):
         self.control_names = []
 
         for b in range(MAX_BEATS):
+            bars = self.settings.get(f'BeatEffectBars{b}', 4)
             loop = self.settings.get(f'BeatEffectLoop{b}', 16)
             beats = self.settings.get(f'BeatEffectBeats{b}', 4)
             if beats > loop:
@@ -305,6 +307,7 @@ class MidiBeatEffect(Effect):
             parms = {'Octave':  octave,
                      'Note':    note,
                      'Loud':    loud, 
+                     'Bars':    bars, 
                      'Loop':    loop, 
                      'Beats':   beats,
                      'Rotate':  rotate}
@@ -351,7 +354,7 @@ class MidiBeatEffect(Effect):
         # selects which beat is being modified
         # limitation is CC controls only operate on selected beat. 
         def next_cc():
-            cc = 21
+            cc = 20
             while True:
                 yield cc
                 cc += 1
@@ -389,6 +392,14 @@ class MidiBeatEffect(Effect):
 
         self.control_names.append('Loud') # remember the names so selecting a beat can update its controls
 
+        self.cc_controls.add(name='BeatEffectBarsControlCC',
+                                 cc_default=next(ccs),
+                                 control_callback=self.control_bars,
+                                 min=1,
+                                 max=MAX_LOOP_LENGTH)
+
+        self.control_names.append('Bars') # remember the names so selecting a beat can update its controls
+
         self.cc_controls.add(name='BeatEffectLoopControlCC',
                                  cc_default=next(ccs),
                                  control_callback=self.control_loop,
@@ -396,6 +407,7 @@ class MidiBeatEffect(Effect):
                                  max=MAX_LOOP_LENGTH)
 
         self.control_names.append('Loop') # remember the names so selecting a beat can update its controls
+
 
         self.cc_controls.add(name='BeatEffectBeatsControlCC',
                                  cc_default=next(ccs),
@@ -488,10 +500,19 @@ class MidiBeatEffect(Effect):
         self.settings.set(f'BeatEffectLoud{self.update_beat_index}', control)
         log.info(f'control_loud {self.update_beat_index}: {control}')
 
+    def control_bars(self, control):
+        if control >= MAX_LOOP_LENGTH:
+            log.error('control_bars control too big')
+            return
+
+        self.note_manager.beats[self.update_beat_index].set('Bars', control)
+        
+        self.settings.set(f'BeatEffectBars{self.update_beat_index}', control)
+        log.info(f"control_bars {self.update_beat_index}: {control}")
 
     def control_loop(self, control):
         if control >= MAX_LOOP_LENGTH:
-            log.error('control_loop_length control too big')
+            log.error('control_loop control too big')
             return
 
         self.note_manager.beats[self.update_beat_index].set('Loop', control)
