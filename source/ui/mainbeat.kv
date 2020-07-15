@@ -110,7 +110,7 @@
             orientation: 'vertical' 
             width: 65
             size_hint: None, .5
-            pos_hint: {'left':1, 'center_y':.8}
+            pos_hint: {'top':0.4, 'left':1, 'center_y':.8}
             NavButton:
                 id: nav_midi
                 text: root.bold('MIDI')
@@ -119,6 +119,10 @@
                 id: nav_effect
                 text: root.bold('BEAT')
                 on_press: root.nav_button_pressed(self, 'screen_effect')
+            NavButton:
+                id: nav_save
+                text: root.bold('SAVE')
+                on_press: root.nav_button_pressed(self, 'screen_save')
             NavButton:
                 id: nav_help
                 text: root.bold('HELP')
@@ -542,6 +546,21 @@
                         pos_hint: {'x':.85, 'center_y':0.5}
                         on_text_validate: root.ui_control_map(self)
                         on_focus: root.control_cc_learn(self, self.focus)
+
+            SaveScreen:
+                id: screen_save
+                name: 'screen_save'
+                manager: 'screen_manager'
+                FloatLayout:
+                    orientation: 'vertical'
+                    Label:
+                        font_size: 22
+                        height: 20
+                        size_hint: 1, None
+                        pos_hint: {'top':.9}
+                        text: root.bold('SAVE/LOAD SETTINGS')
+                        markup: True
+
 
                                         
             HelpScreen:

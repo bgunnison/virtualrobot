@@ -71,6 +71,9 @@ class EffectScreen(Screen):
 class HelpScreen(Screen):
     pass
 
+class SaveScreen(Screen):
+    pass
+
 class CCControlInput(TextInput):
     pass
 

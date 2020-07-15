@@ -77,6 +77,8 @@ class Beat:
     def __init__(self, parms, index=0):
         self.index = index # which beat are we for logging
         self.parms = parms # dict of parms
+        self.off_tick = 0 # when to send note off
+        self.sustain_ticks = 6 # a beat lasts 6 ticks or 1/16 of a bar, may make this adjustable later
 
         # we update note info in run loop to keep things synchronous
         self.update_notes = True
@@ -92,6 +94,7 @@ class Beat:
             raise ValueError
 
         self.mute = False
+        self.muted = False
         self.check_mute()
 
 
@@ -102,7 +105,7 @@ class Beat:
             raise ValueError
 
         self.note_on_message = MidiMessage(midi_note, velocity=self.parms['Loud']).get_message() # used to do note on
-        self.note_off_message = MidiMessage(midi_note, velocity=self.parms['Loud'], note_on=False).get_message() # used to do note off
+        self.note_off_message = MidiMessage(midi_note, 0, note_on=False).get_message() # used to do note off
         self.update_notes = False
 
     def calc_beats(self, new_truths=True):
@@ -128,7 +131,8 @@ class Beat:
             self.truths  = list(dt) 
 
         # every 4 * 24 pulses defines a bar, the loop fits in bars
-        self.beat_ticks = round((bars * 4 * 24)/loop) - 1
+        # run is called every 6 ticks (our min period)
+        self.beat_ticks = round((bars * 4 * 24/6)/loop) - 1
         self.tick_count = 0 # we count ticks and when equal to above we examine our truths
         self.truth_index = 0
 
@@ -156,6 +160,8 @@ class Beat:
         else:
             self.mute = False
 
+        self.muted = False
+
     def get(self, name):
         if self.parms.get(name) is None:
             log.error(f'Beat parm name {name} does not exist')
@@ -172,27 +178,35 @@ class Beat:
 
     def run(self, tick):
         """
-        called at clock rate to update and return a note message if any
+        called at 1/6th clock rate to update and return a note message if any
         """
         #log.info(f'Run: {self.index}, tick: {tick}')
         if self.mute:
-            return (self.note_off_message,) # must be iterable
+           if self.muted == False:
+                self.muted = True
+                return (self.note_off_message,) # must be iterable
+           return None
 
         if self.update_notes:
             try:
                 self.make_notes()
             except:
                 log.error('Error making notes')
-                return (None,None) 
+                return None
 
         if self.update:
             try:
                 self.calc_beats()
             except:
-                return (None, None)
+                return None
 
         msg_off = None
         msg_on = None
+
+        if tick >= self.off_tick:
+            # we turn off the last note
+            msg_off = self.note_off_message
+            self.off_tick = 0
 
         self.tick_count += 1
         if self.tick_count == self.beat_ticks:
@@ -200,9 +214,8 @@ class Beat:
 
             if self.truths[self.truth_index]:
                 # send a beat
-                # we turn off the last note
-                msg_off = self.note_off_message
                 msg_on = self.note_on_message
+                self.off_tick = tick + self.sustain_ticks # when to turn off this note
 
             self.truth_index += 1
             if self.truth_index == len(self.truths):
@@ -219,20 +232,31 @@ class BeatManager:
         self.mute = True
         self.beats = []
         self.midiout = None
+        self.tick_count = 0
 
     def run(self, tick, midiout):
         """
         See if any events are ready to play
         called at clock rate
-        async Controls are modifying the beat parameters
         """
         self.midiout = midiout
+
+        # we only want to process events every 6 ticks
+        self.tick_count += 1
+        if self.tick_count != 6:
+            return
+
+        self.tick_count = 0
+
         if self.mute == True:
             return
 
         #log.info(f't: {tick}')
         for beat in self.beats:
             messages = beat.run(tick)
+            if messages is None:
+                continue
+
             for message in messages:
                 if message is not None:
                     midiout.send_message(message)
