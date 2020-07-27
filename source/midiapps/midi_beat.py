@@ -203,7 +203,7 @@ class Beat:
         msg_off = None
         msg_on = None
 
-        if tick >= self.off_tick:
+        if self.off_tick != 0 and tick >= self.off_tick:
             # we turn off the last note
             msg_off = self.note_off_message
             self.off_tick = 0
@@ -259,6 +259,7 @@ class BeatManager:
 
             for message in messages:
                 if message is not None:
+                    log.info(f't: {tick}, {message}')
                     midiout.send_message(message)
         
 

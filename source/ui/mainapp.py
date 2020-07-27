@@ -48,7 +48,8 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.slider import Slider
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
-
+from kivy.factory import Factory
+from kivy.properties import ObjectProperty
 
 class TitleBoxLayout(BoxLayout):
     pass
@@ -74,6 +75,9 @@ class HelpScreen(Screen):
 class SaveScreen(Screen):
     pass
 
+class LoadScreen(Screen):
+    pass
+
 class CCControlInput(TextInput):
     pass
 
@@ -81,12 +85,33 @@ class CCControlInput(TextInput):
 class ScrollableLabel(ScrollView):
     pass
 
+
+class LoadDialog(FloatLayout):
+    load = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
+
+class SaveDialog(FloatLayout):
+    save = ObjectProperty(None)
+    text_input = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
+
     
 class RootWidget(BoxLayout):
 
     def __init__(self, title='generic', effect=None, use_clock=True, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
         self.use_clock=use_clock # some apps don't need a MIDI clock
+
+        self.loadfile = ObjectProperty(None)
+        self.savefile = ObjectProperty(None)
+        self.text_input = ObjectProperty(None)
+
+        self.global_settings = Settings(title)  
+        self.start_app(title, effect)
+
+    def start_app(self, title, effect):
         self.settings = Settings(title)    # our persistant settings
 
         #registration does nothing but stro what was entered
@@ -107,6 +132,10 @@ class RootWidget(BoxLayout):
             but = self.ids.nav_effect
         if 'help' in screen:
             but = self.ids.nav_help
+        if 'save' in screen:
+            but = self.ids.nav_save
+        if 'load' in screen:
+            but = self.ids.nav_load
         if but is None:
             but = self.ids.nav_midi
             screen = 'screen_midi'
@@ -134,6 +163,14 @@ class RootWidget(BoxLayout):
         self.settings.close()
         log.info('destroy finished')
 
+    def cancel_load_save(self):
+        pass
+
+    def load_settings(self, path, filename):
+        log.info(f'load settings: {path}, {filename}')
+
+    def save_settings(self, path, filename):
+        log.info(f'save settings: {path}, {filename}')
 
     def midi_panic(self, dt):
         self.effect.panic()
@@ -209,6 +246,15 @@ class RootWidget(BoxLayout):
         cc_str = self.midi_manager.cc_controls.get_cc_str(control_name)
         info.get('control_cc_id').text = cc_str
         self.midi_manager.cc_controls.register_ui_callback(control_name, self.ui_effect_control_update, control_name)
+
+
+    def nav_button_pressed(self, but, screen_name):
+        log.info(screen_name)
+        but.state = 'down'
+        self.ids['screen_manager'].current = screen_name
+        self.settings.set('start_screen', screen_name)
+       # log.info(f'cwd: {os.getcwd()}')
+        #Window.screenshot(name=f'{screen_name}' +'.png') # for website takes a snap of the screen
 
 
     def ui_effect_control_update(self, value, id_str):
@@ -393,13 +439,6 @@ class RootWidget(BoxLayout):
 
         self.midi_manager.clock.change_bpm(int(value))
 
-    def nav_button_pressed(self, but, screen_name):
-        log.info(screen_name)
-        but.state = 'down'
-        self.ids['screen_manager'].current = screen_name
-        self.settings.set('start_screen', screen_name)
-       # log.info(f'cwd: {os.getcwd()}')
-        #Window.screenshot(name=f'{screen_name}' +'.png') # for website takes a snap of the screen
 
    
     def select_midi_input_port(self, selector):

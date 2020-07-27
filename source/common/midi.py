@@ -382,7 +382,12 @@ class MidiOutput(MidiPort):
         log.info(f"Panic")
         for channel in range(16):
             data = CONTROL_CHANGE + channel
-            self.midi.send_message([data, ALL_SOUND_OFF, 0])
+            try:
+                self.midi.send_message([data, ALL_SOUND_OFF, 0])
+            except:
+                log.error('Cant panic is port open?')
+                return
+
             #self.midi.send_message([data, RESET_ALL_CONTROLLERS, 0])
             time.sleep(0.05)
 
@@ -401,8 +406,11 @@ class MidiOutput(MidiPort):
             self.notes_pending += 1
 
         #log.info(f'notes pending: {self.notes_pending}')
+        try:
+            self.midi.send_message(message)
+        except:
+            log.error('Cant send midi message, port closed?')
 
-        self.midi.send_message(message)
         time_passed = time.perf_counter() - gstart_debug_timer
         #log.info(f'tp: {time_passed:.04f}')
 
@@ -413,9 +421,10 @@ class MidiOutput(MidiPort):
     def send_clock_message(self):
         if self.midi.is_port_open() == False:
             return
-
-        self.midi.send_message([TIMING_CLOCK])
-
+        try:
+            self.midi.send_message([TIMING_CLOCK])
+        except:
+            log.error('Cant send clock, port closed?') # devices can be powered off
 
 
 
@@ -761,8 +770,9 @@ class CCControls:
 class MidiMessage:
     """
     compose a midi message from its parts
+    channels are 0 - 15
     """
-    def __init__(self, midi_number, velocity=127, note_on=True, channel=1):
+    def __init__(self, midi_number, velocity=127, note_on=True, channel=0):
         if note_on:
             type = NOTE_ON
         else:
