@@ -11,13 +11,15 @@ import glob
 import queue
 import logging
 from pathlib import Path
-import shelve
+#import shelve
 from datetime import datetime
-import rsa
+#import rsa
+import json
 
 logging.basicConfig(level=logging.ERROR)
 log = logging.getLogger(__name__)
 
+"""
 class license:
     def __init__(self, email, signature):
 
@@ -34,133 +36,149 @@ class license:
 
     def is_valid(self):
         return self.valid
+"""
 
 class Settings:
     """
     persistant storage
     """
-    def __init__(self, app_name='generic', debug_info=False):
+    def __init__(self, app_name='generic', path=None):
         """
         Try to make this foolproof...
-        put settings in user dir in case other dirs are admin
-        we create the path dirs
-        then create the shelve files, if these fail we resort to a dictionay so set and get work, but persistance fails
-        todo: multiple apps of same type?
+        put global settings in user dir 
+        use a json file for settings
         """
-        self.debug_info = debug_info
-        self.path = os.path.expanduser(os.path.join('~', 'AppData', 'Local', 'VIRTUALROBOT', app_name))
-        self.debug_log(f'Path: {self.path}')
-        self.settings = None
-        self.persist = True
-        self.closed = True
+        self.last_error = None
+        self.path = None # a Path object
+        if path is None: # this is the global settings
+            if self.global_settings(app_name) == False:
+                return
+        else:
+            try:
+                p = Path(path)
+            except:
+                self.set_last_error(f'Error in settings path: {path}')
+                return
 
-        self._open()    
-        if self.dump() == False: # getting a exception dumping, try saving first
-            self.delete_config()
-            self._open()
+            if p.is_file(path) == False:
+                self.set_last_error(f'Error settings path: {path} does not exist')
+                return
+
+            self.path = p
 
 
-        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        #log.info(f'Settings at {self.path} started: {now}')
-        self.set(app_name, now)
-        self.set('path', self.path)
+        log.info(f'Path: {self.path}')
+        self.settings = {}
+
+        self.load()  
+        self.dump() 
+
+        self.set('App', app_name)
+
+        if self.settings.get('Created') is None:
+            now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            log.info(f'Settings at {self.path} created at: {now}')
+            self.set('Created', now)
+
+        self.set('Path', str(self.path))
         self.save()
 
-    def debug_log(self, msg):
-        if self.debug_info:
-            log.info(msg)
-     
-    def delete_config(self):
-        self.debug_log('Deleting settings files')
-        thispath = os.path.join(self.path, '*')
-        files = glob.glob(thispath)
-        for file in files:
-            if 'config' in file:
-                self.debug_log(f'Removing: {file}')
-                os.remove(file)
+    def get_last_error(self):
+        return self.last_error  # returns None if all OK
 
-    def _open(self):
-        # flag = 'n'  # NOT ON WINDOWS!! Always create a new, empty database, open for reading and writing
-        try:
-            if Path(self.path).exists() == False:
-                self.debug_log(f'Creating settings path: {self.path}')
-                Path(self.path).mkdir(parents=True)
+    def set_last_error(self, error):
+        self.last_error = error
+        log.error(error)
 
-            pathfile = os.path.join(self.path, 'config')
-            self.debug_log(f'Settings opening at: {pathfile}')
-            self.settings = shelve.open(pathfile, writeback=True) # we do not want to save every access only when closed
-            self.persist = True
-            self.closed = False
-        except:
-            log.error(f'Error opening settings at: {self.path}')
-            self.settings = {}  # use a dict so all the calls don't fail and we can get settings
-            self.persist = False
+
+    def global_settings(self, app_name):
+        path = os.path.expanduser(os.path.join('~', 'AppData', 'Local', 'VIRTUALROBOT', app_name))
+        p = Path(path)
+        if p.exists() == False:
+            log.info(f'Creating global settings path: {self.path}')
+            try:
+                p.mkdir(parents=True)
+            except:
+                self.set_last_error( f'Cannot create global settings path {self.path}')
+                return False
+
+        self.path = Path.joinpath(p, 'global.cfg')
+        return True
+
+    def load(self):
+        """
+        Gave up on using shelve as its not good for managing one file
+        """
+        if self.path.exists():
+            try:
+                with self.path.open() as json_file:
+                    self.settings = json.load(json_file)
+            except:
+                self.set_last_error( f'Error opening settings at: {self.path}')
+        else:
+            log.info('File {self.path} does not esits yet')
 
     def save(self):
-        if self.persist:
-            try:
-                self.settings.sync()
-            except:
-                log.error('Error syncing settings')
+        try:
+            with self.path.open('w') as outfile:
+                json.dump(self.settings, outfile, indent=4, ensure_ascii=True)
+        except:
+            self.set_last_error(f'Error saving settings, path: {self.path}')
 
     def set(self, name, value):
+        if isinstance(name, str) == False:
+            self.set_last_error(f'Set name must be a string, got: {name}')
+            return False
+
         try:
             self.settings[name] = value
         except:
-            log.error(f'Error setting: {name} to {value}')
-            return
+            self.set_last_error(f'Error setting: {name} to {value}')
+            return False
 
-        self.debug_log(f'Settings set: {self.path}, {name}, {value}')
+        log.info(f'Settings set: {self.path}, {name}, {value}')
+
+        return True
 
     def get(self, name, default_value=None):
         """
         if not in settings, set default value
         """
-        try:
-            value = self.settings[name]
-        except:
-            self.debug_log(f'Setting default: {name} to {default_value}')
+        if isinstance(name, str) == False:
+            self.set_last_error(f'Get name must be a string, got: {name}')
+            return None
+
+        value = self.settings.get(name)
+        if value is None and default_value is not None:
+            log.info(f'Setting default: {name} to {default_value}')
             self.set(name, default_value)
             return default_value
 
-        self.debug_log(f'Get: {name}: {value}')
+        log.info(f'Get: {name}: {value}')
         return value
 
     def dump(self):
         try:
             for k in self.settings.keys():
                 v = self.settings[k]
-                self.debug_log(f'Stored setting: {k}, {v}')
+                log.info(f'Stored setting: {k}, {v}')
         except:
-            log.error('Settings dump encountered an error')
-            try:
-                self.settings.close()
-            except:
-                log.error('Cant close after dump error')
+            self.set_last_error( f'Settings dump encountered an error, key: {k}')
             return False # a bad config file
 
         return True
 
 
     def close(self):
-        if self.closed:
-            self.debug_log('Already closed')
-            return
 
         self.debug_log('Closing')
         self.dump()
-        if self.persist:
-            try:
-                self.closed = True
-                self.settings.close()
-            except:
-                log.error('Error closing')
-                return
+        self.save()
 
-        self.debug_log(f'Settings closed {self.path}')
+        log.info(f'Settings closed {self.path}')
 
     def __del__(self):
-        self.debug_log('Deleting')
+        log.info('Deleting')
         self.close()
         
 
