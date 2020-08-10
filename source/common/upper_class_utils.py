@@ -42,57 +42,64 @@ class Settings:
     """
     persistant storage
     """
-    def __init__(self, app_name='generic', path=None):
+    def __init__(self, app_name='generic', type='empty'):
         """
         Try to make this foolproof...
         put global settings in user dir 
         use a json file for settings
+        if type is None we create an empty settings, use set_path then save to save settings.
+        if type is 'global' we create a settings file in user dir and save every time set is called
+        if path and file are set we save to that. 
         """
+        self.app_name = app_name # setting files must have this to be valid
+        self.dirty = False #if true we save on every call to set 
         self.last_error = None
         self.path = None # a Path object
-        if path is None: # this is the global settings
-            if self.global_settings(app_name) == False:
-                return
-        else:
-            try:
-                p = Path(path)
-            except:
-                self.set_last_error(f'Error in settings path: {path}')
-                return
-
-            if p.is_file(path) == False:
-                self.set_last_error(f'Error settings path: {path} does not exist')
-                return
-
-            self.path = p
-
-
-        log.info(f'Path: {self.path}')
         self.settings = {}
 
-        self.load()  
-        self.dump() 
+        if type == 'global': # this is the global settings
+            self.dirty = True
+            if self.global_settings(app_name) == False:
+                return
 
-        self.set('App', app_name)
+        self.set('Application', app_name)
 
         if self.settings.get('Created') is None:
             now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            log.info(f'Settings at {self.path} created at: {now}')
+            log.info(f'Settings created at: {now}')
             self.set('Created', now)
 
-        self.set('Path', str(self.path))
-        self.save()
 
     def get_last_error(self):
-        return self.last_error  # returns None if all OK
+        err = self.last_error  # returns None if all OK
+        self.last_error = None
+        return err
 
     def set_last_error(self, error):
         self.last_error = error
         log.error(error)
 
 
+    def set_path(self, path, file, must_exist=False):
+        try:
+            p = Path(path)
+        except:
+            self.set_last_error(f'Error in  path: {path}')
+            return False
+
+        p = p.joinpath(p, file)
+        if must_exist == True and p.is_file() == False:
+            self.set_last_error(f'{path} or {file} does not exist')
+            return False
+
+        self.path = p
+
+        log.info(f'Path: {self.path}')
+        return True
+
     def global_settings(self, app_name):
-        path = os.path.expanduser(os.path.join('~', 'AppData', 'Local', 'VIRTUALROBOT', app_name))
+        # everybody else does it on windows, so it must be OK
+        path = os.path.expanduser(os.path.join('~', '.VIRTUALROBOT', app_name))
         p = Path(path)
         if p.exists() == False:
             log.info(f'Creating global settings path: {self.path}')
@@ -109,34 +116,55 @@ class Settings:
         """
         Gave up on using shelve as its not good for managing one file
         """
-        if self.path.exists():
-            try:
-                with self.path.open() as json_file:
-                    self.settings = json.load(json_file)
-            except:
-                self.set_last_error( f'Error opening settings at: {self.path}')
-        else:
-            log.info('File {self.path} does not esits yet')
+        if self.path is None:
+            log.info('Path is not set')
+            return False
+
+        if self.path.exists() == False:
+            log.info('File {self.path} does not exist')
+            return False
+
+        try:
+            with self.path.open() as json_file:
+                settings = json.load(json_file)
+                app = settings.get('Application')
+                if app is None or app != self.app_name:
+                    self.set_last_error(f'Bad settings file: {self.path}')
+                    return False
+        except:
+            self.set_last_error( f'Error opening settings at: {self.path}')
+            return False
+
+        self.settings = settings
+        self.dump()
+        return True
+              
 
     def save(self):
+        if self.path is None:
+            log.info('File is not set')
+            return False
+
         try:
             with self.path.open('w') as outfile:
                 json.dump(self.settings, outfile, indent=4, ensure_ascii=True)
         except:
             self.set_last_error(f'Error saving settings, path: {self.path}')
+            return False
+
+        return True
 
     def set(self, name, value):
         if isinstance(name, str) == False:
             self.set_last_error(f'Set name must be a string, got: {name}')
             return False
 
-        try:
-            self.settings[name] = value
-        except:
-            self.set_last_error(f'Error setting: {name} to {value}')
-            return False
+        self.settings[name] = value
 
-        log.info(f'Settings set: {self.path}, {name}, {value}')
+        log.info(f'Settings set: {name}, {value}')
+
+        if self.dirty:
+            self.save()
 
         return True
 
@@ -145,7 +173,7 @@ class Settings:
         if not in settings, set default value
         """
         if isinstance(name, str) == False:
-            self.set_last_error(f'Get name must be a string, got: {name}')
+            log.error(f'Get name must be a string, got: {name}')
             return None
 
         value = self.settings.get(name)
@@ -158,32 +186,20 @@ class Settings:
         return value
 
     def dump(self):
-        try:
-            for k in self.settings.keys():
-                v = self.settings[k]
-                log.info(f'Stored setting: {k}, {v}')
-        except:
-            self.set_last_error( f'Settings dump encountered an error, key: {k}')
-            return False # a bad config file
-
-        return True
+        for k in self.settings.keys():
+            v = self.settings[k]
+            log.info(f'Stored setting: {k}, {v}')
 
 
     def close(self):
-
-        self.debug_log('Closing')
         self.dump()
         self.save()
-
         log.info(f'Settings closed {self.path}')
 
     def __del__(self):
         log.info('Deleting')
         self.close()
         
-
-
-
 
 
 class NoteManager:

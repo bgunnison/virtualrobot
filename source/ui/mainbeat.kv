@@ -570,8 +570,11 @@
                         height: 400
                         size_hint: 1, None
                         pos_hint: {'top':.85}
-                        id: filechooser
-                        filters: ['*.dat']
+                        id: save_filechooser
+                        filters: ['*.cfg']
+                        #on_entry_added: root.file_chooser_on_entry_added(self, node)
+                        on_entries_cleared: root.save_file_chooser_on_entries_cleared(self)
+                        #on_subentry_to_entry: root.file_chooser_on_subentry_to_entry(self.entry, self.parent)
                         on_selection: save_settings_text_input.text = self.selection and self.selection[0] or ''
 
                     FloatLayout:
@@ -590,7 +593,7 @@
                             height: 30
                             markup: True
                             text: root.bold('SAVE')
-                            on_release: root.save_settings(filechooser.path, save_settings_text_input.text)
+                            on_release: root.save_settings(save_filechooser.path, save_settings_text_input.text)
 
 
             LoadScreen:
@@ -612,8 +615,10 @@
                         height: 400
                         size_hint: 1, None
                         pos_hint: {'top':.85}
-                        id: filechooser
-                        filters: ['*.dat']
+                        id: load_filechooser
+                        filters: ['*.cfg']
+                        on_entries_cleared: root.load_file_chooser_on_entries_cleared(self)
+
 
                     FloatLayout:
                         orientation: 'horizontal'
@@ -631,7 +636,7 @@
                             height: 30
                             markup: True
                             text: root.bold('LOAD')
-                            on_release: root.load_settings(filechooser.path, filechooser.selection)
+                            on_release: root.load_settings(load_filechooser.path, load_filechooser.selection)
 
 
                   

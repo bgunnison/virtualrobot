@@ -12,6 +12,8 @@ import sys
 import os
 import time
 import logging
+from pathlib import Path
+
 
 help_text = '' 
 
@@ -86,15 +88,6 @@ class ScrollableLabel(ScrollView):
     pass
 
 
-class LoadDialog(FloatLayout):
-    load = ObjectProperty(None)
-    cancel = ObjectProperty(None)
-
-
-class SaveDialog(FloatLayout):
-    save = ObjectProperty(None)
-    text_input = ObjectProperty(None)
-    cancel = ObjectProperty(None)
 
 
     
@@ -104,28 +97,40 @@ class RootWidget(BoxLayout):
         super(RootWidget, self).__init__(**kwargs)
         self.use_clock=use_clock # some apps don't need a MIDI clock
 
-        self.loadfile = ObjectProperty(None)
-        self.savefile = ObjectProperty(None)
-        self.text_input = ObjectProperty(None)
+        #self.loadfile = ObjectProperty(None)
+        #self.savefile = ObjectProperty(None)
 
-        self.global_settings = Settings(title)  
         self.start_app(title, effect)
 
     def start_app(self, title, effect):
-        self.settings = Settings(title)    # our persistant settings
+        """
+        global_settings are global to the app, config_settings are the saved configuration
+        """
+        self.global_settings = Settings(title, type='global')    #global settings calls to set will save the file
 
-        #registration does nothing but stro what was entered
-        self.ids.RegisteredUserBut.text = self.bold(self.settings.get('registered_user', 'REGISTER'))
+        #registration does nothing but store what was entered
+        self.ids.RegisteredUserBut.text = self.bold(self.global_settings.get('registered_user', 'REGISTER'))
         self.register_popup_text_box = None
         self.register_popup = None
 
-        self.midi_manager = MidiManager(self.settings, use_clock=self.use_clock)
-        self.effect = effect(self.settings, self.midi_manager.cc_controls)
-        self.effect_manager = MidiEffectManager(self.settings, self.effect, self.midi_manager)
+        self.current_settings = Settings(title) 
+        path = self.global_settings.get('ConfigPath', '/')
+        file = self.global_settings.get('ConfigFile', '')
+        if self.current_settings.set_path(path, file) == False:
+            # something may have happened to the file
+            self.global_settings.set('ConfigPath', '/')
+            self.global_settings.set('ConfigFile', '')
+            
+
+        self.midi_manager = MidiManager(self.current_settings, use_clock=self.use_clock)
+        self.effect = effect(self.current_settings, self.midi_manager.cc_controls)
+        self.effect_manager = MidiEffectManager(self.current_settings, self.effect, self.midi_manager)
+
         self.effect_controls = {} # dict keyd by effect control name with ui ids to update if we get a CC control
-        # restore screen in settings
+
+        # restore screen from settings
         but = None
-        screen = self.settings.get('start_screen', 'screen_help') # first screen at install is help
+        screen = self.global_settings.get('start_screen', 'screen_help') # first screen at install is help
         if 'midi' in screen:
             but = self.ids.nav_midi
         if 'effect' in screen:
@@ -160,17 +165,81 @@ class RootWidget(BoxLayout):
         """
         self.effect.panic()
         self.midi_manager.destroy()
-        self.settings.close()
+        self.global_settings.close()
         log.info('destroy finished')
 
-    def cancel_load_save(self):
-        pass
+    def set_file_chooser_path(self, chooser_name):
+        """
+        sets file chooser screen path
+        """
+        if chooser_name == 'load':
+            set_name = 'LoadFileChooserPath'
+            chooser = self.ids.load_filechooser
 
-    def load_settings(self, path, filename):
+        if chooser_name == 'save':
+            set_name = 'SaveFileChooserPath'
+            chooser = self.ids.save_filechooser
+
+
+        path = self.global_settings.get(set_name, '/')
+        try:
+            p = Path(path)
+            if p.exists() == False:
+                self.global_settings.set(set_name, '/')
+                p = '/' # default to root if any errors
+        except:
+            p = '/'
+
+        chooser.path = str(p)
+
+    #def file_chooser_on_entry_added(self, file_chooser, file_list_entry):
+    #    log.info(f'entry_added: {entry}, {parent}')
+    #def file_chooser_on_subentry_to_entry(self, entry, parent):
+    #    log.info(f'subentry_to_entry: {entry}, {parent}')
+
+
+    def save_file_chooser_on_entries_cleared(self, chooser):
+        # fires off when chooser view changes
+        # remember path so we can restore it when screen loads
+        log.info(f'save on_entries_cleared, path: {chooser.path}')
+        self.global_settings.set('SaveFileChooserPath', chooser.path)
+        self.ids.save_settings_text_input.text = chooser.path
+
+    def load_file_chooser_on_entries_cleared(self, chooser):
+        # fires off when chooser view changes
+        # remember path so we can restore it when screen loads
+        log.info(f'load on_entries_cleared, path: {chooser.path}')
+        self.global_settings.set('LoadFileChooserPath', chooser.path)
+        self.ids.load_settings_text_input.text = chooser.path
+
+
+    def load_settings(self, path, filenames):
+        filename = filenames[0]
         log.info(f'load settings: {path}, {filename}')
+        if self.current_settings.set_path(path, filename, must_exist=True) == False:
+            self.error_notification(title='Cannot load!', msg=f'{path}, {filename}')
+            return
 
+        if self.current_settings.load() == False:
+            err = self.current_settings.get_last_error()
+            self.error_notification(title='Cannot load!', msg=f'{path}, {filename}, {err}')
+            return
+
+        
     def save_settings(self, path, filename):
         log.info(f'save settings: {path}, {filename}')
+        if self.current_settings.set_path(path, filename) == False:
+            err = self.current_settings.get_last_error()
+            self.error_notification(title='Error - cannot save!', msg=f'{path}, {filename}, {err}')
+            return
+
+        if self.current_settings.save() == False:
+            err = self.current_settings.get_last_error()
+            self.error_notification(title='Cannot save!', msg=f'{path}, {filename}, {err}')
+            return
+
+        self.global_settings.set('ConfigPath', path)
+        self.global_settings.set('ConfigFile', filename)
 
     def midi_panic(self, dt):
         self.effect.panic()
@@ -190,7 +259,7 @@ class RootWidget(BoxLayout):
         self.update_clock_selections()
 
         # reopen midi ports if in settings
-        midi_port = self.settings.get('midi_in_port')
+        midi_port = self.current_settings.get('midi_in_port')
         if midi_port is not None:
             ports = self.midi_manager.get_midi_in_ports()
             if ports is not None:
@@ -198,7 +267,7 @@ class RootWidget(BoxLayout):
                     self.ids.midi_port_in.text = midi_port # fires off select_midi_input_port
                     #self.select_midi_input_port(self.ids.midi_port_in)
 
-        midi_port = self.settings.get('midi_out_port')
+        midi_port = self.current_settings.get('midi_out_port')
         if midi_port is not None:
             ports = self.midi_manager.get_midi_out_ports()
             if ports is not None:
@@ -211,7 +280,7 @@ class RootWidget(BoxLayout):
         self.midi_manager.cc_controls.register_ui_callback('EffectEnableControlCC', self.ui_effect_on)
         cc_str = self.midi_manager.cc_controls.get_cc_str('EffectEnableControlCC')
         self.ids.EffectEnableControlCC.text = cc_str
-        self.ui_effect_on(self.settings.get('EffectEnabled'), None)
+        self.ui_effect_on(self.current_settings.get('EffectEnabled'), None)
         self.update_effect_controls()
 
     def update_effect_control(self, effect_control_key):
@@ -232,7 +301,7 @@ class RootWidget(BoxLayout):
              # get the current settings object number
             settings_name = settings_name.replace('XObject',f'{self.effect.get_settings_xobject()}')
 
-        value = self.settings.get(settings_name)
+        value = self.current_settings.get(settings_name)
            
         slider_id.value = value
         slider_id.disabled = False
@@ -249,10 +318,17 @@ class RootWidget(BoxLayout):
 
 
     def nav_button_pressed(self, but, screen_name):
+
+        # set the path for the choosers
+        if 'load' in screen_name:
+           self.set_file_chooser_path('load')
+        if 'save' in screen_name:
+            self.set_file_chooser_path('save')
+
         log.info(screen_name)
         but.state = 'down'
         self.ids['screen_manager'].current = screen_name
-        self.settings.set('start_screen', screen_name)
+        self.global_settings.set('start_screen', screen_name)
        # log.info(f'cwd: {os.getcwd()}')
         #Window.screenshot(name=f'{screen_name}' +'.png') # for website takes a snap of the screen
 
@@ -377,7 +453,7 @@ class RootWidget(BoxLayout):
         popup = Popup(title=title, content=Label(markup=True,
                                                  text=self.bold(msg)),
                                                  size_hint=(None, None),
-                                                 size=(300, 200),
+                                                 size=(500, 200),
                                                  background_color=(1, 0, 0, .7))
         popup.open()
         
@@ -445,32 +521,32 @@ class RootWidget(BoxLayout):
         log.info(f'midi in port desired: {selector.text}') 
         if selector.text is 'None':
             self.midi_manager.close_midi_in_port()
-            self.settings.set('midi_in_port', selector.text)
+            self.current_settings.set('midi_in_port', selector.text)
             return
 
         if self.midi_manager.set_midi_in_port(selector.text):
-            self.settings.set('midi_in_port', selector.text)
+            self.current_settings.set('midi_in_port', selector.text)
             return
 
         self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
         selector.text = selector.values[0]
-        self.settings.set('midi_in_port', selector.text)
+        self.current_settings.set('midi_in_port', selector.text)
         log.error('error opening input port')
 
     def select_midi_output_port(self, selector):
         log.info(f'midi out port desired: {selector.text}') 
         if selector.text is 'None':
             self.midi_manager.close_midi_out_port()
-            self.settings.set('midi_out_port', selector.text)
+            self.current_settings.set('midi_out_port', selector.text)
             return
 
         if self.midi_manager.set_midi_out_port(selector.text):
-            self.settings.set('midi_out_port', selector.text)
+            self.current_settings.set('midi_out_port', selector.text)
             return
 
         self.error_notification(title='Error opening MIDI port', msg=f'{selector.text}')
         selector.text = selector.values[0]
-        self.settings.set('midi_out_port', selector.text)
+        self.current_settings.set('midi_out_port', selector.text)
         log.error('error opening output port')
 
     def select_clock_source(self, but, internal_source):
@@ -557,7 +633,7 @@ class RootWidget(BoxLayout):
             text = 'REGISTER'
 
         log.info(f'User email: {text}')
-        self.settings.set('registered_user', text)
+        self.global_settings.set('registered_user', text)
         self.register_popup.dismiss()
         self.ids.RegisteredUserBut.text = self.bold(text)
         self.register_popup_text_box = None
